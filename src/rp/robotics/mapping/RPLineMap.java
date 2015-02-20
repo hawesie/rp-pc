@@ -20,18 +20,6 @@ public class RPLineMap extends LineMap {
 
 	/**
 	 * 
-	 * Overall grid width is (_gridWidth - 1) * _cellSize.
-	 * 
-	 * @param _gridWidth
-	 *            The number of points the grid is wide.
-	 * @param _gridHeight
-	 *            The number of points the grid is high.
-	 * @param _xStart
-	 *            The x offset of the first point
-	 * @param _yStart
-	 *            The y offset of the first point
-	 * @param _cellSize
-	 *            The spacing between grid points
 	 * @param _lines
 	 *            The lines that will make up the underlying LineMap
 	 * @param _boundingRect
