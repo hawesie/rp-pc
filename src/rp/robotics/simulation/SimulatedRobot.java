@@ -103,4 +103,15 @@ public class SimulatedRobot implements LocalisedRangeScanner {
 		m_pose.rotateUpdate(_angle);
 		m_needReadings = true;
 	}
+
+	/***
+	 * Move the robot forward by this amount. Currently does not collision
+	 * checking.
+	 * 
+	 * @param _junctionSeparation
+	 */
+	public void translate(float _distance) {
+		m_pose.moveUpdate(_distance);
+		m_needReadings = true;
+	}
 }
