@@ -5,6 +5,7 @@ import lejos.robotics.RangeReadings;
 import lejos.robotics.mapping.LineMap;
 import lejos.robotics.navigation.Pose;
 import rp.robotics.LocalisedRangeScanner;
+import rp.robotics.RangeReadingsFilter;
 
 /**
  * A simple simulated robot for testing.
@@ -15,10 +16,14 @@ import rp.robotics.LocalisedRangeScanner;
 public class SimulatedRobot implements LocalisedRangeScanner {
 
 	private Pose m_pose;
-	private LineMap m_map;
+	private final LineMap m_map;
 	private RangeReadings m_readings;
-	private float[] m_readingAngles;
+	private final float[] m_readingAngles;
 	private boolean m_needReadings = true;
+	private final float m_sensorMinRange;
+	private final float m_sensorMaxRange;
+	private final float m_sensorOutOfRange;
+	private RangeReadingsFilter m_rangeFilter;
 
 	/**
 	 * 
@@ -28,17 +33,59 @@ public class SimulatedRobot implements LocalisedRangeScanner {
 	 *            The map on which the robot exists
 	 * @param _readingAngles
 	 *            The angles to take readings from, relative to 0 for this robot
+	 * @param _sensorMaxRange
+	 *            Minimum sensor reading to return
+	 * @param _sensorMinRange
+	 *            Maximum sensor reading to return
+	 * @param _sensorOfOutRange
+	 *            The value to return if the simulated sensor would fall outside
+	 *            the max or min values.
 	 */
-	public SimulatedRobot(Pose _pose, LineMap _map, float[] _readingAngles) {
+	public SimulatedRobot(Pose _pose, LineMap _map, float[] _readingAngles,
+			float _sensorMinRange, float _sensorMaxRange,
+			float _sensorOfOutRange, RangeReadingsFilter _filter) {
 		m_pose = _pose;
 		m_map = _map;
 		m_readings = new RangeReadings(_readingAngles.length);
 		m_readingAngles = _readingAngles;
 		takeReadings();
+		m_sensorMaxRange = _sensorMaxRange;
+		m_sensorMinRange = _sensorMinRange;
+		m_sensorOutOfRange = _sensorOfOutRange;
+		m_rangeFilter = _filter;
 	}
 
+	/**
+	 * 
+	 * 
+	 * Creates a simulated robot with a min sensor range of 7, max of 160 and
+	 * out of range value of 255. This represents the approximate reliable
+	 * capabilities of the nxt ultrasonic sensor.
+	 * 
+	 * @param _pose
+	 *            The initial pose of the robot
+	 * @param _map
+	 *            The map on which the robot exists
+	 * @param _readingAngles
+	 *            The angles to take readings from, relative to 0 for this robot
+	 * @param _sensorMaxRange
+	 * @param _sensorMinRange
+	 * @param _sensorOfOutRange
+	 */
+	public SimulatedRobot(Pose _pose, LineMap _map, float[] _readingAngles) {
+		this(_pose, _map, new float[] { 0 }, 7, 160, 255, new GaussianNoise(3,
+				7, 160, 255));
+
+	}
+
+	/**
+	 * Creates a robot with no distance sensor.
+	 * 
+	 * @param _pose
+	 * @param _map
+	 */
 	public SimulatedRobot(Pose _pose, LineMap _map) {
-		this(_pose, _map, new float[] {});
+		this(_pose, _map, new float[] {}, 0, 0, 0, null);
 	}
 
 	@Override
@@ -67,9 +114,27 @@ public class SimulatedRobot implements LocalisedRangeScanner {
 			readingPose.setHeading(m_pose.getHeading() + m_readingAngles[i]);
 
 			// and take a reading from there
-			m_readings
-					.setRange(i, m_readingAngles[i], m_map.range(readingPose));
-			System.out.println(m_map.range(readingPose));
+			float mapRange = m_map.range(readingPose);
+
+			System.out.println(mapRange);
+			System.out.println(m_sensorMaxRange);
+			System.out.println(m_sensorMinRange);
+
+			// bound reading to configured parameters
+			if (mapRange > m_sensorMaxRange) {
+				mapRange = m_sensorOutOfRange;
+			} else if (mapRange < m_sensorMinRange) {
+				mapRange = m_sensorOutOfRange;
+			}
+
+			m_readings.setRange(i, m_readingAngles[i], mapRange);
+
+			System.out.println(mapRange);
+
+		}
+
+		if (m_rangeFilter != null) {
+			m_readings = m_rangeFilter.apply(m_readings);
 		}
 
 		m_needReadings = false;

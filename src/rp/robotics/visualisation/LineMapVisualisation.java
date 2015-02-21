@@ -183,15 +183,24 @@ public class LineMapVisualisation extends JComponent {
 			renderPose(p, g2);
 		}
 
-		g2.setStroke(new BasicStroke(1));
-		g2.setPaint(Color.BLUE);
-
 		for (LocalisedRangeScanner r : m_robots) {
 			Pose p = r.getPose();
 			RangeReadings readings = r.getRangeValues();
 			for (RangeReading reading : readings) {
+				float range = reading.getRange();
+
+				if (range == 255) {
+					g2.setStroke(new BasicStroke(1));
+					g2.setPaint(Color.RED);
+					range = 20;
+
+				} else {
+					g2.setStroke(new BasicStroke(1));
+					g2.setPaint(Color.BLUE);
+
+				}
 				drawLineToHeading(g2, p.getX(), p.getY(), p.getHeading()
-						+ reading.getAngle(), reading.getRange());
+						+ reading.getAngle(), range);
 			}
 		}
 
