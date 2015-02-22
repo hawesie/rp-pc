@@ -105,6 +105,10 @@ public class LineMapVisualisation extends JComponent {
 				.getBoundingRect().getHeight(), _lineMap, _scaleFactor);
 	}
 
+	public LineMap getLineMap() {
+		return m_lineMap;
+	}
+
 	/**
 	 * 
 	 * @param _dimension

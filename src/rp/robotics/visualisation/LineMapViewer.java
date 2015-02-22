@@ -7,22 +7,34 @@ import rp.robotics.mapping.RPLineMap;
 
 public class LineMapViewer {
 
+	public LineMapVisualisation run() {
+
+		// Create a frame to contain the viewer
+		JFrame frame = new JFrame("Map Viewer");
+
+		// Get the line map to display
+		RPLineMap lineMap = MapUtils.create2014Map2();
+
+		// Create the visualisation of this map with 2 pixels as 1 cm
+		LineMapVisualisation mapVis = new LineMapVisualisation(lineMap, 2);
+
+		// Add visualisation to frame
+		frame.add(mapVis);
+		frame.addWindowListener(new KillMeNow());
+
+		frame.pack();
+		frame.setSize(800, 600);
+		frame.setVisible(true);
+
+		return mapVis;
+
+	}
+
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-
-		JFrame frame = new JFrame("Map Viewer");
-
-		RPLineMap lineMap = MapUtils.create2014Map2();
-
-		// view the map with 2 pixels as 1 cm
-		LineMapVisualisation mapVis = new LineMapVisualisation(lineMap, 2);
-
-		frame.add(mapVis);
-		frame.pack();
-		frame.setSize(1050, 600);
-		frame.setVisible(true);
-
+		LineMapViewer demo = new LineMapViewer();
+		demo.run();
 	}
 }

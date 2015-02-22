@@ -27,6 +27,71 @@ public class SimulatedRobot implements LocalisedRangeScanner {
 
 	/**
 	 * 
+	 * 
+	 * Creates a simulated robot with a single, forward pointing sensor with a
+	 * min sensor range of 7, max of 160, +/-3, and out of range value of 255.
+	 * This represents the approximate reliable capabilities of the nxt
+	 * ultrasonic sensor.
+	 * 
+	 * @param _pose
+	 *            The initial pose of the robot
+	 * @param _map
+	 *            The map on which the robot exists
+	 */
+	public static SimulatedRobot createSingleSensorRobot(Pose _pose,
+			LineMap _map) {
+		return new SimulatedRobot(_pose, _map, new float[] { 0 }, 7, 160, 255,
+				new GaussianNoise(3, 7, 160, 255));
+	}
+
+	/**
+	 * 
+	 * 
+	 * Creates a simulated robot with a single, forward pointing sensor with a
+	 * min sensor range of 7, max of 160, +/-0, and out of range value of 255.
+	 * This represents the approximate reliable capabilities of the nxt
+	 * ultrasonic sensor.
+	 * 
+	 * @param _pose
+	 *            The initial pose of the robot
+	 * @param _map
+	 *            The map on which the robot exists
+	 */
+	public static SimulatedRobot createSingleNoiseFreeSensorRobot(Pose _pose,
+			LineMap _map) {
+		return new SimulatedRobot(_pose, _map, new float[] { 0 }, 7, 160, 255,
+				null);
+	}
+
+	/**
+	 * 
+	 * 
+	 * Creates a simulated robot with a single, forward pointing sensor with a
+	 * min sensor range of 7, max of 160 and out of range value of 255. This
+	 * represents the approximate reliable capabilities of the nxt ultrasonic
+	 * sensor.
+	 * 
+	 * @param _pose
+	 *            The initial pose of the robot
+	 * @param _map
+	 *            The map on which the robot exists
+	 */
+	public static SimulatedRobot createSensorlessRobot(Pose _pose, LineMap _map) {
+		return new SimulatedRobot(_pose, _map, new float[] {}, 0, 0, 0, null);
+	}
+
+	/**
+	 * Creates a robot with no distance sensor.
+	 * 
+	 * @param _pose
+	 * @param _map
+	 */
+	public SimulatedRobot(Pose _pose, LineMap _map) {
+		this(_pose, _map, new float[] {}, 0, 0, 0, null);
+	}
+
+	/**
+	 * 
 	 * @param _pose
 	 *            The initial pose of the robot
 	 * @param _map
@@ -48,44 +113,10 @@ public class SimulatedRobot implements LocalisedRangeScanner {
 		m_map = _map;
 		m_readings = new RangeReadings(_readingAngles.length);
 		m_readingAngles = _readingAngles;
-		takeReadings();
 		m_sensorMaxRange = _sensorMaxRange;
 		m_sensorMinRange = _sensorMinRange;
 		m_sensorOutOfRange = _sensorOfOutRange;
 		m_rangeFilter = _filter;
-	}
-
-	/**
-	 * 
-	 * 
-	 * Creates a simulated robot with a min sensor range of 7, max of 160 and
-	 * out of range value of 255. This represents the approximate reliable
-	 * capabilities of the nxt ultrasonic sensor.
-	 * 
-	 * @param _pose
-	 *            The initial pose of the robot
-	 * @param _map
-	 *            The map on which the robot exists
-	 * @param _readingAngles
-	 *            The angles to take readings from, relative to 0 for this robot
-	 * @param _sensorMaxRange
-	 * @param _sensorMinRange
-	 * @param _sensorOfOutRange
-	 */
-	public SimulatedRobot(Pose _pose, LineMap _map, float[] _readingAngles) {
-		this(_pose, _map, new float[] { 0 }, 7, 160, 255, new GaussianNoise(3,
-				7, 160, 255));
-
-	}
-
-	/**
-	 * Creates a robot with no distance sensor.
-	 * 
-	 * @param _pose
-	 * @param _map
-	 */
-	public SimulatedRobot(Pose _pose, LineMap _map) {
-		this(_pose, _map, new float[] {}, 0, 0, 0, null);
 	}
 
 	@Override
@@ -116,20 +147,20 @@ public class SimulatedRobot implements LocalisedRangeScanner {
 			// and take a reading from there
 			float mapRange = m_map.range(readingPose);
 
-			System.out.println(mapRange);
-			System.out.println(m_sensorMaxRange);
-			System.out.println(m_sensorMinRange);
+			// System.out.println(mapRange);
+			// System.out.println(m_sensorMaxRange);
+			// System.out.println(m_sensorMinRange);
 
 			// bound reading to configured parameters
 			if (mapRange > m_sensorMaxRange) {
 				mapRange = m_sensorOutOfRange;
 			} else if (mapRange < m_sensorMinRange) {
-				mapRange = m_sensorOutOfRange;
+				mapRange = m_sensorMinRange;
 			}
 
 			m_readings.setRange(i, m_readingAngles[i], mapRange);
 
-			System.out.println(mapRange);
+			// System.out.println(mapRange);
 
 		}
 

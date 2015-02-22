@@ -9,7 +9,7 @@ import rp.robotics.RangeReadingsFilter;
 /***
  * Filter to apply Gaussian noise to range readings.
  * 
- * @author nah
+ * @author Nick Hawes
  *
  */
 public class GaussianNoise implements RangeReadingsFilter {
@@ -64,7 +64,7 @@ public class GaussianNoise implements RangeReadingsFilter {
 				out = m_min;
 			}
 		}
-		System.out.println(_range + " to " + out);
+		// System.out.println(_range + " to " + out);
 		return out;
 	}
 }
