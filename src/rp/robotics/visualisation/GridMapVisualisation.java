@@ -4,7 +4,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 
-import lejos.geom.Line;
 import lejos.geom.Point;
 import lejos.robotics.mapping.LineMap;
 import rp.robotics.mapping.IGridMap;
@@ -12,7 +11,7 @@ import rp.robotics.mapping.IGridMap;
 /***
  * Visualise an IGridMap on top of a LineMap.
  * 
- * @author nah
+ * @author Nick Hawes
  *
  */
 public class GridMapVisualisation extends LineMapVisualisation {

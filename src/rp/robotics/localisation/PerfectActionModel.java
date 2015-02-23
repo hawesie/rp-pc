@@ -7,7 +7,7 @@ import rp.robotics.mapping.Heading;
  * cell in the requested direction. In the case where the move would take the
  * robot into an obstacle or off the map, this model assumes the robot stayed in
  * one place. This is the same as the model presented in Robot Programming
- * Lecture 14.
+ * lecture on action models.
  * 
  * Note that this class doesn't actually do this, instead it shows you a
  * <b>possible</b> structure for your action model.
@@ -65,9 +65,10 @@ public class PerfectActionModel implements ActionModel {
 
 					// for example if the only way to have got to _to (x,y) was
 					// from _from (x-1, y) (i.e. there was a PLUS_X move from
-					// (x-1, y) then you write that to the (x, y) value
+					// (x-1, y) then you write the value from _from (x-1, y) to
+					// the _to (x, y) value
 
-					// The below code does not move the value, just copies
+					// The below code does not translate the value, just copies
 					// it to the same position
 
 					// position before move

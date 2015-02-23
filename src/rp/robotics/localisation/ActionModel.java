@@ -3,9 +3,8 @@ package rp.robotics.localisation;
 import rp.robotics.mapping.Heading;
 
 /**
- * An example of an interface an action model might provide.
- * 
- * Note: you do not have to use this if you don't want to.
+ * An interface for an action model to reason about movements over a grid map.
+ * This interface ignores rotation actions as a simplification.
  * 
  * @author Nick Hawes
  * 
@@ -13,13 +12,16 @@ import rp.robotics.mapping.Heading;
 public interface ActionModel {
 
 	/***
-	 * Update the given distribution assuming a one position translation in the
-	 * direction given by the heading. This heading is in the global coordinate
-	 * frame.
+	 * Update the given distribution assuming the robot has successfully moved
+	 * one grid position in the direction given by the heading. This heading is
+	 * in the global coordinate frame.
 	 * 
 	 * @param _dist
+	 *            The distribution over robot position before the move was made
 	 * @param _heading
-	 * @return
+	 *            The direction of the successful move
+	 * @return The distribution over robot position after the application of the
+	 *         action model
 	 */
 	public GridPositionDistribution updateAfterMove(
 			GridPositionDistribution _dist, Heading _heading);
