@@ -1,5 +1,6 @@
 package rp.robotics.simulation;
 
+import java.util.Iterator;
 import java.util.Random;
 
 import lejos.robotics.RangeReading;
@@ -44,10 +45,13 @@ public class GaussianNoise implements RangeReadingsFilter {
 
 	@Override
 	public RangeReadings apply(RangeReadings _in) {
-		RangeReadings out = new RangeReadings(0);
-		for (RangeReading reading : _in) {
-			out.add(new RangeReading(reading.getAngle(), applyNoise(reading
-					.getRange())));
+		RangeReadings out = new RangeReadings(_in.getNumReadings());
+
+		for (int i = 0; i < _in.getNumReadings(); i++) {
+			RangeReading reading = _in.get(i);
+			out.set(i,
+					new RangeReading(reading.getAngle(), applyNoise(reading
+							.getRange())));
 		}
 
 		return out;

@@ -87,15 +87,20 @@ public class MarkovLocalisationSkeleton {
 		// A short delay so we can see what's going on
 		Delay.msDelay(1000);
 
-		// // m_distribution =
-		// _sensorModel.updateAfterSensing(m_distribution,
-		// Heading.PLUS_X, m_robot.getRangeValues());
-		// // m_mapVis.setDistribution(m_distribution);
+		m_distribution = _sensorModel.updateAfterSensing(m_distribution,
+				_heading, m_robot.getRangeValues());
+
+		// if visualising, update the shown distribution
+		if (m_mapVis != null) {
+			m_mapVis.setDistribution(m_distribution);
+		}
+
+		// A short delay so we can see what's going on
+		Delay.msDelay(1000);
 	}
 
 	public void run() {
 
-		// ActionModel actionModel = new NicksPerfectActionModel();
 		ActionModel actionModel = new PerfectActionModel();
 		SensorModel sensorModel = new PerfectSensorModel();
 
@@ -194,11 +199,14 @@ public class MarkovLocalisationSkeleton {
 		Pose startPose = new Pose(startPoint.x, startPoint.y, startTheta);
 
 		// This creates a simulated robot with single, forward pointing distance
-		// sensor with similar properties to the Lego ultrasonic sensor
+		// sensor with similar properties to the Lego ultrasonic sensor but
+		// without the noise
+		SimulatedRobot robot = SimulatedRobot.createSingleNoiseFreeSensorRobot(
+				startPose, lineMap);
+
+		// This does the same as above but adds noise to the range readings
 		// SimulatedRobot robot = SimulatedRobot.createSingleSensorRobot(
 		// startPose, lineMap);
-		SimulatedRobot robot = SimulatedRobot.createSensorlessRobot(startPose,
-				lineMap);
 
 		MarkovLocalisationSkeleton ml = new MarkovLocalisationSkeleton(robot,
 				lineMap, gridMap, junctionSeparation);
