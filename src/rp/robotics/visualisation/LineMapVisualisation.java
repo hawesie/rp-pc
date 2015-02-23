@@ -254,6 +254,12 @@ public class LineMapVisualisation extends JComponent {
 		g2.draw(l);
 	}
 
+	protected void renderLine(Point _p1, Point _p2, Graphics2D _g2) {
+		Line2D line = new Line2D.Double(scale(_p1.x) + X_MARGIN, scale(_p1.y)
+				+ Y_MARGIN, scale(_p2.x) + X_MARGIN, scale(_p2.y) + Y_MARGIN);
+		_g2.draw(line);
+	}
+
 	protected void renderPose(Pose _pose, Graphics2D _g2) {
 		Ellipse2D ell =
 		// first 2 coords are upper left corner of framing rectangle
