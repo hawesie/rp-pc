@@ -13,7 +13,7 @@ public class LineMapViewer {
 		JFrame frame = new JFrame("Map Viewer");
 
 		// Get the line map to display
-		RPLineMap lineMap = MapUtils.create2014Map2();
+		RPLineMap lineMap = MapUtils.create2015Map1();
 
 		// Create the visualisation of this map with 2 pixels as 1 cm
 		LineMapVisualisation mapVis = new LineMapVisualisation(lineMap, 2);
