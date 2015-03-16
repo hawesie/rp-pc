@@ -330,43 +330,43 @@ public class MapUtils {
 		
 
 		// Top left box
-		lines.addAll(createBox(0, 30, 
-							   32, 30+30,
+		lines.addAll(createBox(0, height-30, 
+							   32, height-60,
 							   createBoxLinesAsBoxes));
 		// Bottom left box
-		lines.addAll(createBox(0, height-65, 
-							   30, height-31,
+		lines.addAll(createBox(0, 65, 
+							   30, 31,
 							   createBoxLinesAsBoxes));
 		// Top right box
-		lines.addAll(createBox(width-32, 30, 
-							   width, 30+30,
+		lines.addAll(createBox(width-32, height-30, 
+							   width, height-60,
 							   createBoxLinesAsBoxes));
 		// Bottom right box
-		lines.addAll(createBox(width-32, height-61, 
-							   width, height-31,
+		lines.addAll(createBox(width-32, 61, 
+							   width, 31,
 							   createBoxLinesAsBoxes));
 		
 		
 		// Top-edge box
-		lines.addAll(createBox(122, 0, 
-							   122+90, 31,
+		lines.addAll(createBox(122, height, 
+							   122+90, height-31,
 							   createBoxLinesAsBoxes));
 		// Bottom-edge box
-		lines.addAll(createBox(121, height-31, 
-							   121+90, height,
+		lines.addAll(createBox(121, 31, 
+							   121+90, 0,
 							   createBoxLinesAsBoxes));
 		
 		
 		// Mid-left box
-		lines.addAll(createBox(119, 90, 
-							   119+32, 90+62,
+		lines.addAll(createBox(119, height-90, 
+							   119+32, height-(90+62),
 							   createBoxLinesAsBoxes));
 		// Mid-right box
-		lines.addAll(createBox(119+32+62, 90, 
-							   119+32+62+32, 90+62,
+		lines.addAll(createBox(119+32+62, height-90, 
+							   119+32+62+32, height-(90+62),
 							   createBoxLinesAsBoxes));
 
-		lines.add(new Line(119+32, 90+62, 119+32+62, 90+62));
+		lines.add(new Line(119+32, height-(90+62), 119+32+62, height-(90+62)));
 		
 
 		Line[] lineArray = new Line[lines.size()];
