@@ -61,7 +61,7 @@ public class GridMapVisualisation extends LineMapVisualisation {
 
 		// and visualise valid connections
 		for (int x = 0; x < m_gridMap.getXSize(); x++) {
-			for (int y = 0; y < m_gridMap.getXSize(); y++) {
+			for (int y = 0; y < m_gridMap.getYSize(); y++) {
 
 				if (m_gridMap.isValidGridPosition(x, y)) {
 					connectToNeighbour(_g2, x, y, 1, 0);
