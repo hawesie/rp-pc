@@ -72,8 +72,10 @@ public class GridMapViewer {
 						Heading.toDegrees(Heading.MINUS_X)));
 
 		// view the map with 2 pixels as 1 cm
+		// flip the y axis to get RH rule correct although it's ugly
+		boolean flipYAxis = false;
 		GridMapVisualisation mapVis = new GridMapVisualisation(gridMap,
-				lineMap, 2);
+				lineMap, 2, flipYAxis);
 
 		frame.add(mapVis);
 		frame.pack();

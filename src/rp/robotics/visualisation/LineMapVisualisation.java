@@ -58,8 +58,10 @@ public class LineMapVisualisation extends JComponent {
 	private ArrayList<LocalisedRangeScanner> m_robots = new ArrayList<LocalisedRangeScanner>(
 			1);
 
+	private final boolean m_flip;
+
 	private LineMapVisualisation(int _width, int _height, LineMap _lineMap,
-			float _scaleFactor) {
+			float _scaleFactor, boolean _flip) {
 
 		m_scaleFactor = _scaleFactor;
 		m_worldDimensions = new Rectangle(scale(_width), scale(_height));
@@ -72,6 +74,8 @@ public class LineMapVisualisation extends JComponent {
 		m_lineMap = _lineMap;
 
 		m_translatedLines = translateLines(m_lineMap, X_MARGIN, Y_MARGIN);
+
+		m_flip = _flip;
 
 		// repaint at 10Hz
 		new Timer(100, new ActionListener() {
@@ -90,7 +94,7 @@ public class LineMapVisualisation extends JComponent {
 	 */
 	public LineMapVisualisation(LineMap _lineMap) {
 		this((int) _lineMap.getBoundingRect().getWidth(), (int) _lineMap
-				.getBoundingRect().getHeight(), _lineMap, 1);
+				.getBoundingRect().getHeight(), _lineMap, 1, false);
 	}
 
 	/**
@@ -102,7 +106,23 @@ public class LineMapVisualisation extends JComponent {
 	 */
 	public LineMapVisualisation(LineMap _lineMap, float _scaleFactor) {
 		this((int) _lineMap.getBoundingRect().getWidth(), (int) _lineMap
-				.getBoundingRect().getHeight(), _lineMap, _scaleFactor);
+				.getBoundingRect().getHeight(), _lineMap, _scaleFactor, false);
+	}
+
+	/**
+	 * Create a visualisation of the given LineMap with the given scale factor
+	 * (pixels to map units).
+	 * 
+	 * @param _lineMap
+	 * @param _scaleFactor
+	 * @param _flip
+	 *            invert y axis
+	 */
+
+	public LineMapVisualisation(LineMap _lineMap, float _scaleFactor,
+			boolean _flip) {
+		this((int) _lineMap.getBoundingRect().getWidth(), (int) _lineMap
+				.getBoundingRect().getHeight(), _lineMap, _scaleFactor, _flip);
 	}
 
 	public LineMap getLineMap() {
@@ -150,6 +170,13 @@ public class LineMapVisualisation extends JComponent {
 		rectFill.translate(X_MARGIN, Y_MARGIN);
 		g2.setPaint(Color.WHITE);
 		g2.fill(rectFill);
+
+		if (m_flip) {
+			int height = getHeight() / 2;
+			g2.translate(0, height);
+			g2.scale(1, -1);
+			g2.translate(0, -height);
+		}
 
 		renderMap(g2);
 

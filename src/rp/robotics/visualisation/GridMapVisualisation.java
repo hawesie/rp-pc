@@ -24,9 +24,14 @@ public class GridMapVisualisation extends LineMapVisualisation {
 	protected IGridMap m_gridMap;
 
 	public GridMapVisualisation(IGridMap _gridMap, LineMap _lineMap,
-			float _scaleFactor) {
-		super(_lineMap, _scaleFactor);
+			float _scaleFactor, boolean _flip) {
+		super(_lineMap, _scaleFactor, _flip);
 		m_gridMap = _gridMap;
+	}
+
+	public GridMapVisualisation(IGridMap _gridMap, LineMap _lineMap,
+			float _scaleFactor) {
+		this(_gridMap, _lineMap, _scaleFactor, false);
 	}
 
 	private void connectToNeighbour(Graphics2D _g2, int _x, int _y, int _dx,
