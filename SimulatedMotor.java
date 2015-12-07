@@ -37,12 +37,19 @@ public class SimulatedMotor implements RegulatedMotor {
 
 	private float m_direction = STOPPED;
 	private Thread m_moveThread;
+	private int m_limitAngle;
 
-	/**
-	 * Move until stopped.
-	 */
-	private void move() {
-		move(i -> false);
+	private void notifyListener(boolean _started) {
+		if (m_listener != null) {
+			if (_started) {
+				m_listener.rotationStarted(this, getTachoCount(), isStalled(),
+						System.currentTimeMillis());
+			} else {
+				m_listener.rotationStopped(this, getTachoCount(), isStalled(),
+						System.currentTimeMillis());
+			}
+		}
+
 	}
 
 	/**
@@ -60,6 +67,8 @@ public class SimulatedMotor implements RegulatedMotor {
 		float cycleTimeSecs = 2f / m_targetSpeed;
 		long cycleTimeMs = (long) (cycleTimeSecs * 1000);
 
+		notifyListener(true);
+
 		while (m_isMoving && !_tachoPredicate.test(m_tachoCount)) {
 
 			// System.out.println("loop:" + Math.floor(cycleTimeSecs *
@@ -68,7 +77,7 @@ public class SimulatedMotor implements RegulatedMotor {
 
 			m_tachoCount += Math.floor(cycleTimeSecs * m_currentSpeed
 					* m_direction);
-//			System.out.println(m_tachoCount);
+			// System.out.println(m_tachoCount);
 
 			if (m_currentSpeed < m_targetSpeed) {
 				m_currentSpeed = Math.min(m_targetSpeed, m_currentSpeed
@@ -77,8 +86,11 @@ public class SimulatedMotor implements RegulatedMotor {
 
 			Delay.msDelay(cycleTimeMs);
 		}
+
 		// need to set this if the tacho predicate stopped the move
 		m_isMoving = false;
+
+		notifyListener(false);
 	}
 
 	@Override
@@ -218,6 +230,7 @@ public class SimulatedMotor implements RegulatedMotor {
 
 	@Override
 	public void rotateTo(int _limitAngle, boolean _immediateReturn) {
+		m_limitAngle = _limitAngle;
 		float direction = FORWARD;
 		Predicate<Integer> target = i -> i >= _limitAngle - 2;
 		if (_limitAngle < getTachoCount()) {
@@ -232,13 +245,18 @@ public class SimulatedMotor implements RegulatedMotor {
 
 	@Override
 	public int getLimitAngle() {
-		// TODO Auto-generated method stub
-		return 0;
+		return m_limitAngle;
 	}
 
 	@Override
 	public void setSpeed(int _speed) {
-		// TODO Auto-generated method stub
+		if (_speed > 0 && _speed <= getMaxSpeed()) {
+			m_targetSpeed = _speed;
+		} else {
+			throw new IllegalArgumentException(
+					"Speed must be greater than 0 and less than or equal to "
+							+ getMaxSpeed());
+		}
 
 	}
 
@@ -249,8 +267,10 @@ public class SimulatedMotor implements RegulatedMotor {
 
 	@Override
 	public float getMaxSpeed() {
-		// TODO Auto-generated method stub
-		return 0;
+		// It is generally assumed, that the maximum accurate speed of Motor is
+		// 100 degree/second * Voltage
+		// 9.4V seems like a high value for the voltage
+		return 900;
 	}
 
 	@Override
@@ -264,7 +284,12 @@ public class SimulatedMotor implements RegulatedMotor {
 
 	@Override
 	public void setAcceleration(int _acceleration) {
-		// TODO Auto-generated method stub
+		if (_acceleration > 0 && _acceleration <= 6000) {
+			m_acceleration = _acceleration;
+		} else {
+			throw new IllegalArgumentException(
+					"Acceleration must be greater than 0 and less than or equal to 6000");
+		}
 
 	}
 
