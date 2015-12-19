@@ -1,4 +1,4 @@
-package rp.sim;
+package rp.robotics.simulation;
 
 import static org.junit.Assert.*;
 import lejos.robotics.localization.OdometryPoseProvider;

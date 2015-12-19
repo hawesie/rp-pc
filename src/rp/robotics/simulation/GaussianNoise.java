@@ -1,6 +1,5 @@
 package rp.robotics.simulation;
 
-import java.util.Iterator;
 import java.util.Random;
 
 import lejos.robotics.RangeReading;

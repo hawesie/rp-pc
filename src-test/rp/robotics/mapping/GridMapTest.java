@@ -8,8 +8,9 @@ import java.util.HashSet;
 import lejos.geom.Line;
 import lejos.geom.Rectangle;
 
-import org.testng.Assert;
-import org.testng.annotations.Test;
+import org.junit.Assert;
+
+import org.junit.Test;
 
 public class GridMapTest {
 
@@ -218,9 +219,9 @@ public class GridMapTest {
 							Assert.assertFalse(map.isValidTransition(from.x,
 									from.y, to.x, to.y));
 						} else {
-							Assert.assertTrue(map.isValidTransition(from.x,
-									from.y, to.x, to.y), "from " + from
-									+ " to " + to);
+							Assert.assertTrue("from " + from + " to " + to, map
+									.isValidTransition(from.x, from.y, to.x,
+											to.y));
 						}
 					}
 				}
