@@ -1,7 +1,6 @@
 package rp.sim;
 
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.RegulatedMotorListener;
 import lejos.util.Delay;
@@ -26,7 +25,7 @@ public class SimulatedMotorTest {
 		// start moving forward
 		motor.forward();
 
-		int delaySecs = 3;
+		int delaySecs = 5;
 		Delay.msDelay(delaySecs * 1000);
 
 		// the motor should be going as fast as acceleration allows, up to
@@ -34,25 +33,22 @@ public class SimulatedMotorTest {
 		double estimatedSpeed = Math.min(acceleration * delaySecs, targetSpeed);
 		int currentSpeed = motor.getRotationSpeed();
 
-		int wiggleRoom = 30;
-
 		assertTrue("Speed has exceeded target speed",
 				currentSpeed <= targetSpeed);
-		assertTrue("Speed is not fast enough", currentSpeed > estimatedSpeed
-				- wiggleRoom);
-		assertTrue("Speed is too fast", currentSpeed < estimatedSpeed
-				+ wiggleRoom);
+		assertTrue("Speed is not fast enough",
+				currentSpeed > estimatedSpeed * 0.95);
+		assertTrue("Speed is too fast", currentSpeed < estimatedSpeed * 1.05);
 
 		long estimatedTachoCountIncrease = Math.round(Math.floor(estimatedSpeed
 				* delaySecs));
 		long tachoCountIncrease = motor.getTachoCount() - startCount;
 
-		wiggleRoom = 200;
-		assertTrue("Count is not high enough",
-				tachoCountIncrease > estimatedTachoCountIncrease - wiggleRoom);
-		assertTrue("Count is too high",
-				tachoCountIncrease < estimatedTachoCountIncrease + wiggleRoom);
-
+		assertTrue("Count is not high enough " + tachoCountIncrease
+				+ "vs estimate " + estimatedTachoCountIncrease,
+				tachoCountIncrease > estimatedTachoCountIncrease * 0.9);
+		assertTrue("Count is too high " + tachoCountIncrease + "vs estimate "
+				+ estimatedTachoCountIncrease,
+				tachoCountIncrease < estimatedTachoCountIncrease * 1.1);
 	}
 
 	@Test
@@ -71,7 +67,7 @@ public class SimulatedMotorTest {
 		// start moving backward
 		motor.backward();
 
-		int delaySecs = 3;
+		int delaySecs = 5;
 		Delay.msDelay(delaySecs * 1000);
 
 		// the motor should be going as fast as acceleration allows, up to
@@ -79,25 +75,22 @@ public class SimulatedMotorTest {
 		double estimatedSpeed = Math.min(acceleration * delaySecs, targetSpeed);
 		int currentSpeed = motor.getRotationSpeed();
 
-		int wiggleRoom = 30;
-
 		assertTrue("Speed has exceeded target speed",
-				currentSpeed <= targetSpeed);
-		assertTrue("Speed is not fast enough", currentSpeed > estimatedSpeed
-				- wiggleRoom);
-		assertTrue("Speed is too fast", currentSpeed < estimatedSpeed
-				+ wiggleRoom);
+				currentSpeed <= targetSpeed * 1.05);
+		assertTrue("Speed is not fast enough",
+				currentSpeed > estimatedSpeed * 0.95);
+		assertTrue("Speed is too fast", currentSpeed < estimatedSpeed * 1.05);
 
 		long estimatedTachoCountIncrease = -Math.round(Math
 				.floor(estimatedSpeed * delaySecs));
 		long tachoCountIncrease = motor.getTachoCount() - startCount;
 
-		wiggleRoom = 200;
-		assertTrue("Count is not high enough",
-				tachoCountIncrease > estimatedTachoCountIncrease - wiggleRoom);
-		assertTrue("Count is too high",
-				tachoCountIncrease < estimatedTachoCountIncrease + wiggleRoom);
-
+		assertTrue("Count is not high enough " + tachoCountIncrease
+				+ "vs estimate " + estimatedTachoCountIncrease,
+				tachoCountIncrease > estimatedTachoCountIncrease * 1.1);
+		assertTrue("Count is too high " + tachoCountIncrease + "vs estimate "
+				+ estimatedTachoCountIncrease,
+				tachoCountIncrease < estimatedTachoCountIncrease * 0.9);
 	}
 
 	@Test
@@ -107,7 +100,7 @@ public class SimulatedMotorTest {
 
 		motor.forward();
 		Delay.msDelay(1000);
-		motor.stop();
+		motor.stop(false);
 
 		int targetSpeed = 360;
 		int acceleration = 6000;
@@ -120,7 +113,7 @@ public class SimulatedMotorTest {
 		// start moving backward
 		motor.backward();
 
-		int delaySecs = 3;
+		int delaySecs = 5;
 		Delay.msDelay(delaySecs * 1000);
 
 		// the motor should be going as fast as acceleration allows, up to
@@ -128,24 +121,22 @@ public class SimulatedMotorTest {
 		double estimatedSpeed = Math.min(acceleration * delaySecs, targetSpeed);
 		int currentSpeed = motor.getRotationSpeed();
 
-		int wiggleRoom = 30;
-
 		assertTrue("Speed has exceeded target speed",
-				currentSpeed <= targetSpeed);
-		assertTrue("Speed is not fast enough", currentSpeed > estimatedSpeed
-				- wiggleRoom);
-		assertTrue("Speed is too fast", currentSpeed < estimatedSpeed
-				+ wiggleRoom);
+				currentSpeed < targetSpeed * 1.05);
+		assertTrue("Speed is not fast enough",
+				currentSpeed > estimatedSpeed * 0.95);
+		assertTrue("Speed is too fast", currentSpeed < estimatedSpeed * 1.05);
 
 		long estimatedTachoCountIncrease = -Math.round(Math
 				.floor(estimatedSpeed * delaySecs));
 		long tachoCountIncrease = motor.getTachoCount() - startCount;
 
-		wiggleRoom = 100;
-		assertTrue("Count is not high enough",
-				tachoCountIncrease > estimatedTachoCountIncrease - wiggleRoom);
-		assertTrue("Count is too high",
-				tachoCountIncrease < estimatedTachoCountIncrease + wiggleRoom);
+		assertTrue("Count is not high enough " + tachoCountIncrease
+				+ "vs estimate " + estimatedTachoCountIncrease,
+				tachoCountIncrease > estimatedTachoCountIncrease * 0.9);
+		assertTrue("Count is too high " + tachoCountIncrease + "vs estimate "
+				+ estimatedTachoCountIncrease,
+				tachoCountIncrease < estimatedTachoCountIncrease * 1.1);
 
 	}
 
@@ -155,9 +146,12 @@ public class SimulatedMotorTest {
 		int[] targets = { 0, 361, -33, 400, 404, -27, -666, 1024 };
 		for (int target : targets) {
 			motor.rotateTo(target, false);
-			assertTrue("Rotation for " + target + " did not go far enough",
+			assertTrue("Rotation for " + target + " did not go far enough: "
+					+ motor.getTachoCount(),
 					motor.getTachoCount() >= target - 2);
-			assertTrue("Rotation for " + target + "went too far",
+			assertTrue(
+					"Rotation for " + target + "went too far: "
+							+ motor.getTachoCount(),
 					motor.getTachoCount() <= target + 2);
 		}
 	}
@@ -169,9 +163,12 @@ public class SimulatedMotorTest {
 		for (int increment : increments) {
 			int target = motor.getTachoCount() + increment;
 			motor.rotate(increment, false);
-			assertTrue("Rotation for " + target + " did not go far enough",
+			assertTrue("Rotation for " + target + " did not go far enough: "
+					+ motor.getTachoCount(),
 					motor.getTachoCount() >= target - 2);
-			assertTrue("Rotation for " + target + "went too far",
+			assertTrue(
+					"Rotation for " + target + "went too far: "
+							+ motor.getTachoCount(),
 					motor.getTachoCount() <= target + 2);
 		}
 	}
