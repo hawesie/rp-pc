@@ -4,7 +4,8 @@ import java.util.function.Predicate;
 
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.RegulatedMotorListener;
-import lejos.util.Delay;
+import lejos.robotics.localization.OdometryPoseProvider;
+import lejos.robotics.navigation.DifferentialPilot;
 
 /**
  * This class simulates the desired behaviour of a regulated motor. It does not
@@ -16,13 +17,15 @@ import lejos.util.Delay;
 public class SimulatedMotor implements RegulatedMotor {
 
 	// target speed of motor in degrees/second
-	protected float m_targetSpeed = 360;
+	protected double m_targetSpeed = 360;
 	// acceleration of motor in degrees/second/second
 	protected int m_acceleration = 6000;
 	// current speed of motor in degrees/second
-	protected float m_currentSpeed = 0;
+	protected double m_commandedSpeed = 0;
+	protected double m_measuredSpeed = 0;
+
 	// tacho count of motor in degrees
-	protected int m_tachoCount = 0;
+	protected double m_tachoCount = 0;
 
 	// whether or not the motor should be moving
 	private boolean m_isMoving = false;
@@ -31,13 +34,20 @@ public class SimulatedMotor implements RegulatedMotor {
 	// implementation
 	private RegulatedMotorListener m_listener = null;
 
-	private final float FORWARD = 1f;
-	private final float STOPPED = 0f;
-	private final float BACKWARD = -1f;
+	private enum MotorState {
+		ACCELERATING, REGULATING, STOPPED
+	};
 
-	private float m_direction = STOPPED;
+	private MotorState m_state = MotorState.STOPPED;
+
+	private final double FORWARD = 1f;
+	private final double STOPPED = 0f;
+	private final double BACKWARD = -1f;
+
+	private double m_direction = STOPPED;
 	private Thread m_moveThread;
 	private int m_limitAngle;
+	private Thread m_regulateThread;
 
 	private void notifyListener(boolean _started) {
 		if (m_listener != null) {
@@ -53,6 +63,37 @@ public class SimulatedMotor implements RegulatedMotor {
 	}
 
 	/**
+	 * Regulate the speed of the motor relative to the target.
+	 */
+	private void regulate() {
+
+		double cycleTimeSecs = 0.8;
+		Rate rate = new Rate(1 / cycleTimeSecs);
+		double lastReading = getTachoCount(), currentReading, difference;
+
+		while (m_isMoving) {
+			currentReading = getTachoCount();
+			difference = Math.abs(currentReading - lastReading);
+			m_measuredSpeed = difference / cycleTimeSecs;
+			difference = m_targetSpeed - m_measuredSpeed;
+//			System.out.println("spped diff: " + difference);
+//			System.out.println("measured: " + m_measuredSpeed);
+
+			if (m_state == MotorState.REGULATING) {
+				m_commandedSpeed = m_commandedSpeed + 1
+						* (cycleTimeSecs * difference);
+			}
+
+			lastReading = currentReading;
+
+			rate.sleep();
+
+		}
+		
+		m_measuredSpeed = 0;
+	}
+
+	/**
 	 * Move until stopped or until the predicate tests true.
 	 * 
 	 * @param _tachoPredicate
@@ -64,32 +105,34 @@ public class SimulatedMotor implements RegulatedMotor {
 		// tacho should have a resolution of 4 degrees (+/- 2) so this loop
 		// needs to increment in smaller steps, e.g. 2 degree steps
 
-		float cycleTimeSecs = 2f / m_targetSpeed;
-		long cycleTimeMs = (long) (cycleTimeSecs * 1000);
+		Rate rate = new Rate(m_targetSpeed / 2d);
+		double cycleTimeSecs = 2d / m_targetSpeed;
 
 		notifyListener(true);
 
-		while (m_isMoving && !_tachoPredicate.test(m_tachoCount)) {
+		m_state = MotorState.ACCELERATING;
+		while (m_isMoving && !_tachoPredicate.test(getTachoCount())) {
 
-			// System.out.println("loop:" + Math.floor(cycleTimeSecs *
-			// _currentSpeed
-			// * _direction));
+			if (m_state == MotorState.ACCELERATING) {
+				if (m_commandedSpeed < m_targetSpeed) {
+					m_commandedSpeed += m_acceleration * cycleTimeSecs;
+//					System.out.println("accelerating to speed: "
+//							+ m_commandedSpeed);
 
-			m_tachoCount += Math.floor(cycleTimeSecs * m_currentSpeed
-					* m_direction);
-			// System.out.println(m_tachoCount);
-
-			if (m_currentSpeed < m_targetSpeed) {
-				m_currentSpeed = Math.min(m_targetSpeed, m_currentSpeed
-						+ (cycleTimeSecs * m_acceleration));
+				} else {
+					m_state = MotorState.REGULATING;
+				}
 			}
 
-			Delay.msDelay(cycleTimeMs);
+			m_tachoCount += (cycleTimeSecs * m_commandedSpeed * m_direction);
+		
+			rate.sleep();
+			
 		}
 
 		// need to set this if the tacho predicate stopped the move
 		m_isMoving = false;
-
+		m_state = MotorState.STOPPED;
 		notifyListener(false);
 	}
 
@@ -99,11 +142,11 @@ public class SimulatedMotor implements RegulatedMotor {
 		m_isMoving = false;
 	}
 
-	private void startMove(float _direction) {
+	private void startMove(double _direction) {
 		startMove(_direction, i -> false);
 	}
 
-	private void startMove(float _direction, Predicate<Integer> _tachoPredicate) {
+	private void startMove(double _direction, Predicate<Integer> _tachoPredicate) {
 
 		// if moving in a different direction, make sure we've stopped before
 		// moving again
@@ -129,8 +172,19 @@ public class SimulatedMotor implements RegulatedMotor {
 
 			}
 		});
+		m_regulateThread = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				regulate();
+
+			}
+		});
+
 		m_moveThread.setDaemon(true);
+		m_regulateThread.setDaemon(true);
 		m_moveThread.start();
+		m_regulateThread.start();
 	}
 
 	@Override
@@ -166,7 +220,7 @@ public class SimulatedMotor implements RegulatedMotor {
 
 	@Override
 	public int getTachoCount() {
-		return m_tachoCount;
+		return (int) Math.round(Math.floor(m_tachoCount));
 	}
 
 	@Override
@@ -183,7 +237,7 @@ public class SimulatedMotor implements RegulatedMotor {
 	public RegulatedMotorListener removeListener() {
 		RegulatedMotorListener listener = m_listener;
 		m_listener = null;
-		return m_listener;
+		return listener;
 	}
 
 	@Override
@@ -209,6 +263,14 @@ public class SimulatedMotor implements RegulatedMotor {
 				e.printStackTrace();
 			}
 		}
+		if (m_regulateThread != null) {
+			try {
+				m_regulateThread.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		
 
 	}
 
@@ -231,7 +293,7 @@ public class SimulatedMotor implements RegulatedMotor {
 	@Override
 	public void rotateTo(int _limitAngle, boolean _immediateReturn) {
 		m_limitAngle = _limitAngle;
-		float direction = FORWARD;
+		double direction = FORWARD;
 		Predicate<Integer> target = i -> i >= _limitAngle - 2;
 		if (_limitAngle < getTachoCount()) {
 			direction = BACKWARD;
@@ -262,7 +324,7 @@ public class SimulatedMotor implements RegulatedMotor {
 
 	@Override
 	public int getSpeed() {
-		return Math.round((float) Math.floor(m_currentSpeed));
+		return Math.round((float) Math.floor(m_measuredSpeed));
 	}
 
 	@Override
@@ -294,11 +356,39 @@ public class SimulatedMotor implements RegulatedMotor {
 	}
 
 	public static void main(String[] args) {
-		SimulatedMotor motor = new SimulatedMotor();
-		motor.rotateTo(0, false);
-		System.out.println("Count: " + motor.getTachoCount());
-		motor.rotateTo(361, false);
-		System.out.println("Count: " + motor.getTachoCount());
+//		SimulatedMotor motor = new SimulatedMotor();
+//		motor.forward();
+//		int prev = 0;
+//		Rate rate = new Rate(0.5);
+//		for (int i = 0; i < 20; i++) {
+//			int curr = motor.getTachoCount();
+//			System.out.println(motor.getSpeed() + " " + (curr - prev));
+//			prev = curr;
+//			rate.sleep();
+//		}
+
+		
+//		RegulatedMotor motor = new SimulatedMotor();
+//		int[] targets = { 0, 361, -33, 400, 404, -27, -666, 1024 };
+//		for (int target : targets) {
+//			motor.rotateTo(target, false);
+//			System.out.println("Rotation for " + target + " att " + motor.getTachoCount());
+//		}
+
+		DifferentialPilot dp = new DifferentialPilot(56, 163,
+				new SimulatedMotor(), new SimulatedMotor());
+
+		OdometryPoseProvider pp = new OdometryPoseProvider(dp);
+
+		System.out.println(pp.getPose());
+		
+		double distanceMm = 500;
+
+		dp.travel(distanceMm);
+		dp.rotate(-90);
+		dp.travel(distanceMm);
+		
+		System.out.println(pp.getPose());
 	}
 
 }
