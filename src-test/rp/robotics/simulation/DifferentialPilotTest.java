@@ -1,9 +1,8 @@
 package rp.robotics.simulation;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 import lejos.robotics.localization.OdometryPoseProvider;
 import lejos.robotics.navigation.DifferentialPilot;
-import lejos.robotics.navigation.Navigator;
 import lejos.robotics.navigation.Pose;
 
 import org.junit.Test;
@@ -68,8 +67,11 @@ public class DifferentialPilotTest {
 
 		Pose pose = pp.getPose();
 
-		assertTrue(pose.getX() > distanceMm * 0.99);
-		assertTrue(pose.getX() < distanceMm * 1.01);
+		double lowerBound = 0.98;
+		double upperBound = 1.02;
+
+		assertTrue(pose.getX() > distanceMm * lowerBound);
+		assertTrue(pose.getX() < distanceMm * upperBound);
 		assertTrue(pose.getY() > distanceMm * -0.01);
 		assertTrue(pose.getY() < distanceMm * 0.01);
 		assertTrue(pose.getHeading() > -1);
@@ -78,28 +80,26 @@ public class DifferentialPilotTest {
 		float turn = 90;
 		dp.rotate(turn);
 		pose = pp.getPose();
-		
-		assertTrue(pose.getX() > distanceMm * 0.99);
-		assertTrue(pose.getX() < distanceMm * 1.01);
+
+		assertTrue(pose.getX() > distanceMm * lowerBound);
+		assertTrue(pose.getX() < distanceMm * upperBound);
 		assertTrue(pose.getY() > distanceMm * -0.01);
 		assertTrue(pose.getY() < distanceMm * 0.01);
-		assertTrue(pose.getHeading() > turn * 0.98);
-		assertTrue(pose.getHeading() < turn * 1.02);
+		assertTrue(pose.getHeading() > turn * lowerBound);
+		assertTrue(pose.getHeading() < turn * upperBound);
 
 		dp.travel(distanceMm);
 		pose = pp.getPose();
-		
-		assertTrue(pose.getX() > distanceMm * 0.99);
-		assertTrue(pose.getX() < distanceMm * 1.01);
-		assertTrue(pose.getY() > distanceMm * 0.99);
-		assertTrue(pose.getY() < distanceMm * 1.01);
-		assertTrue(pose.getHeading() > turn * 0.98);
-		assertTrue(pose.getHeading() < turn * 1.02);
 
-		
+		assertTrue(pose.getX() > distanceMm * lowerBound);
+		assertTrue(pose.getX() < distanceMm * upperBound);
+		assertTrue(pose.getY() > distanceMm * lowerBound);
+		assertTrue(pose.getY() < distanceMm * upperBound);
+		assertTrue(pose.getHeading() > turn * lowerBound);
+		assertTrue(pose.getHeading() < turn * upperBound);
+
 	}
 
-	
 	@Test
 	public void testOdomReverse() {
 
@@ -114,35 +114,38 @@ public class DifferentialPilotTest {
 
 		Pose pose = pp.getPose();
 
-		assertTrue(pose.getX() > distanceMm * 0.99);
-		assertTrue(pose.getX() < distanceMm * 1.01);
-		assertTrue(pose.getY() > -distanceMm * -0.01);
-		assertTrue(pose.getY() < -distanceMm * 0.01);
+		double lowerBound = 0.98;
+		double upperBound = 1.02;
+
+		assertTrue(pose.getX() > distanceMm * lowerBound);
+
+		assertTrue(pose.getX() < distanceMm * upperBound);
+		assertTrue(pose.getY() > -0.02);
+		assertTrue(pose.getY() < 0.02);
 		assertTrue(pose.getHeading() > -1);
 		assertTrue(pose.getHeading() < 1);
 
 		float turn = -90;
 		dp.rotate(turn);
 		pose = pp.getPose();
-		
-		assertTrue(pose.getX() > distanceMm * 0.99);
-		assertTrue(pose.getX() < distanceMm * 1.01);
-		assertTrue(pose.getY() > -distanceMm * -0.01);
-		assertTrue(pose.getY() < -distanceMm * 0.01);
-		assertTrue(pose.getHeading() > turn * 0.98);
-		assertTrue(pose.getHeading() < turn * 1.02);
+
+		assertTrue(pose.getX() > distanceMm * lowerBound);
+		assertTrue(pose.getX() < distanceMm * upperBound);
+		assertTrue(pose.getY() > -0.02);
+		assertTrue(pose.getY() < 0.02);
+		assertTrue(pose.getHeading() > turn * upperBound);
+		assertTrue(pose.getHeading() < turn * lowerBound);
 
 		dp.travel(distanceMm);
 		pose = pp.getPose();
-		
-		assertTrue(pose.getX() > distanceMm * 0.99);
-		assertTrue(pose.getX() < distanceMm * 1.01);
-		assertTrue(pose.getY() > -distanceMm * 0.99);
-		assertTrue(pose.getY() < -distanceMm * 1.01);
-		assertTrue(pose.getHeading() > turn * 0.98);
-		assertTrue(pose.getHeading() < turn * 1.02);
 
-		
+		assertTrue(pose.getX() > distanceMm * lowerBound);
+		assertTrue(pose.getX() < distanceMm * upperBound);
+		assertTrue(pose.getY() > -distanceMm * upperBound);
+		assertTrue(pose.getY() < -distanceMm * lowerBound);
+		assertTrue(pose.getHeading() > turn * upperBound);
+		assertTrue(pose.getHeading() < turn * lowerBound);
+
 	}
 
 }

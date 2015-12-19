@@ -8,7 +8,7 @@ import java.util.HashSet;
 import lejos.geom.Line;
 import lejos.geom.Rectangle;
 
-import org.junit.Assert;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
@@ -165,7 +165,7 @@ public class GridMapTest {
 				if (blocked.contains(from)) {
 
 					// an in place transition should be fine
-					Assert.assertFalse(map.isValidTransition(from.x, from.y,
+					assertFalse(map.isValidTransition(from.x, from.y,
 							from.x, from.y));
 				} else {
 					if (x > 0) {
@@ -174,10 +174,10 @@ public class GridMapTest {
 
 						if (blocked.contains(to)
 								|| !isManuallyApproved(from, to, invalid)) {
-							Assert.assertFalse(map.isValidTransition(from.x,
+							assertFalse(map.isValidTransition(from.x,
 									from.y, to.x, to.y));
 						} else {
-							Assert.assertTrue(map.isValidTransition(from.x,
+							assertTrue(map.isValidTransition(from.x,
 									from.y, to.x, to.y));
 						}
 					}
@@ -188,10 +188,10 @@ public class GridMapTest {
 
 						if (blocked.contains(to)
 								|| !isManuallyApproved(from, to, invalid)) {
-							Assert.assertFalse(map.isValidTransition(from.x,
+							assertFalse(map.isValidTransition(from.x,
 									from.y, to.x, to.y));
 						} else {
-							Assert.assertTrue(map.isValidTransition(from.x,
+							assertTrue(map.isValidTransition(from.x,
 									from.y, to.x, to.y));
 						}
 					}
@@ -202,10 +202,10 @@ public class GridMapTest {
 
 						if (blocked.contains(to)
 								|| !isManuallyApproved(from, to, invalid)) {
-							Assert.assertFalse(map.isValidTransition(from.x,
+							assertFalse(map.isValidTransition(from.x,
 									from.y, to.x, to.y));
 						} else {
-							Assert.assertTrue(map.isValidTransition(from.x,
+							assertTrue(map.isValidTransition(from.x,
 									from.y, to.x, to.y));
 						}
 					}
@@ -216,10 +216,10 @@ public class GridMapTest {
 
 						if (blocked.contains(to)
 								|| !isManuallyApproved(from, to, invalid)) {
-							Assert.assertFalse(map.isValidTransition(from.x,
+							assertFalse(map.isValidTransition(from.x,
 									from.y, to.x, to.y));
 						} else {
-							Assert.assertTrue("from " + from + " to " + to, map
+							assertTrue("from " + from + " to " + to, map
 									.isValidTransition(from.x, from.y, to.x,
 											to.y));
 						}
@@ -261,19 +261,19 @@ public class GridMapTest {
 				int toY = y;
 
 				// an in place transition should be fine
-				Assert.assertTrue(map.isValidTransition(x, y, toX, toY));
+				assertTrue(map.isValidTransition(x, y, toX, toY));
 
 				if (x > 0) {
 					toX = x - 1;
 					toY = y;
-					Assert.assertTrue(map.isValidTransition(x, y, toX, toY));
+					assertTrue(map.isValidTransition(x, y, toX, toY));
 					System.out.println(x + " " + y + " " + toX + " " + toY);
 				}
 
 				if (x < width - 1) {
 					toX = x + 1;
 					toY = y;
-					Assert.assertTrue(map.isValidTransition(x, y, toX, toY));
+					assertTrue(map.isValidTransition(x, y, toX, toY));
 					System.out.println(x + " " + y + " " + toX + " " + toY);
 
 				}
@@ -281,14 +281,14 @@ public class GridMapTest {
 				if (y > 0) {
 					toX = x;
 					toY = y - 1;
-					Assert.assertTrue(map.isValidTransition(x, y, toX, toY));
+					assertTrue(map.isValidTransition(x, y, toX, toY));
 					System.out.println(x + " " + y + " " + toX + " " + toY);
 				}
 
 				if (y < height - 1) {
 					toX = x;
 					toY = y + 1;
-					Assert.assertTrue(map.isValidTransition(x, y, toX, toY));
+					assertTrue(map.isValidTransition(x, y, toX, toY));
 					System.out.println(x + " " + y + " " + toX + " " + toY);
 				}
 
@@ -297,21 +297,21 @@ public class GridMapTest {
 	}
 
 	@Test
-	private void rangeToObstacleTest() {
+	public void rangeToObstacleTest() {
 
 		float sep = 30f;
 		float target = sep / 2f;
 		IGridMap map = createRectangularGridMap(1, 1, sep);
-		Assert.assertEquals(
+		assertEquals(
 				map.rangeToObstacleFromGridPosition(0, 0,
 						Heading.toDegrees(Heading.PLUS_X)), target, 0f);
-		Assert.assertEquals(
+		assertEquals(
 				map.rangeToObstacleFromGridPosition(0, 0,
 						Heading.toDegrees(Heading.PLUS_Y)), target, 0f);
-		Assert.assertEquals(
+		assertEquals(
 				map.rangeToObstacleFromGridPosition(0, 0,
 						Heading.toDegrees(Heading.MINUS_X)), target, 0f);
-		Assert.assertEquals(
+		assertEquals(
 				map.rangeToObstacleFromGridPosition(0, 0,
 						Heading.toDegrees(Heading.MINUS_Y)), target, 0f);
 
@@ -325,19 +325,19 @@ public class GridMapTest {
 		int xInset = 24;
 		int yInset = 24;
 
-		Assert.assertEquals(
+		assertEquals(
 				map.rangeToObstacleFromGridPosition(0, 0,
 						Heading.toDegrees(Heading.PLUS_X)), 233f, 0f);
 
-		Assert.assertEquals(
+		assertEquals(
 				map.rangeToObstacleFromGridPosition(0, 0,
 						Heading.toDegrees(Heading.PLUS_Y)), height - yInset, 0f);
 
-		Assert.assertEquals(
+		assertEquals(
 				map.rangeToObstacleFromGridPosition(0, 0,
 						Heading.toDegrees(Heading.MINUS_X)), xInset, 0f);
 
-		Assert.assertEquals(
+		assertEquals(
 				map.rangeToObstacleFromGridPosition(0, 0,
 						Heading.toDegrees(Heading.MINUS_Y)), yInset, 0f);
 
