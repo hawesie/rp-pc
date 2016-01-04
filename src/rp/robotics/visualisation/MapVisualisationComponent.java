@@ -22,8 +22,6 @@ import lejos.robotics.RangeScanner;
 import lejos.robotics.localization.PoseProvider;
 import lejos.robotics.mapping.LineMap;
 import lejos.robotics.navigation.Pose;
-import rp.robotics.LocalisedRangeScanner;
-import rp.robotics.mapping.RPLineMap;
 
 /**
  * 
@@ -44,13 +42,17 @@ public class MapVisualisationComponent extends JComponent {
 	 */
 	private static final long serialVersionUID = 1L;
 
+	// in rendering units
 	private static final int X_MARGIN = 30;
 
+	// in rendering units
 	private static final int Y_MARGIN = 30;
 
-	private static final int ROBOT_RADIUS = 6;
+	// in world units
+	private static final int ROBOT_RADIUS = 60;
 
-	private static final int POINT_RADIUS = 2;
+	// in world units
+	private static final int POINT_RADIUS = 20;
 
 	private final Rectangle m_worldDimensions;
 
@@ -67,13 +69,11 @@ public class MapVisualisationComponent extends JComponent {
 
 	private ArrayList<Object> m_robots = new ArrayList<Object>(1);
 
-	private final boolean m_flip;
-
 	private boolean m_trackRobots = true;
 	private ArrayList<Point> m_robotTracks = new ArrayList<Point>();
 
 	private MapVisualisationComponent(int _width, int _height,
-			LineMap _lineMap, float _scaleFactor, boolean _flip) {
+			LineMap _lineMap, float _scaleFactor) {
 
 		m_scaleFactor = _scaleFactor;
 		m_worldDimensions = new Rectangle(scale(_width), scale(_height));
@@ -85,9 +85,9 @@ public class MapVisualisationComponent extends JComponent {
 
 		m_lineMap = _lineMap;
 
+		// translate (and scale!) lines so that we don't need to do this every
+		// render time during visualisation
 		m_translatedLines = translateLines(m_lineMap, X_MARGIN, Y_MARGIN);
-
-		m_flip = _flip;
 
 		// repaint at 20Hz
 		new Timer(50, new ActionListener() {
@@ -106,7 +106,7 @@ public class MapVisualisationComponent extends JComponent {
 	 */
 	public MapVisualisationComponent(LineMap _lineMap) {
 		this((int) _lineMap.getBoundingRect().getWidth(), (int) _lineMap
-				.getBoundingRect().getHeight(), _lineMap, 0.1f, false);
+				.getBoundingRect().getHeight(), _lineMap, 0.1f);
 	}
 
 	/**
@@ -149,7 +149,7 @@ public class MapVisualisationComponent extends JComponent {
 	 */
 	public MapVisualisationComponent(LineMap _lineMap, float _scaleFactor) {
 		this((int) _lineMap.getBoundingRect().getWidth(), (int) _lineMap
-				.getBoundingRect().getHeight(), _lineMap, _scaleFactor, false);
+				.getBoundingRect().getHeight(), _lineMap, _scaleFactor);
 	}
 
 	/**
@@ -165,7 +165,7 @@ public class MapVisualisationComponent extends JComponent {
 	public MapVisualisationComponent(LineMap _lineMap, float _scaleFactor,
 			boolean _flip) {
 		this((int) _lineMap.getBoundingRect().getWidth(), (int) _lineMap
-				.getBoundingRect().getHeight(), _lineMap, _scaleFactor, _flip);
+				.getBoundingRect().getHeight(), _lineMap, _scaleFactor);
 	}
 
 	public LineMap getLineMap() {
@@ -189,6 +189,32 @@ public class MapVisualisationComponent extends JComponent {
 		return (_dimension * m_scaleFactor);
 	}
 
+	/**
+	 * The y axis visually is top down. We want it to be bottom up. Therefore
+	 * this method takes a y value in world coordinates and returns a new world
+	 * coordinate which is the world's max y minus the original value. In other
+	 * words this treats max y as the y origin and the value as translated from
+	 * there.
+	 * 
+	 * @param _y
+	 */
+	private double flipY(double _y) {
+		return m_lineMap.getBoundingRect().height - _y;
+	}
+
+	/**
+	 * The y axis visually is top down. We want it to be bottom up. Therefore
+	 * this method takes a y value in world coordinates and returns a new world
+	 * coordinate which is the world's max y minus the original value. In other
+	 * words this treats max y as the y origin and the value as translated from
+	 * there.
+	 * 
+	 * @param _y
+	 */
+	private float flipY(float _y) {
+		return m_lineMap.getBoundingRect().height - _y;
+	}
+
 	private Line[] translateLines(LineMap _lm, int _dx, int _dy) {
 
 		Line[] originalLines = _lm.getLines();
@@ -196,9 +222,9 @@ public class MapVisualisationComponent extends JComponent {
 
 		for (int i = 0; i < originalLines.length; i++) {
 			translatedLines[i] = new Line(scale(originalLines[i].x1) + _dx,
-					scale(originalLines[i].y1) + _dy,
+					scale(flipY(originalLines[i].y1)) + _dy,
 					scale(originalLines[i].x2) + _dx,
-					scale(originalLines[i].y2) + _dy);
+					scale(flipY(originalLines[i].y2)) + _dy);
 		}
 
 		return translatedLines;
@@ -210,22 +236,17 @@ public class MapVisualisationComponent extends JComponent {
 
 		Rectangle rectFill = new Rectangle(m_worldDimensions);
 
+		// move the rectangle away from the edge of the frame
 		rectFill.translate(X_MARGIN, Y_MARGIN);
 		g2.setPaint(Color.WHITE);
 		g2.fill(rectFill);
-
-		if (m_flip) {
-			int height = getHeight() / 2;
-			g2.translate(0, height);
-			g2.scale(1, -1);
-			g2.translate(0, -height);
-		}
 
 		renderMap(g2);
 
 	}
 
 	protected void renderMap(Graphics2D g2) {
+
 		if (m_lineMap != null) {
 			g2.setStroke(new BasicStroke(2));
 			g2.setPaint(Color.BLACK);
@@ -234,17 +255,19 @@ public class MapVisualisationComponent extends JComponent {
 				g2.draw(line);
 			}
 
-			// Also add useful guide text
-			g2.drawString("(0,0)    0 heading ->", 0, Y_MARGIN - 10);
-
 			float mapHeight = m_lineMap.getBoundingRect().height;
 
-			g2.drawString("(0," + mapHeight + ")", 0, scale(mapHeight)
-					+ Y_MARGIN + 5);
+			// Also add useful guide text
+			g2.drawString("(0,0)    0 heading ->", scale(0), scale(flipY(0))
+					+ Y_MARGIN + 15);
+
+			g2.drawString("(0," + mapHeight + ")", scale(0),
+					scale(flipY(mapHeight)) + Y_MARGIN - 5);
 
 			float mapWidth = m_lineMap.getBoundingRect().width;
-			g2.drawString("(" + mapWidth + ",0)", scale(mapWidth) + X_MARGIN,
-					-Y_MARGIN * 2 - 10);
+			g2.drawString("(" + mapWidth + "," + mapHeight + ")",
+					scale(mapWidth) + X_MARGIN, scale(flipY(mapHeight))
+							+ Y_MARGIN - 5);
 
 		}
 
@@ -297,6 +320,15 @@ public class MapVisualisationComponent extends JComponent {
 		}
 	}
 
+	/**
+	 * Input should all be in world units/coords
+	 * 
+	 * @param g2
+	 * @param _x
+	 * @param _y
+	 * @param heading
+	 * @param _lineLength
+	 */
 	private void drawLineToHeading(Graphics2D g2, double _x, double _y,
 			double heading, double _lineLength) {
 
@@ -334,10 +366,10 @@ public class MapVisualisationComponent extends JComponent {
 
 		}
 
-		Line2D l = new Line2D.Double(scale(_x) + X_MARGIN,
-				scale(_y) + Y_MARGIN, scale(_x + headingX) + X_MARGIN, scale(_y
-						+ headingY)
-						+ Y_MARGIN);
+		Line2D l = new Line2D.Double(scale(_x) + X_MARGIN, scale(flipY(_y))
+				+ Y_MARGIN, scale(_x + headingX) + X_MARGIN, scale(flipY(_y
+				+ headingY))
+				+ Y_MARGIN);
 		g2.draw(l);
 	}
 
@@ -350,13 +382,13 @@ public class MapVisualisationComponent extends JComponent {
 	protected void renderPose(Pose _pose, Graphics2D _g2) {
 		Ellipse2D ell =
 		// first 2 coords are upper left corner of framing rectangle
-		new Ellipse2D.Float(scale(_pose.getX()) - ROBOT_RADIUS + X_MARGIN,
-				scale(_pose.getY()) - ROBOT_RADIUS + Y_MARGIN,
-				ROBOT_RADIUS * 2, ROBOT_RADIUS * 2);
+		new Ellipse2D.Float(scale(_pose.getX() - ROBOT_RADIUS) + X_MARGIN,
+				scale(flipY(_pose.getY() + ROBOT_RADIUS)) + Y_MARGIN,
+				scale(ROBOT_RADIUS * 2), scale(ROBOT_RADIUS * 2));
 		_g2.draw(ell);
 
 		drawLineToHeading(_g2, _pose.getX(), _pose.getY(), _pose.getHeading(),
-				ROBOT_RADIUS * 10);
+				ROBOT_RADIUS * 2);
 	}
 
 	protected void renderPoint(Point _point, Graphics2D _g2) {
@@ -366,9 +398,9 @@ public class MapVisualisationComponent extends JComponent {
 	protected void renderPoint(Point _point, Graphics2D _g2, double _radius) {
 		Ellipse2D ell =
 		// first 2 coords are upper left corner of framing rectangle
-		new Ellipse2D.Double(scale(_point.getX()) - _radius + X_MARGIN,
-				scale(_point.getY()) - _radius + Y_MARGIN, _radius * 2,
-				_radius * 2);
+		new Ellipse2D.Double(scale(_point.getX() - _radius) + X_MARGIN,
+				scale(flipY(_point.getY() + _radius)) + Y_MARGIN,
+				scale(_radius * 2), scale(_radius * 2));
 		_g2.draw(ell);
 	}
 
