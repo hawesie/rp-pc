@@ -49,10 +49,10 @@ public class MapVisualisationComponent extends JComponent {
 	private static final int Y_MARGIN = 30;
 
 	// in world units
-	private static final int ROBOT_RADIUS = 60;
+	private static final float ROBOT_RADIUS = 0.06f;
 
 	// in world units
-	private static final int POINT_RADIUS = 20;
+	private static final float POINT_RADIUS = 0.02f;
 
 	private final Rectangle m_worldDimensions;
 
@@ -62,7 +62,7 @@ public class MapVisualisationComponent extends JComponent {
 
 	private final float m_scaleFactor;
 
-	private Line[] m_translatedLines;
+	private Line[] m_transformedLines;
 
 	private ArrayList<PoseProvider> m_poseProviders = new ArrayList<PoseProvider>(
 			1);
@@ -77,17 +77,18 @@ public class MapVisualisationComponent extends JComponent {
 
 		m_scaleFactor = _scaleFactor;
 		m_worldDimensions = new Rectangle(scale(_width), scale(_height));
-		m_visualisationDimensions = new Rectangle(_width + (2 * X_MARGIN),
-				_height + (2 * Y_MARGIN));
+		m_visualisationDimensions = new Rectangle(scale(_width)
+				+ (2 * X_MARGIN), scale(_height) + (2 * Y_MARGIN));
 
 		// set minimum size of frame to scaled size of world
 		setMinimumSize(m_visualisationDimensions.getSize());
 
 		m_lineMap = _lineMap;
 
-		// translate (and scale!) lines so that we don't need to do this every
+		// transform lines so that we don't need to do this every
 		// render time during visualisation
-		m_translatedLines = translateLines(m_lineMap, X_MARGIN, Y_MARGIN);
+		m_transformedLines = staticTransformMapLines(m_lineMap, X_MARGIN,
+				Y_MARGIN);
 
 		// repaint at 20Hz
 		new Timer(50, new ActionListener() {
@@ -106,7 +107,7 @@ public class MapVisualisationComponent extends JComponent {
 	 */
 	public MapVisualisationComponent(LineMap _lineMap) {
 		this((int) _lineMap.getBoundingRect().getWidth(), (int) _lineMap
-				.getBoundingRect().getHeight(), _lineMap, 0.1f);
+				.getBoundingRect().getHeight(), _lineMap, 100f);
 	}
 
 	/**
@@ -116,8 +117,8 @@ public class MapVisualisationComponent extends JComponent {
 	 */
 	public static MapVisualisationComponent createVisualisation() {
 
-		float _height = 6000f;
-		float _width = 8000f;
+		float _height = 6.0f;
+		float _width = 8.0f;
 		return createVisualisation(_width, _height);
 	}
 
@@ -215,7 +216,7 @@ public class MapVisualisationComponent extends JComponent {
 		return m_lineMap.getBoundingRect().height - _y;
 	}
 
-	private Line[] translateLines(LineMap _lm, int _dx, int _dy) {
+	private Line[] staticTransformMapLines(LineMap _lm, int _dx, int _dy) {
 
 		Line[] originalLines = _lm.getLines();
 		Line[] translatedLines = new Line[originalLines.length];
@@ -251,7 +252,7 @@ public class MapVisualisationComponent extends JComponent {
 			g2.setStroke(new BasicStroke(2));
 			g2.setPaint(Color.BLACK);
 
-			for (Line line : m_translatedLines) {
+			for (Line line : m_transformedLines) {
 				g2.draw(line);
 			}
 
@@ -280,7 +281,7 @@ public class MapVisualisationComponent extends JComponent {
 		if (m_trackRobots) {
 			g2.setPaint(Color.GRAY);
 			for (Point p : m_robotTracks) {
-				renderPoint(p, g2, 0.25);
+				renderPoint(p, g2, 0.005);
 			}
 		}
 

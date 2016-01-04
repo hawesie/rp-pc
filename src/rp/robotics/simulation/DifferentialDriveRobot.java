@@ -16,13 +16,13 @@ public class DifferentialDriveRobot implements PoseProvider,
 	 * Configuration for the simulation of Nick's Expressbot build.
 	 */
 	public static final WheeledRobotConfiguration EXPRESS_BOT = new WheeledRobotConfiguration(
-			56, 163, 210, new SimulatedMotor(), new SimulatedMotor());
+			0.056, 0.163, 0.210, new SimulatedMotor(), new SimulatedMotor());
 
 	/**
 	 * Configuration for the simulation of Nick's Castorbot build.
 	 */
 	public static final WheeledRobotConfiguration CASTOR_BOT = new WheeledRobotConfiguration(
-			56, 120, 230, new SimulatedMotor(), new SimulatedMotor());
+			0.056, 0.12, 0.23, new SimulatedMotor(), new SimulatedMotor());
 
 	private final WheeledRobotConfiguration m_config;
 
