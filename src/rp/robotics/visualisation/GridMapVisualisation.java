@@ -14,7 +14,7 @@ import rp.robotics.mapping.IGridMap;
  * @author Nick Hawes
  *
  */
-public class GridMapVisualisation extends LineMapVisualisation {
+public class GridMapVisualisation extends MapVisualisationComponent {
 
 	/**
 	 * 

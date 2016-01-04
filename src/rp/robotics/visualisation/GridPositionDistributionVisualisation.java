@@ -8,7 +8,7 @@ import lejos.geom.Point;
 import lejos.robotics.mapping.LineMap;
 import rp.robotics.localisation.GridPositionDistribution;
 
-public class GridPositionDistributionVisualisation extends LineMapVisualisation {
+public class GridPositionDistributionVisualisation extends MapVisualisationComponent {
 
 	/**
 	 * 

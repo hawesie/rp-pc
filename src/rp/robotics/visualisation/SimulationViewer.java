@@ -17,7 +17,7 @@ public class SimulationViewer {
 
 		// Create a display for the world
 		LineMapViewer lmv = new LineMapViewer();
-		LineMapVisualisation mapViz = lmv.run();
+		MapVisualisationComponent mapViz = lmv.run();
 
 		// Pretending we have a grid map....
 

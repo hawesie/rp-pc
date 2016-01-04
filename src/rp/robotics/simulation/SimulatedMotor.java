@@ -76,8 +76,8 @@ public class SimulatedMotor implements RegulatedMotor {
 			difference = Math.abs(currentReading - lastReading);
 			m_measuredSpeed = difference / cycleTimeSecs;
 			difference = m_targetSpeed - m_measuredSpeed;
-//			System.out.println("spped diff: " + difference);
-//			System.out.println("measured: " + m_measuredSpeed);
+			// System.out.println("spped diff: " + difference);
+			// System.out.println("measured: " + m_measuredSpeed);
 
 			if (m_state == MotorState.REGULATING) {
 				m_commandedSpeed = m_commandedSpeed + 1
@@ -89,7 +89,7 @@ public class SimulatedMotor implements RegulatedMotor {
 			rate.sleep();
 
 		}
-		
+
 		m_measuredSpeed = 0;
 	}
 
@@ -115,9 +115,11 @@ public class SimulatedMotor implements RegulatedMotor {
 
 			if (m_state == MotorState.ACCELERATING) {
 				if (m_commandedSpeed < m_targetSpeed) {
-					m_commandedSpeed += m_acceleration * cycleTimeSecs;
-//					System.out.println("accelerating to speed: "
-//							+ m_commandedSpeed);
+					// don't accelerate past target speed
+					m_commandedSpeed = Math.min(m_commandedSpeed
+							+ (m_acceleration * cycleTimeSecs), m_targetSpeed);
+					// System.out.println("accelerating to speed: "
+					// + m_commandedSpeed);
 
 				} else {
 					m_state = MotorState.REGULATING;
@@ -125,13 +127,14 @@ public class SimulatedMotor implements RegulatedMotor {
 			}
 
 			m_tachoCount += (cycleTimeSecs * m_commandedSpeed * m_direction);
-		
+
 			rate.sleep();
-			
+
 		}
 
 		// need to set this if the tacho predicate stopped the move
 		m_isMoving = false;
+		m_commandedSpeed = 0;
 		m_state = MotorState.STOPPED;
 		notifyListener(false);
 	}
@@ -270,7 +273,6 @@ public class SimulatedMotor implements RegulatedMotor {
 				e.printStackTrace();
 			}
 		}
-		
 
 	}
 
@@ -356,24 +358,24 @@ public class SimulatedMotor implements RegulatedMotor {
 	}
 
 	public static void main(String[] args) {
-//		SimulatedMotor motor = new SimulatedMotor();
-//		motor.forward();
-//		int prev = 0;
-//		Rate rate = new Rate(0.5);
-//		for (int i = 0; i < 20; i++) {
-//			int curr = motor.getTachoCount();
-//			System.out.println(motor.getSpeed() + " " + (curr - prev));
-//			prev = curr;
-//			rate.sleep();
-//		}
+		// SimulatedMotor motor = new SimulatedMotor();
+		// motor.forward();
+		// int prev = 0;
+		// Rate rate = new Rate(0.5);
+		// for (int i = 0; i < 20; i++) {
+		// int curr = motor.getTachoCount();
+		// System.out.println(motor.getSpeed() + " " + (curr - prev));
+		// prev = curr;
+		// rate.sleep();
+		// }
 
-		
-//		RegulatedMotor motor = new SimulatedMotor();
-//		int[] targets = { 0, 361, -33, 400, 404, -27, -666, 1024 };
-//		for (int target : targets) {
-//			motor.rotateTo(target, false);
-//			System.out.println("Rotation for " + target + " att " + motor.getTachoCount());
-//		}
+		// RegulatedMotor motor = new SimulatedMotor();
+		// int[] targets = { 0, 361, -33, 400, 404, -27, -666, 1024 };
+		// for (int target : targets) {
+		// motor.rotateTo(target, false);
+		// System.out.println("Rotation for " + target + " att " +
+		// motor.getTachoCount());
+		// }
 
 		DifferentialPilot dp = new DifferentialPilot(56, 163,
 				new SimulatedMotor(), new SimulatedMotor());
@@ -381,13 +383,13 @@ public class SimulatedMotor implements RegulatedMotor {
 		OdometryPoseProvider pp = new OdometryPoseProvider(dp);
 
 		System.out.println(pp.getPose());
-		
+
 		double distanceMm = 500;
 
 		dp.travel(distanceMm);
 		dp.rotate(-90);
 		dp.travel(distanceMm);
-		
+
 		System.out.println(pp.getPose());
 	}
 

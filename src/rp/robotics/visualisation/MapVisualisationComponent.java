@@ -18,16 +18,26 @@ import lejos.geom.Line;
 import lejos.geom.Point;
 import lejos.robotics.RangeReading;
 import lejos.robotics.RangeReadings;
+import lejos.robotics.RangeScanner;
 import lejos.robotics.localization.PoseProvider;
 import lejos.robotics.mapping.LineMap;
 import lejos.robotics.navigation.Pose;
 import rp.robotics.LocalisedRangeScanner;
+import rp.robotics.mapping.RPLineMap;
 
 /**
  * 
  * @author nah
  */
-public class LineMapVisualisation extends JComponent {
+public class MapVisualisationComponent extends JComponent {
+
+	/*
+	 * The code in here is ugly, badly written and error-prone. This is a great
+	 * example of what happens when code organically develops and is regularly
+	 * repurposed for tasks other than those it was designed for. Please don't
+	 * use the code here for anything other than a negative example of
+	 * development practice.
+	 */
 
 	/**
 	 * 
@@ -38,7 +48,7 @@ public class LineMapVisualisation extends JComponent {
 
 	private static final int Y_MARGIN = 30;
 
-	private static final int ROBOT_RADIUS = 5;
+	private static final int ROBOT_RADIUS = 6;
 
 	private static final int POINT_RADIUS = 2;
 
@@ -55,13 +65,15 @@ public class LineMapVisualisation extends JComponent {
 	private ArrayList<PoseProvider> m_poseProviders = new ArrayList<PoseProvider>(
 			1);
 
-	private ArrayList<LocalisedRangeScanner> m_robots = new ArrayList<LocalisedRangeScanner>(
-			1);
+	private ArrayList<Object> m_robots = new ArrayList<Object>(1);
 
 	private final boolean m_flip;
 
-	private LineMapVisualisation(int _width, int _height, LineMap _lineMap,
-			float _scaleFactor, boolean _flip) {
+	private boolean m_trackRobots = true;
+	private ArrayList<Point> m_robotTracks = new ArrayList<Point>();
+
+	private MapVisualisationComponent(int _width, int _height,
+			LineMap _lineMap, float _scaleFactor, boolean _flip) {
 
 		m_scaleFactor = _scaleFactor;
 		m_worldDimensions = new Rectangle(scale(_width), scale(_height));
@@ -77,8 +89,8 @@ public class LineMapVisualisation extends JComponent {
 
 		m_flip = _flip;
 
-		// repaint at 10Hz
-		new Timer(100, new ActionListener() {
+		// repaint at 20Hz
+		new Timer(50, new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
 				repaint();
@@ -92,9 +104,40 @@ public class LineMapVisualisation extends JComponent {
 	 * 
 	 * @param _lineMap
 	 */
-	public LineMapVisualisation(LineMap _lineMap) {
+	public MapVisualisationComponent(LineMap _lineMap) {
 		this((int) _lineMap.getBoundingRect().getWidth(), (int) _lineMap
-				.getBoundingRect().getHeight(), _lineMap, 1, false);
+				.getBoundingRect().getHeight(), _lineMap, 0.1f, false);
+	}
+
+	/**
+	 * Create an empty visualisation of a default size.
+	 * 
+	 * @return
+	 */
+	public static MapVisualisationComponent createVisualisation() {
+
+		float _height = 6000f;
+		float _width = 8000f;
+		return createVisualisation(_width, _height);
+	}
+
+	public static MapVisualisationComponent createVisualisation(LineMap _map) {
+		return new MapVisualisationComponent(_map);
+	}
+
+	public static MapVisualisationComponent createVisualisation(float _width,
+			float _height) {
+
+		// these are the walls for the world outline
+		Line[] lines = new Line[] { new Line(0f, 0f, _width, 0f),
+				new Line(_width, 0f, _width, _height),
+				new Line(_width, _height, 0f, _height),
+				new Line(0f, _height, 0f, 0f) };
+
+		LineMap map = new LineMap(lines, new lejos.geom.Rectangle(0, 0, _width,
+				_height));
+
+		return new MapVisualisationComponent(map);
 	}
 
 	/**
@@ -104,7 +147,7 @@ public class LineMapVisualisation extends JComponent {
 	 * @param _lineMap
 	 * @param _scaleFactor
 	 */
-	public LineMapVisualisation(LineMap _lineMap, float _scaleFactor) {
+	public MapVisualisationComponent(LineMap _lineMap, float _scaleFactor) {
 		this((int) _lineMap.getBoundingRect().getWidth(), (int) _lineMap
 				.getBoundingRect().getHeight(), _lineMap, _scaleFactor, false);
 	}
@@ -119,7 +162,7 @@ public class LineMapVisualisation extends JComponent {
 	 *            invert y axis
 	 */
 
-	public LineMapVisualisation(LineMap _lineMap, float _scaleFactor,
+	public MapVisualisationComponent(LineMap _lineMap, float _scaleFactor,
 			boolean _flip) {
 		this((int) _lineMap.getBoundingRect().getWidth(), (int) _lineMap
 				.getBoundingRect().getHeight(), _lineMap, _scaleFactor, _flip);
@@ -205,36 +248,53 @@ public class LineMapVisualisation extends JComponent {
 
 		}
 
+		g2.setStroke(new BasicStroke(1));
+
 		for (PoseProvider pp : m_poseProviders) {
 			renderPose(pp.getPose(), g2);
 		}
 
-		for (LocalisedRangeScanner r : m_robots) {
-			Pose p = r.getPose();
-			renderPose(p, g2);
-		}
-
-		for (LocalisedRangeScanner r : m_robots) {
-			Pose p = r.getPose();
-			RangeReadings readings = r.getRangeValues();
-			for (RangeReading reading : readings) {
-				float range = reading.getRange();
-
-				if (range == 255) {
-					g2.setStroke(new BasicStroke(1));
-					g2.setPaint(Color.RED);
-					range = 20;
-
-				} else {
-					g2.setStroke(new BasicStroke(1));
-					g2.setPaint(Color.BLUE);
-
-				}
-				drawLineToHeading(g2, p.getX(), p.getY(), p.getHeading()
-						+ reading.getAngle(), range);
+		if (m_trackRobots) {
+			g2.setPaint(Color.GRAY);
+			for (Point p : m_robotTracks) {
+				renderPoint(p, g2, 0.25);
 			}
 		}
 
+		// if the robot can give us a pose
+		for (Object r : m_robots) {
+			if (r instanceof PoseProvider) {
+				Pose p = ((PoseProvider) r).getPose();
+				renderPose(p, g2);
+
+				if (m_trackRobots) {
+					m_robotTracks.add(new Point(p.getX(), p.getY()));
+				}
+
+				// if the robot can give us some range readings too
+				if (r instanceof RangeScanner) {
+					RangeReadings readings = ((RangeScanner) r)
+							.getRangeValues();
+					for (RangeReading reading : readings) {
+						float range = reading.getRange();
+
+						if (range == 255) {
+							g2.setStroke(new BasicStroke(1));
+							g2.setPaint(Color.RED);
+							range = 20;
+
+						} else {
+							g2.setStroke(new BasicStroke(1));
+							g2.setPaint(Color.BLUE);
+
+						}
+						drawLineToHeading(g2, p.getX(), p.getY(),
+								p.getHeading() + reading.getAngle(), range);
+					}
+				}
+
+			}
+		}
 	}
 
 	private void drawLineToHeading(Graphics2D g2, double _x, double _y,
@@ -296,22 +356,20 @@ public class LineMapVisualisation extends JComponent {
 		_g2.draw(ell);
 
 		drawLineToHeading(_g2, _pose.getX(), _pose.getY(), _pose.getHeading(),
-				ROBOT_RADIUS / 3);
+				ROBOT_RADIUS * 10);
 	}
 
 	protected void renderPoint(Point _point, Graphics2D _g2) {
 		renderPoint(_point, _g2, POINT_RADIUS);
-
 	}
 
-	protected void renderPoint(Point _point, Graphics2D _g2, int _radius) {
+	protected void renderPoint(Point _point, Graphics2D _g2, double _radius) {
 		Ellipse2D ell =
 		// first 2 coords are upper left corner of framing rectangle
 		new Ellipse2D.Double(scale(_point.getX()) - _radius + X_MARGIN,
 				scale(_point.getY()) - _radius + Y_MARGIN, _radius * 2,
 				_radius * 2);
 		_g2.draw(ell);
-
 	}
 
 	/**
@@ -323,7 +381,11 @@ public class LineMapVisualisation extends JComponent {
 		m_poseProviders.add(_poser);
 	}
 
-	public void addRobot(LocalisedRangeScanner _robot) {
+	// public void addRobot(LocalisedRangeScanner _robot) {
+	// m_robots.add(_robot);
+	// }
+
+	public void addRobot(PoseProvider _robot) {
 		m_robots.add(_robot);
 	}
 

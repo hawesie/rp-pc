@@ -7,7 +7,7 @@ import rp.robotics.mapping.RPLineMap;
 
 public class LineMapViewer {
 
-	public LineMapVisualisation run() {
+	public MapVisualisationComponent run() {
 
 		// Create a frame to contain the viewer
 		JFrame frame = new JFrame("Map Viewer");
@@ -16,7 +16,7 @@ public class LineMapViewer {
 		RPLineMap lineMap = MapUtils.create2015Map1();
 
 		// Create the visualisation of this map with 2 pixels as 1 cm
-		LineMapVisualisation mapVis = new LineMapVisualisation(lineMap, 2);
+		MapVisualisationComponent mapVis = new MapVisualisationComponent(lineMap, 2);
 
 		// Add visualisation to frame
 		frame.add(mapVis);
@@ -27,7 +27,6 @@ public class LineMapViewer {
 		frame.setVisible(true);
 
 		return mapVis;
-
 	}
 
 	/**
