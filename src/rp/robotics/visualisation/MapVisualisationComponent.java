@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import javax.swing.JComponent;
 import javax.swing.Timer;
 
+import rp.robotics.mapping.MapUtils;
 import lejos.geom.Line;
 import lejos.geom.Point;
 import lejos.robotics.RangeReading;
@@ -43,10 +44,10 @@ public class MapVisualisationComponent extends JComponent {
 	private static final long serialVersionUID = 1L;
 
 	// in rendering units
-	private static final int X_MARGIN = 30;
+	protected static final int X_MARGIN = 30;
 
 	// in rendering units
-	private static final int Y_MARGIN = 30;
+	protected static final int Y_MARGIN = 30;
 
 	// in world units
 	private static final float ROBOT_RADIUS = 0.06f;
@@ -72,8 +73,10 @@ public class MapVisualisationComponent extends JComponent {
 	private boolean m_trackRobots = true;
 	private ArrayList<Point> m_robotTracks = new ArrayList<Point>();
 
-	private MapVisualisationComponent(int _width, int _height,
-			LineMap _lineMap, float _scaleFactor) {
+	public MapVisualisationComponent(LineMap _lineMap, float _scaleFactor) {
+
+		int _width = (int) _lineMap.getBoundingRect().getWidth();
+		int _height = (int) _lineMap.getBoundingRect().getHeight();
 
 		m_scaleFactor = _scaleFactor;
 		m_worldDimensions = new Rectangle(scale(_width), scale(_height));
@@ -101,13 +104,12 @@ public class MapVisualisationComponent extends JComponent {
 
 	/**
 	 * Create a visualisation of the given LineMap with scale factor (pixels to
-	 * map units) of 1.
+	 * map units) of 100. This is suitable for maps defined in metres.
 	 * 
 	 * @param _lineMap
 	 */
 	public MapVisualisationComponent(LineMap _lineMap) {
-		this((int) _lineMap.getBoundingRect().getWidth(), (int) _lineMap
-				.getBoundingRect().getHeight(), _lineMap, 100f);
+		this(_lineMap, 100f);
 	}
 
 	/**
@@ -129,44 +131,8 @@ public class MapVisualisationComponent extends JComponent {
 	public static MapVisualisationComponent createVisualisation(float _width,
 			float _height) {
 
-		// these are the walls for the world outline
-		Line[] lines = new Line[] { new Line(0f, 0f, _width, 0f),
-				new Line(_width, 0f, _width, _height),
-				new Line(_width, _height, 0f, _height),
-				new Line(0f, _height, 0f, 0f) };
-
-		LineMap map = new LineMap(lines, new lejos.geom.Rectangle(0, 0, _width,
-				_height));
-
-		return new MapVisualisationComponent(map);
-	}
-
-	/**
-	 * Create a visualisation of the given LineMap with the given scale factor
-	 * (pixels to map units).
-	 * 
-	 * @param _lineMap
-	 * @param _scaleFactor
-	 */
-	public MapVisualisationComponent(LineMap _lineMap, float _scaleFactor) {
-		this((int) _lineMap.getBoundingRect().getWidth(), (int) _lineMap
-				.getBoundingRect().getHeight(), _lineMap, _scaleFactor);
-	}
-
-	/**
-	 * Create a visualisation of the given LineMap with the given scale factor
-	 * (pixels to map units).
-	 * 
-	 * @param _lineMap
-	 * @param _scaleFactor
-	 * @param _flip
-	 *            invert y axis
-	 */
-
-	public MapVisualisationComponent(LineMap _lineMap, float _scaleFactor,
-			boolean _flip) {
-		this((int) _lineMap.getBoundingRect().getWidth(), (int) _lineMap
-				.getBoundingRect().getHeight(), _lineMap, _scaleFactor);
+		return new MapVisualisationComponent(MapUtils.createRectangularMap(
+				_width, _height));
 	}
 
 	public LineMap getLineMap() {
@@ -178,15 +144,15 @@ public class MapVisualisationComponent extends JComponent {
 	 * @param _dimension
 	 * @return
 	 */
-	private final int scale(int _dimension) {
+	protected final int scale(int _dimension) {
 		return (int) (_dimension * m_scaleFactor);
 	}
 
-	private final double scale(double _dimension) {
+	protected final double scale(double _dimension) {
 		return (_dimension * m_scaleFactor);
 	}
 
-	private final float scale(float _dimension) {
+	protected final float scale(float _dimension) {
 		return (_dimension * m_scaleFactor);
 	}
 
@@ -199,7 +165,7 @@ public class MapVisualisationComponent extends JComponent {
 	 * 
 	 * @param _y
 	 */
-	private double flipY(double _y) {
+	protected double flipY(double _y) {
 		return m_lineMap.getBoundingRect().height - _y;
 	}
 

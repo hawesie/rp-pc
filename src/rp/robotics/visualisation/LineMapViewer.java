@@ -16,7 +16,7 @@ public class LineMapViewer {
 		RPLineMap lineMap = MapUtils.create2015Map1();
 
 		// Create the visualisation of this map with 2 pixels as 1 cm
-		MapVisualisationComponent mapVis = new MapVisualisationComponent(lineMap, 2);
+		MapVisualisationComponent mapVis = new MapVisualisationComponent(lineMap, 2f);
 
 		// Add visualisation to frame
 		frame.add(mapVis);

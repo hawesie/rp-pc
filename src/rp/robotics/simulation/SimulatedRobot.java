@@ -13,6 +13,7 @@ import rp.robotics.RangeReadingsFilter;
  * @author nah
  *
  */
+@Deprecated
 public class SimulatedRobot implements LocalisedRangeScanner {
 
 	private Pose m_pose;

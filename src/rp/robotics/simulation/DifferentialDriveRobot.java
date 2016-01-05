@@ -1,5 +1,7 @@
 package rp.robotics.simulation;
 
+import java.util.UUID;
+
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.localization.OdometryPoseProvider;
 import lejos.robotics.localization.PoseProvider;
@@ -10,7 +12,7 @@ import rp.config.WheeledRobotDescription;
 import rp.systems.WheeledRobotSystem;
 
 public class DifferentialDriveRobot implements PoseProvider,
-		WheeledRobotDescription {
+		WheeledRobotDescription, Comparable<DifferentialDriveRobot> {
 
 	/**
 	 * Configuration for the simulation of Nick's Expressbot build.
@@ -25,6 +27,8 @@ public class DifferentialDriveRobot implements PoseProvider,
 			0.056, 0.12, 0.23, new SimulatedMotor(), new SimulatedMotor());
 
 	private final WheeledRobotConfiguration m_config;
+
+	private final UUID m_uuid = UUID.randomUUID();
 
 	public double getWheelDiameter() {
 		return m_config.getWheelDiameter();
@@ -78,6 +82,20 @@ public class DifferentialDriveRobot implements PoseProvider,
 
 	public DifferentialPilot getDifferentialPilot() {
 		return m_pilot;
+	}
+
+	@Override
+	public int compareTo(DifferentialDriveRobot _that) {
+		return this.m_uuid.compareTo(_that.m_uuid);
+	}
+
+	@Override
+	public boolean equals(Object _that) {
+		if (_that instanceof DifferentialDriveRobot) {
+			return this.m_uuid.equals(((DifferentialDriveRobot) _that).m_uuid);
+		} else {
+			return false;
+		}
 	}
 
 }

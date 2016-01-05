@@ -1,15 +1,20 @@
 package rp.robotics.testing;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static rp.robotics.testing.PoseMatcher.is;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Stack;
 
 import lejos.robotics.localization.PoseProvider;
+import lejos.robotics.mapping.LineMap;
 import lejos.robotics.navigation.Pose;
+import rp.robotics.simulation.DifferentialDriveRobot;
 import rp.robotics.simulation.Rate;
 import rp.systems.StoppableRunnable;
-import static org.junit.Assert.*;
-import static rp.robotics.testing.PoseMatcher.*;
 
 /**
  * 
@@ -24,9 +29,11 @@ public class ZoneSequenceTest implements Iterable<TargetZone> {
 	private final ArrayList<TargetZone> m_zones;
 	private boolean m_failIfOutOfSequence = false;
 	private final Pose m_start;
+	private final LineMap m_map;
 
-	public ZoneSequenceTest(Pose _start, TargetZone... _zones) {
+	public ZoneSequenceTest(LineMap _map, Pose _start, TargetZone... _zones) {
 
+		m_map = _map;
 		m_start = _start;
 		m_zones = new ArrayList<TargetZone>(_zones.length);
 		for (TargetZone tz : _zones) {
@@ -56,8 +63,10 @@ public class ZoneSequenceTest implements Iterable<TargetZone> {
 	 * @param _poser
 	 * @throws InterruptedException
 	 */
-	public void runTest(StoppableRunnable _controller, PoseProvider _poser,
-			long _timeout) throws InterruptedException {
+	public void runTest(StoppableRunnable _controller, long _timeout)
+			throws InterruptedException {
+
+		DifferentialDriveRobot robot = new DifferentialDriveRobot();
 
 		Stack<TargetZone> zones = new Stack<TargetZone>();
 		zones.addAll(m_zones);
