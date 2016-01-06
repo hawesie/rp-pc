@@ -85,7 +85,7 @@ public class ZoneSequenceTest implements Iterable<TargetZone> {
 				for (TargetZone zone : m_zones) {
 					assertFalse(
 							"Test must not visit other zones before next target",
-							zone.inZone(p));
+							zone.inZone(p));					
 				}
 			}
 
