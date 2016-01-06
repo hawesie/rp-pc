@@ -2,10 +2,12 @@ package rp.robotics.simulation;
 
 import java.util.ArrayList;
 
-import lejos.robotics.mapping.LineMap;
+import lejos.geom.Line;
 import rp.config.WheeledRobotConfiguration;
-import rp.robotics.DifferentialDriveRobot;
+import rp.geom.GeometryUtils;
 import rp.robotics.DifferentialDriveRobotPC;
+import rp.robotics.mapping.RPLineMap;
+import rp.robotics.visualisation.MapVisualisationComponent;
 import rp.systems.StoppableRunnable;
 
 /**
@@ -19,12 +21,14 @@ import rp.systems.StoppableRunnable;
  */
 public class MapBasedSimulation implements StoppableRunnable {
 
-	private final LineMap m_map;
+	private final RPLineMap m_map;
 	private final ArrayList<DifferentialDriveRobotPC> m_robots = new ArrayList<DifferentialDriveRobotPC>();
 	private float m_simulationRateHz = 30;
 	private boolean m_running = false;
+	private Thread m_simThread;
+	private Line[] m_footprint = new Line[4];
 
-	public MapBasedSimulation(LineMap _map) {
+	public MapBasedSimulation(RPLineMap _map) {
 		m_map = _map;
 	}
 
@@ -36,12 +40,22 @@ public class MapBasedSimulation implements StoppableRunnable {
 
 			synchronized (m_robots) {
 				for (DifferentialDriveRobotPC robot : m_robots) {
-
+					if (isInCollision(robot)) {
+						robot.startCollision();
+					}
 				}
 			}
 
 			r.sleep();
 		}
+	}
+
+	private boolean isInCollision(DifferentialDriveRobotPC _robot) {
+		// transform robot footprint to it's pose location
+		GeometryUtils.transform(_robot.getPose(), _robot.getFootprint(),
+				m_footprint);
+		// check for footprint intersection with map
+		return m_map.intersectsWith(m_footprint);
 	}
 
 	@Override
@@ -52,15 +66,40 @@ public class MapBasedSimulation implements StoppableRunnable {
 	/**
 	 * Add a robot to the simulation with the given configuration.
 	 * 
-	 * @param _robot
+	 * @param _config
 	 */
-	public void addRobot(WheeledRobotConfiguration _robot) {
+	public DifferentialDriveRobotPC addRobot(WheeledRobotConfiguration _config) {
 
+		DifferentialDriveRobotPC robot = new DifferentialDriveRobotPC(_config);
 		synchronized (m_robots) {
-			if (_robot != null && !m_robots.contains(_robot)) {
-				m_robots.add(new DifferentialDriveRobotPC(_robot));
+			if (_config != null && !m_robots.contains(_config)) {
+				m_robots.add(robot);
 			}
 		}
+
+		// if the first robot was added, the start sim running
+		if (m_robots.size() == 1) {
+			m_simThread = new Thread(this);
+			m_simThread.start();
+		}
+
+		return robot;
+	}
+
+	/**
+	 * Creates a visualisation for the given simulation.
+	 * 
+	 * @param _sim
+	 * @return
+	 */
+	public static MapVisualisationComponent createVisulation(
+			MapBasedSimulation _sim) {
+		MapVisualisationComponent visualisation = MapVisualisationComponent
+				.createVisualisation(_sim.m_map);
+		for (DifferentialDriveRobotPC robot : _sim.m_robots) {
+			visualisation.addRobot(robot);
+		}
+		return visualisation;
 	}
 
 }

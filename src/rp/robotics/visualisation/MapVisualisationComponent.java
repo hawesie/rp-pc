@@ -5,10 +5,8 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
@@ -24,6 +22,7 @@ import lejos.robotics.RangeScanner;
 import lejos.robotics.localization.PoseProvider;
 import lejos.robotics.mapping.LineMap;
 import lejos.robotics.navigation.Pose;
+import rp.geom.GeometryUtils;
 import rp.robotics.DifferentialDriveRobotPC;
 import rp.robotics.mapping.MapUtils;
 
@@ -304,21 +303,13 @@ public class MapVisualisationComponent extends JComponent {
 
 	private void renderRelative(Line[] _lines, Pose _pose, Graphics2D _g2) {
 
-		AffineTransform transform = _g2.getTransform();
-
-		_g2.rotate(Math.toRadians(-_pose.getHeading()), scale(_pose.getX())
-				+ X_MARGIN, scale(flipY(_pose.getY())) + Y_MARGIN);
-
 		for (Line l : _lines) {
-			// Line scaled = new Line(scale(l.x1), scale(flipY(l.y1)),
-			// scale(l.x2), scale(flipY(l.y2)));
-			_g2.drawLine((int) scale(l.x1 + _pose.getX()) + X_MARGIN,
-					(int) scale(flipY(l.y1 + _pose.getY())) + X_MARGIN,
-					(int) scale(l.x2 + _pose.getX()) + X_MARGIN,
-					(int) scale(flipY(l.y2 + _pose.getY())) + X_MARGIN);
-		}
 
-		_g2.setTransform(transform);
+			l = GeometryUtils.transform(_pose, l);
+			_g2.drawLine((int) scale(l.x1) + X_MARGIN, (int) scale(flipY(l.y1))
+					+ X_MARGIN, (int) scale(l.x2) + X_MARGIN,
+					(int) scale(flipY(l.y2)) + X_MARGIN);
+		}
 
 	}
 
