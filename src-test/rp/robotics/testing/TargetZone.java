@@ -11,8 +11,17 @@ import lejos.robotics.navigation.Pose;
  */
 public class TargetZone {
 
+	public enum Status {
+		NEUTRAL,
+		// the next target
+		LIVE,
+		// when robot has arrived
+		HIT
+	}
+
 	private final Point m_target;
 	private final float m_radius;
+	private Status m_status = Status.NEUTRAL;
 
 	public TargetZone(Point _target, float _radius) {
 		m_target = _target;
@@ -37,4 +46,11 @@ public class TargetZone {
 		return _p.distanceTo(getTarget()) < getRadius();
 	}
 
+	public Status getStatus() {
+		return m_status;
+	}
+
+	public void setStatus(Status _status) {
+		m_status = _status;
+	}
 }

@@ -1,8 +1,11 @@
 package rp.robotics.simulation;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import lejos.geom.Line;
+import lejos.robotics.mapping.LineMap;
+import lejos.robotics.navigation.Pose;
 import rp.config.WheeledRobotConfiguration;
 import rp.geom.GeometryUtils;
 import rp.robotics.DifferentialDriveRobotPC;
@@ -19,10 +22,11 @@ import rp.systems.StoppableRunnable;
  * @author Nick Hawes
  *
  */
-public class MapBasedSimulation implements StoppableRunnable {
+public class MapBasedSimulation implements StoppableRunnable,
+		Iterable<DifferentialDriveRobotPC> {
 
-	private final RPLineMap m_map;
-	private final ArrayList<DifferentialDriveRobotPC> m_robots = new ArrayList<DifferentialDriveRobotPC>();
+	protected final RPLineMap m_map;
+	protected final ArrayList<DifferentialDriveRobotPC> m_robots = new ArrayList<DifferentialDriveRobotPC>();
 	private float m_simulationRateHz = 30;
 	private boolean m_running = false;
 	private Thread m_simThread;
@@ -64,13 +68,16 @@ public class MapBasedSimulation implements StoppableRunnable {
 	}
 
 	/**
-	 * Add a robot to the simulation with the given configuration.
+	 * Add a robot to the simulation with the given configuration at the given
+	 * pose.
 	 * 
 	 * @param _config
 	 */
-	public DifferentialDriveRobotPC addRobot(WheeledRobotConfiguration _config) {
+	public DifferentialDriveRobotPC addRobot(WheeledRobotConfiguration _config,
+			Pose _start) {
 
 		DifferentialDriveRobotPC robot = new DifferentialDriveRobotPC(_config);
+		robot.setPose(_start);
 		synchronized (m_robots) {
 			if (_config != null && !m_robots.contains(_config)) {
 				m_robots.add(robot);
@@ -100,6 +107,15 @@ public class MapBasedSimulation implements StoppableRunnable {
 			visualisation.addRobot(robot);
 		}
 		return visualisation;
+	}
+
+	public LineMap getMap() {
+		return m_map;
+	}
+
+	@Override
+	public Iterator<DifferentialDriveRobotPC> iterator() {
+		return m_robots.iterator();
 	}
 
 }

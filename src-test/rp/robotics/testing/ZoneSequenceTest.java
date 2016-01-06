@@ -6,14 +6,15 @@ import static org.junit.Assert.fail;
 import static rp.robotics.testing.PoseMatcher.is;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Stack;
 
 import lejos.robotics.localization.PoseProvider;
-import lejos.robotics.mapping.LineMap;
 import lejos.robotics.navigation.Pose;
-import rp.robotics.simulation.DifferentialDriveRobot;
 import rp.robotics.simulation.Rate;
+import rp.robotics.testing.TargetZone.Status;
 import rp.systems.StoppableRunnable;
 
 /**
@@ -27,33 +28,21 @@ import rp.systems.StoppableRunnable;
 public class ZoneSequenceTest implements Iterable<TargetZone> {
 
 	private final ArrayList<TargetZone> m_zones;
-	private boolean m_failIfOutOfSequence = false;
-	private final Pose m_start;
-	private final LineMap m_map;
+	private StoppableRunnable m_controller;
+	private PoseProvider m_poser;
+	private Pose m_start;
+	private long m_timeout;
+	private boolean m_failIfOutOfSequence;
 
-	public ZoneSequenceTest(LineMap _map, Pose _start, TargetZone... _zones) {
-
-		m_map = _map;
+	public ZoneSequenceTest(StoppableRunnable _controller, PoseProvider _poser,
+			Pose _start, long _timeout, boolean _failIfOutOfSequence,
+			ArrayList<TargetZone> _zones) {
+		m_controller = _controller;
+		m_poser = _poser;
 		m_start = _start;
-		m_zones = new ArrayList<TargetZone>(_zones.length);
-		for (TargetZone tz : _zones) {
-			m_zones.add(tz);
-		}
-	}
-
-	/**
-	 * If set to true then the test fails if a target other than the next
-	 * expected one is reached.
-	 * 
-	 * @param _failIfOutOfSequence
-	 */
-	public void setFailIfOutOfSequence(boolean _failIfOutOfSequence) {
+		m_timeout = _timeout;
 		m_failIfOutOfSequence = _failIfOutOfSequence;
-	}
-
-	@Override
-	public Iterator<TargetZone> iterator() {
-		return m_zones.iterator();
+		m_zones = _zones;
 	}
 
 	/**
@@ -63,36 +52,40 @@ public class ZoneSequenceTest implements Iterable<TargetZone> {
 	 * @param _poser
 	 * @throws InterruptedException
 	 */
-	public void runTest(StoppableRunnable _controller, long _timeout)
-			throws InterruptedException {
-
-		DifferentialDriveRobot robot = new DifferentialDriveRobot();
+	public void run() {
 
 		Stack<TargetZone> zones = new Stack<TargetZone>();
+		Collections.reverse(m_zones);
 		zones.addAll(m_zones);
 
-		_poser.setPose(m_start);
+		m_poser.setPose(m_start);
 
-		assertThat(_poser.getPose(), is(m_start));
+		assertThat(m_poser.getPose(), is(m_start));
 
-		Thread t = new Thread(_controller);
-		long timeoutAt = System.currentTimeMillis() + _timeout;
+		Thread t = new Thread(m_controller);
+		long timeoutAt = System.currentTimeMillis() + m_timeout;
 
 		Rate r = new Rate(5);
+
+		zones.peek().setStatus(Status.LIVE);
 
 		t.start();
 		while (System.currentTimeMillis() < timeoutAt && zones.size() > 0) {
 
-			Pose p = _poser.getPose();
+			Pose p = m_poser.getPose();
 
 			if (zones.peek().inZone(p)) {
-				zones.pop();
+				zones.pop().setStatus(Status.HIT);
+
+				if (!zones.isEmpty()) {
+					zones.peek().setStatus(Status.LIVE);
+				}
 				System.out.println("Zone done");
 			} else if (m_failIfOutOfSequence) {
-				for (int i = 1; i < m_zones.size(); i++) {
+				for (TargetZone zone : m_zones) {
 					assertFalse(
 							"Test must not visit other zones before next target",
-							zones.elementAt(i).inZone(p));
+							zone.inZone(p));
 				}
 			}
 
@@ -102,11 +95,22 @@ public class ZoneSequenceTest implements Iterable<TargetZone> {
 		if (zones.size() > 0) {
 			fail(String.format(
 					"Test timed out after %d milliseconds with %d zones left.",
-					_timeout, zones.size()));
+					m_timeout, zones.size()));
 		}
 
-		_controller.stop();
-		t.join(5000);
+		m_controller.stop();
+		try {
+			t.join(5000);
+		} catch (InterruptedException e) {
+			fail(e.getMessage());
+			e.printStackTrace();
+		}
+		System.out.println("Test done");
 
+	}
+
+	@Override
+	public Iterator<TargetZone> iterator() {
+		return m_zones.iterator();
 	}
 }
