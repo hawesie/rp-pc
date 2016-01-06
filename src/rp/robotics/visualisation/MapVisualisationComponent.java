@@ -5,8 +5,10 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
@@ -14,7 +16,6 @@ import java.util.ArrayList;
 import javax.swing.JComponent;
 import javax.swing.Timer;
 
-import rp.robotics.mapping.MapUtils;
 import lejos.geom.Line;
 import lejos.geom.Point;
 import lejos.robotics.RangeReading;
@@ -23,6 +24,8 @@ import lejos.robotics.RangeScanner;
 import lejos.robotics.localization.PoseProvider;
 import lejos.robotics.mapping.LineMap;
 import lejos.robotics.navigation.Pose;
+import rp.robotics.DifferentialDriveRobotPC;
+import rp.robotics.mapping.MapUtils;
 
 /**
  * 
@@ -68,9 +71,11 @@ public class MapVisualisationComponent extends JComponent {
 	private ArrayList<PoseProvider> m_poseProviders = new ArrayList<PoseProvider>(
 			1);
 
-	private ArrayList<Object> m_robots = new ArrayList<Object>(1);
+	private ArrayList<DifferentialDriveRobotPC> m_robots = new ArrayList<DifferentialDriveRobotPC>(
+			1);
 
 	private boolean m_trackRobots = true;
+
 	private ArrayList<Point> m_robotTracks = new ArrayList<Point>();
 
 	public MapVisualisationComponent(LineMap _lineMap, float _scaleFactor) {
@@ -93,8 +98,8 @@ public class MapVisualisationComponent extends JComponent {
 		m_transformedLines = staticTransformMapLines(m_lineMap, X_MARGIN,
 				Y_MARGIN);
 
-		// repaint at 20Hz
-		new Timer(50, new ActionListener() {
+		// repaint frequecy
+		new Timer(25, new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
 				repaint();
@@ -238,53 +243,83 @@ public class MapVisualisationComponent extends JComponent {
 
 		}
 
-		g2.setStroke(new BasicStroke(1));
+		// if the robot can give us a pose
+		for (DifferentialDriveRobotPC r : m_robots) {
+			renderRobot(g2, r);
+		}
 
 		for (PoseProvider pp : m_poseProviders) {
 			renderPose(pp.getPose(), g2);
 		}
 
 		if (m_trackRobots) {
+			g2.setStroke(new BasicStroke(1));
 			g2.setPaint(Color.GRAY);
 			for (Point p : m_robotTracks) {
 				renderPoint(p, g2, 0.005);
 			}
 		}
 
-		// if the robot can give us a pose
-		for (Object r : m_robots) {
-			if (r instanceof PoseProvider) {
-				Pose p = ((PoseProvider) r).getPose();
-				renderPose(p, g2);
+	}
 
-				if (m_trackRobots) {
-					m_robotTracks.add(new Point(p.getX(), p.getY()));
+	private void renderRobot(Graphics2D _g2, DifferentialDriveRobotPC _robot) {
+		_g2.setStroke(new BasicStroke(2));
+		_g2.setPaint(Color.BLACK);
+
+		Pose p = _robot.getPose();
+
+		// renderPose(p, _g2);
+
+		drawLineToHeading(_g2, p.getX(), p.getY(), p.getHeading(),
+				_robot.getRobotLength() / 2);
+
+		renderRelative(_robot.getFootprint(), _robot.getPose(), _g2);
+
+		if (m_trackRobots) {
+			m_robotTracks.add(p.getLocation());
+		}
+
+		// if the robot can give us some range readings too
+		if (_robot instanceof RangeScanner) {
+			RangeReadings readings = ((RangeScanner) _robot).getRangeValues();
+			for (RangeReading reading : readings) {
+				float range = reading.getRange();
+
+				if (range == 255) {
+					_g2.setStroke(new BasicStroke(1));
+					_g2.setPaint(Color.RED);
+					range = 20;
+
+				} else {
+					_g2.setStroke(new BasicStroke(1));
+					_g2.setPaint(Color.BLUE);
+
 				}
-
-				// if the robot can give us some range readings too
-				if (r instanceof RangeScanner) {
-					RangeReadings readings = ((RangeScanner) r)
-							.getRangeValues();
-					for (RangeReading reading : readings) {
-						float range = reading.getRange();
-
-						if (range == 255) {
-							g2.setStroke(new BasicStroke(1));
-							g2.setPaint(Color.RED);
-							range = 20;
-
-						} else {
-							g2.setStroke(new BasicStroke(1));
-							g2.setPaint(Color.BLUE);
-
-						}
-						drawLineToHeading(g2, p.getX(), p.getY(),
-								p.getHeading() + reading.getAngle(), range);
-					}
-				}
-
+				drawLineToHeading(_g2, p.getX(), p.getY(), p.getHeading()
+						+ reading.getAngle(), range);
 			}
 		}
+
+	}
+
+	private void renderRelative(Line[] _lines, Pose _pose, Graphics2D _g2) {
+
+		AffineTransform transform = _g2.getTransform();
+
+		_g2.rotate(Math.toRadians(-_pose.getHeading()), scale(_pose.getX())
+				+ X_MARGIN, scale(flipY(_pose.getY())) + Y_MARGIN);
+
+		for (Line l : _lines) {
+			// Line scaled = new Line(scale(l.x1), scale(flipY(l.y1)),
+			// scale(l.x2), scale(flipY(l.y2)));
+			_g2.drawLine((int) scale(l.x1 + _pose.getX()) + X_MARGIN,
+					(int) scale(flipY(l.y1 + _pose.getY())) + X_MARGIN,
+					(int) scale(l.x2 + _pose.getX()) + X_MARGIN,
+					(int) scale(flipY(l.y2 + _pose.getY())) + X_MARGIN);
+		}
+
+		_g2.setTransform(transform);
+
 	}
 
 	/**
@@ -304,6 +339,34 @@ public class MapVisualisationComponent extends JComponent {
 		}
 
 		// System.out.println("drawLineToHeading: " + heading);
+
+		// double headingX = _x;
+		// double headingY = _y;
+		// if (heading >= 0 && heading < 90) {
+		//
+		// headingX = _lineLength * Math.cos(Math.toRadians(heading));
+		// headingY = (_lineLength * Math.sin(Math.toRadians(heading)));
+		//
+		// } else if (heading >= 90 && heading <= 180) {
+		//
+		// headingX = -(_lineLength * Math.cos(Math.toRadians(180 - heading)));
+		// headingY = (_lineLength * Math.sin(Math.toRadians(180 - heading)));
+		//
+		// } else if (heading < 0 && heading >= -90) {
+		//
+		// headingX = _lineLength
+		// * Math.cos(Math.toRadians(Math.abs(heading)));
+		// headingY = -(_lineLength * Math.sin(Math.toRadians(Math
+		// .abs(heading))));
+		//
+		// } else if (heading < -90 && heading >= -180) {
+		//
+		// headingX = -(_lineLength * Math.cos(Math.toRadians(180 - Math
+		// .abs(heading))));
+		// headingY = -(_lineLength * Math.sin(Math.toRadians(180 - Math
+		// .abs(heading))));
+		//
+		// }
 
 		double headingX = _x;
 		double headingY = _y;
@@ -341,8 +404,9 @@ public class MapVisualisationComponent extends JComponent {
 	}
 
 	protected void renderLine(Point _p1, Point _p2, Graphics2D _g2) {
-		Line2D line = new Line2D.Double(scale(_p1.x) + X_MARGIN, scale(_p1.y)
-				+ Y_MARGIN, scale(_p2.x) + X_MARGIN, scale(_p2.y) + Y_MARGIN);
+		Line2D line = new Line2D.Double(scale(_p1.x) + X_MARGIN,
+				scale(flipY(_p1.y)) + Y_MARGIN, scale(_p2.x) + X_MARGIN,
+				scale(flipY(_p2.y)) + Y_MARGIN);
 		_g2.draw(line);
 	}
 
@@ -384,7 +448,7 @@ public class MapVisualisationComponent extends JComponent {
 	// m_robots.add(_robot);
 	// }
 
-	public void addRobot(PoseProvider _robot) {
+	public void addRobot(DifferentialDriveRobotPC _robot) {
 		m_robots.add(_robot);
 	}
 

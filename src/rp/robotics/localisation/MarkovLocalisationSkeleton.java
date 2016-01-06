@@ -15,6 +15,7 @@ import rp.robotics.visualisation.GridMapViewer;
 import rp.robotics.visualisation.GridPositionDistributionVisualisation;
 import rp.robotics.visualisation.KillMeNow;
 
+@Deprecated
 public class MarkovLocalisationSkeleton {
 
 	// Maps
@@ -56,7 +57,7 @@ public class MarkovLocalisationSkeleton {
 				m_lineMap, 2);
 
 		// Visualise the robot
-		m_mapVis.addRobot(m_robot);
+//		m_mapVis.addRobot(m_robot);
 
 		frame.add(m_mapVis);
 		frame.pack();

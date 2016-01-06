@@ -11,6 +11,7 @@ import rp.robotics.simulation.SimulatedRobot;
  * @author Nick Hawes
  *
  */
+@Deprecated
 public class SimulationViewer {
 
 	public void run() {
@@ -29,11 +30,11 @@ public class SimulationViewer {
 		int yInset = 31;
 
 		// Create a simulated robot with a single, forward-pointing sensor
-		SimulatedRobot robot = SimulatedRobot.createSingleSensorRobot(
-				new Pose(xInset, yInset, 0), mapViz.getLineMap());
+		SimulatedRobot robot = SimulatedRobot.createSingleSensorRobot(new Pose(
+				xInset, yInset, 0), mapViz.getLineMap());
 
 		// Add it to the visualisation
-		mapViz.addRobot(robot);
+		// mapViz.addRobot(robot);
 
 		// Create a behaviour to drive it around
 		RandomGridWalk walk = new RandomGridWalk(robot, junctionSeparation);
