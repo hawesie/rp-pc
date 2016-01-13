@@ -23,7 +23,7 @@ public class DifferentialDriveSim {
 
 		// Create the simulation using the given map. This simulation can run
 		// with a GUI.
-		MapBasedSimulation sim = new MapBasedSimulation(TestMaps.EMPTY_1_x_1);
+		MapBasedSimulation sim = new MapBasedSimulation(TestMaps.EMPTY_8_x_6);
 
 		// Add a robot of a given configuration to the simulation. The return
 		// value is the object you can use to control the robot.
@@ -34,12 +34,20 @@ public class DifferentialDriveSim {
 				SimulatedRobots.EXPRESS_BOT_WITH_SENSORS, new Pose(0.5f, 0.5f,
 						0));
 
+		// This is the controller that actually makes the robot move
 		RandomWalk controller = new RandomWalk(robot);
+
+		// This call attaches an event listener to the robot's touch sensor in
+		// the simulator
 		sim.addTouchSensorListener(robot, controller);
+
+		// This gets the object used for range measurement for the robot in the
+		// simulator
 		RangeFinder ranger = sim.getRanger(robot);
+
+		// This gives the controller the range scanner to use.
 		controller.setRangeScanner(ranger);
 
-		// ForwardBackwards controller = new ForwardBackwards(robot);
 		// Create visualisation JComponent that renders map, robots etc
 		MapVisualisationComponent viz = MapBasedSimulation
 				.createVisulation(sim);
@@ -47,13 +55,14 @@ public class DifferentialDriveSim {
 		// Add the visualisation to a JFrame to display it
 		displayVisualisation(viz);
 
+		// Start the controller running
 		controller.run();
 
 	}
 
-	private void displayVisualisation(MapVisualisationComponent viz) {
+	public static JFrame displayVisualisation(MapVisualisationComponent viz) {
 		// Create a frame to contain the viewer
-		JFrame frame = new JFrame("Map Viewer");
+		JFrame frame = new JFrame("Simulation Viewer");
 
 		// Add visualisation to frame
 		frame.add(viz);
@@ -62,6 +71,8 @@ public class DifferentialDriveSim {
 		frame.pack();
 		frame.setSize(viz.getMinimumSize());
 		frame.setVisible(true);
+		
+		return frame;
 	}
 
 	public static void main(String[] args) {

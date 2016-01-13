@@ -298,10 +298,10 @@ public class MapVisualisationComponent extends JComponent {
 				for (RangeReading reading : readings) {
 					float range = reading.getRange();
 
-					if (range == 255) {
+					if (range == 2.55f) {
 						_g2.setStroke(new BasicStroke(1));
 						_g2.setPaint(Color.RED);
-						range = 20;
+//						range = 2.55f;
 
 					} else {
 						_g2.setStroke(new BasicStroke(1));

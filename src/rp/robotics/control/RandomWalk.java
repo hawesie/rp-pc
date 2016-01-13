@@ -49,9 +49,8 @@ public class RandomWalk implements StoppableRunnable, TouchSensorListener {
 			while (m_running && m_pilot.isMoving() && !m_bumped) {
 				if (m_ranger != null) {
 					if (m_ranger.getRange() < m_robot.getRobotLength()) {
-						System.out.println("Watch out of that wall!");
+						System.out.println("Watch out for that wall!");
 					}
-
 				}
 				r.sleep();
 
