@@ -5,8 +5,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Ellipse2D;
 
-import lejos.robotics.mapping.LineMap;
 import rp.robotics.DifferentialDriveRobotPC;
+import rp.robotics.mapping.RPLineMap;
 import rp.robotics.simulation.MapBasedSimulation;
 import rp.robotics.testing.TargetZone.Status;
 import rp.robotics.visualisation.MapVisualisationComponent;
@@ -23,7 +23,7 @@ public class TestVisualisationComponent extends MapVisualisationComponent {
 	private static final long serialVersionUID = 1L;
 	private final ZoneSequenceTest<?> m_zst;
 
-	public TestVisualisationComponent(LineMap _map, ZoneSequenceTest<?> _test) {
+	public TestVisualisationComponent(RPLineMap _map, ZoneSequenceTest<?> _test) {
 		super(_map);
 		m_zst = _test;
 	}

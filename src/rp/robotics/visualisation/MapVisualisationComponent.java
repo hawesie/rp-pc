@@ -18,13 +18,14 @@ import lejos.geom.Line;
 import lejos.geom.Point;
 import lejos.robotics.RangeReading;
 import lejos.robotics.RangeReadings;
-import lejos.robotics.RangeScanner;
 import lejos.robotics.localization.PoseProvider;
 import lejos.robotics.mapping.LineMap;
 import lejos.robotics.navigation.Pose;
+import rp.config.RangeScannerDescription;
 import rp.geom.GeometryUtils;
 import rp.robotics.DifferentialDriveRobotPC;
 import rp.robotics.mapping.MapUtils;
+import rp.robotics.mapping.RPLineMap;
 
 /**
  * 
@@ -61,7 +62,7 @@ public class MapVisualisationComponent extends JComponent {
 
 	private final Rectangle m_visualisationDimensions;
 
-	private final LineMap m_lineMap;
+	private final RPLineMap m_lineMap;
 
 	private final float m_scaleFactor;
 
@@ -77,7 +78,7 @@ public class MapVisualisationComponent extends JComponent {
 
 	private ArrayList<Point> m_robotTracks = new ArrayList<Point>();
 
-	public MapVisualisationComponent(LineMap _lineMap, float _scaleFactor) {
+	public MapVisualisationComponent(RPLineMap _lineMap, float _scaleFactor) {
 
 		int _width = (int) _lineMap.getBoundingRect().getWidth();
 		int _height = (int) _lineMap.getBoundingRect().getHeight();
@@ -98,7 +99,7 @@ public class MapVisualisationComponent extends JComponent {
 				Y_MARGIN);
 
 		// repaint frequecy
-		new Timer(25, new ActionListener() {
+		new Timer(16, new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
 				repaint();
@@ -112,7 +113,7 @@ public class MapVisualisationComponent extends JComponent {
 	 * 
 	 * @param _lineMap
 	 */
-	public MapVisualisationComponent(LineMap _lineMap) {
+	public MapVisualisationComponent(RPLineMap _lineMap) {
 		this(_lineMap, 100f);
 	}
 
@@ -128,7 +129,7 @@ public class MapVisualisationComponent extends JComponent {
 		return createVisualisation(_width, _height);
 	}
 
-	public static MapVisualisationComponent createVisualisation(LineMap _map) {
+	public static MapVisualisationComponent createVisualisation(RPLineMap _map) {
 		return new MapVisualisationComponent(_map);
 	}
 
@@ -261,6 +262,8 @@ public class MapVisualisationComponent extends JComponent {
 
 	}
 
+	
+
 	private void renderRobot(Graphics2D _g2, DifferentialDriveRobotPC _robot) {
 		_g2.setStroke(new BasicStroke(2));
 		_g2.setPaint(Color.BLACK);
@@ -269,33 +272,47 @@ public class MapVisualisationComponent extends JComponent {
 
 		// renderPose(p, _g2);
 
-		drawLineToHeading(_g2, p.getX(), p.getY(), p.getHeading(),
-				_robot.getRobotLength() / 2);
+		// drawLineToHeading(_g2, p.getX(), p.getY(), p.getHeading(),
+		// _robot.getRobotLength() / 2);
 
 		renderRelative(_robot.getFootprint(), _robot.getPose(), _g2);
+
+		for (Line[] footprint : _robot.getTouchSensors()) {
+			renderRelative(footprint, _robot.getPose(), _g2);
+		}
 
 		if (m_trackRobots) {
 			m_robotTracks.add(p.getLocation());
 		}
 
+		ArrayList<RangeScannerDescription> rangers = _robot.getRangeScanners();
+
 		// if the robot can give us some range readings too
-		if (_robot instanceof RangeScanner) {
-			RangeReadings readings = ((RangeScanner) _robot).getRangeValues();
-			for (RangeReading reading : readings) {
-				float range = reading.getRange();
+		if (rangers != null) {
 
-				if (range == 255) {
-					_g2.setStroke(new BasicStroke(1));
-					_g2.setPaint(Color.RED);
-					range = 20;
+			for (RangeScannerDescription ranger : rangers) {
+				Pose sensorPose = GeometryUtils.transform(p,
+						ranger.getScannerPose());
 
-				} else {
-					_g2.setStroke(new BasicStroke(1));
-					_g2.setPaint(Color.BLUE);
+				RangeReadings readings = m_lineMap.takeReadings(p, ranger);
+				for (RangeReading reading : readings) {
+					float range = reading.getRange();
 
+					if (range == 255) {
+						_g2.setStroke(new BasicStroke(1));
+						_g2.setPaint(Color.RED);
+						range = 20;
+
+					} else {
+						_g2.setStroke(new BasicStroke(1));
+						_g2.setPaint(Color.BLUE);
+
+					}
+
+					drawLineToHeading(_g2, sensorPose.getX(),
+							sensorPose.getY(), sensorPose.getHeading()
+									+ reading.getAngle(), range);
 				}
-				drawLineToHeading(_g2, p.getX(), p.getY(), p.getHeading()
-						+ reading.getAngle(), range);
 			}
 		}
 
@@ -443,8 +460,8 @@ public class MapVisualisationComponent extends JComponent {
 		m_robots.add(_robot);
 	}
 
-//	public void addRobot(PoseProvider _robot) {
-//		m_poseProviders.add(_robot);
-//	}
+	// public void addRobot(PoseProvider _robot) {
+	// m_poseProviders.add(_robot);
+	// }
 
 }

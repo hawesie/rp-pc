@@ -184,6 +184,9 @@ public class SimulatedMotor implements RegulatedMotor {
 			}
 		});
 
+		m_moveThread.setPriority(10);
+		m_regulateThread.setPriority(8);
+
 		m_moveThread.setDaemon(true);
 		m_regulateThread.setDaemon(true);
 		m_moveThread.start();

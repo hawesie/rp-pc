@@ -14,4 +14,7 @@ public class TestMaps {
 	public static final RPLineMap EMPTY_8_x_6 = MapUtils.createRectangularMap(
 			8, 6);
 
+	public static final RPLineMap EMPTY_1_x_1 = MapUtils.createRectangularMap(
+			1, 1);
+
 }

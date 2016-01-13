@@ -5,8 +5,8 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 
 import lejos.geom.Point;
-import lejos.robotics.mapping.LineMap;
 import rp.robotics.mapping.IGridMap;
+import rp.robotics.mapping.RPLineMap;
 
 /***
  * Visualise an IGridMap on top of a LineMap.
@@ -23,7 +23,7 @@ public class GridMapVisualisation extends MapVisualisationComponent {
 
 	protected IGridMap m_gridMap;
 
-	public GridMapVisualisation(IGridMap _gridMap, LineMap _lineMap,
+	public GridMapVisualisation(IGridMap _gridMap, RPLineMap _lineMap,
 			float _scaleFactor) {
 		super(_lineMap, _scaleFactor);
 		m_gridMap = _gridMap;

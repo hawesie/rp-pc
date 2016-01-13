@@ -12,7 +12,6 @@ import rp.robotics.DifferentialDriveRobotPC;
 import rp.robotics.testing.TargetZone;
 import rp.robotics.testing.ZoneSequence;
 import rp.robotics.testing.ZoneSequenceTest;
-import rp.systems.StoppableRunnable;
 
 /**
  * 
