@@ -443,4 +443,8 @@ public class MapVisualisationComponent extends JComponent {
 		m_robots.add(_robot);
 	}
 
+//	public void addRobot(PoseProvider _robot) {
+//		m_poseProviders.add(_robot);
+//	}
+
 }

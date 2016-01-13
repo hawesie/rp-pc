@@ -5,8 +5,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static rp.robotics.testing.PoseMatcher.is;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Stack;
@@ -25,24 +23,23 @@ import rp.systems.StoppableRunnable;
  * @author Nick Hawes
  *
  */
-public class ZoneSequenceTest implements Iterable<TargetZone> {
+public class ZoneSequenceTest<T extends PoseProvider> implements
+		Iterable<TargetZone> {
 
-	private final ArrayList<TargetZone> m_zones;
 	private StoppableRunnable m_controller;
-	private PoseProvider m_poser;
-	private Pose m_start;
+	private T m_poser;
 	private long m_timeout;
 	private boolean m_failIfOutOfSequence;
+	private final ZoneSequence m_sequence;
 
-	public ZoneSequenceTest(StoppableRunnable _controller, PoseProvider _poser,
-			Pose _start, long _timeout, boolean _failIfOutOfSequence,
-			ArrayList<TargetZone> _zones) {
+	public ZoneSequenceTest(ZoneSequence _sequence,
+			StoppableRunnable _controller, T _poser, long _timeout,
+			boolean _failIfOutOfSequence) {
+		m_sequence = _sequence;
 		m_controller = _controller;
 		m_poser = _poser;
-		m_start = _start;
 		m_timeout = _timeout;
 		m_failIfOutOfSequence = _failIfOutOfSequence;
-		m_zones = _zones;
 	}
 
 	/**
@@ -55,12 +52,12 @@ public class ZoneSequenceTest implements Iterable<TargetZone> {
 	public void run() {
 
 		Stack<TargetZone> zones = new Stack<TargetZone>();
-		Collections.reverse(m_zones);
-		zones.addAll(m_zones);
+		zones.addAll(m_sequence.getZones());
+		Collections.reverse(zones);
 
-		m_poser.setPose(m_start);
+		m_poser.setPose(m_sequence.getStart());
 
-		assertThat(m_poser.getPose(), is(m_start));
+		assertThat(m_poser.getPose(), is(m_sequence.getStart()));
 
 		Thread t = new Thread(m_controller);
 		long timeoutAt = System.currentTimeMillis() + m_timeout;
@@ -80,12 +77,12 @@ public class ZoneSequenceTest implements Iterable<TargetZone> {
 				if (!zones.isEmpty()) {
 					zones.peek().setStatus(Status.LIVE);
 				}
-				System.out.println("Zone done");
+				// System.out.println("Zone done");
 			} else if (m_failIfOutOfSequence) {
-				for (TargetZone zone : m_zones) {
+				for (TargetZone zone : m_sequence) {
 					assertFalse(
 							"Test must not visit other zones before next target",
-							zone.inZone(p));					
+							zone.inZone(p));
 				}
 			}
 
@@ -105,12 +102,16 @@ public class ZoneSequenceTest implements Iterable<TargetZone> {
 			fail(e.getMessage());
 			e.printStackTrace();
 		}
-		System.out.println("Test done");
+		// System.out.println("Test done");
 
 	}
 
 	@Override
 	public Iterator<TargetZone> iterator() {
-		return m_zones.iterator();
+		return m_sequence.iterator();
+	}
+
+	public T getPoseProvider() {
+		return m_poser;
 	}
 }
