@@ -37,6 +37,12 @@ public class TestViewer {
 		Thread simThread = new Thread(sim);
 		simThread.start();
 		m_test.run();
+		sim.stop();
+		try {
+			simThread.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 
 	}
 

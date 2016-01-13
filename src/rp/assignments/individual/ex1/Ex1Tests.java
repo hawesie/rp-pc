@@ -8,6 +8,7 @@ import lejos.robotics.navigation.Pose;
 import org.junit.Test;
 
 import rp.assignments.AbstractTestHarness;
+import rp.robotics.DifferentialDriveRobotPC;
 import rp.robotics.testing.TargetZone;
 import rp.robotics.testing.ZoneSequence;
 import rp.robotics.testing.ZoneSequenceTest;
@@ -31,7 +32,7 @@ public class Ex1Tests extends AbstractTestHarness {
 
 	/**
 	 * Example test for Individual Exercise 1a: a triangle with side length of
-	 * 1.0
+	 * 1.0m
 	 * 
 	 * @return
 	 */
@@ -48,11 +49,12 @@ public class Ex1Tests extends AbstractTestHarness {
 	}
 
 	/**
-	 * Example test for Individual Exercise 1b: a square with side length of 1.0
+	 * Example test for Individual Exercise 1b: a square with side length of
+	 * 1.0m
 	 * 
 	 * @return
 	 */
-	public static ZoneSequence getSqureTestSequence() {
+	public static ZoneSequence getSquareTestSequence() {
 
 		Pose start = new Pose(3.0f, 3.0f, 0.0f);
 		ArrayList<TargetZone> zones = new ArrayList<TargetZone>(4);
@@ -63,14 +65,41 @@ public class Ex1Tests extends AbstractTestHarness {
 		return new ZoneSequence(start, zones);
 	}
 
-	public ZoneSequenceTest createTriangeTest() {
+	/**
+	 * Example test for Individual Exercise 1c: a decahendron with side length
+	 * of 0.2m
+	 * 
+	 * @return
+	 */
+	public static ZoneSequence getDecahendronSequence() {
+		Pose start = new Pose(3.0f, 3.0f, 0.0f);
+		ArrayList<TargetZone> zones = new ArrayList<TargetZone>(10);
+		zones.add(new TargetZone(new Point(3.2f, 3.0f), 0.1f));
+		zones.add(new TargetZone(new Point(3.3618035f, 3.117557f), 0.1f));
+		zones.add(new TargetZone(new Point(3.4236069f, 3.3077683f), 0.1f));
+		zones.add(new TargetZone(new Point(3.3618035f, 3.4979796f), 0.1f));
+		zones.add(new TargetZone(new Point(3.2f, 3.6155367f), 0.1f));
+		zones.add(new TargetZone(new Point(3.0f, 3.6155367f), 0.1f));
+		zones.add(new TargetZone(new Point(2.8381965f, 3.4979796f), 0.1f));
+		zones.add(new TargetZone(new Point(2.7763932f, 3.3077683f), 0.1f));
+		zones.add(new TargetZone(new Point(2.8381965f, 3.117557f), 0.1f));
+		zones.add(new TargetZone(new Point(3.0f, 3.0f), 0.1f));
+		return new ZoneSequence(start, zones);
+	}
+
+	public ZoneSequenceTest<DifferentialDriveRobotPC> createTriangeTest() {
 		return createSequenceTest(getTriangleTestSequence(), 30000,
 				"createEquilateralTriangleController", 1.0f);
 	}
 
-	public ZoneSequenceTest createSquareTest() {
-		return createSequenceTest(getSqureTestSequence(), 40000,
+	public ZoneSequenceTest<DifferentialDriveRobotPC> createSquareTest() {
+		return createSequenceTest(getSquareTestSequence(), 40000,
 				"createSquareController", 1.0f);
+	}
+
+	public ZoneSequenceTest<DifferentialDriveRobotPC> createDecahendroTest() {
+		return createSequenceTest(getDecahendronSequence(), 50000,
+				"createDecahedronController", 0.2f);
 	}
 
 	@Test
@@ -81,6 +110,11 @@ public class Ex1Tests extends AbstractTestHarness {
 	@Test
 	public void squareTest() {
 		runSequenceTest(createSquareTest());
+	}
+
+	@Test
+	public void decahedronTest() {
+		runSequenceTest(createDecahendroTest());
 	}
 
 }
