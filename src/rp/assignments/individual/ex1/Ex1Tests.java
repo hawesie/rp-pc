@@ -11,7 +11,7 @@ import rp.assignments.AbstractTestHarness;
 import rp.robotics.DifferentialDriveRobotPC;
 import rp.robotics.testing.TargetZone;
 import rp.robotics.testing.ZoneSequence;
-import rp.robotics.testing.ZoneSequenceTest;
+import rp.robotics.testing.ZoneSequenceTestWithSim;
 
 /**
  * 
@@ -65,12 +65,12 @@ public class Ex1Tests extends AbstractTestHarness {
 	}
 
 	/**
-	 * Example test for Individual Exercise 1c: a decahendron with side length
+	 * Example test for Individual Exercise 1c: a decagon with side length
 	 * of 0.2m
 	 * 
 	 * @return
 	 */
-	public static ZoneSequence getDecahendronSequence() {
+	public static ZoneSequence getDecagonSequence() {
 		Pose start = new Pose(3.0f, 3.0f, 0.0f);
 		ArrayList<TargetZone> zones = new ArrayList<TargetZone>(10);
 		zones.add(new TargetZone(new Point(3.2f, 3.0f), 0.1f));
@@ -86,34 +86,37 @@ public class Ex1Tests extends AbstractTestHarness {
 		return new ZoneSequence(start, zones);
 	}
 
-	public ZoneSequenceTest<DifferentialDriveRobotPC> createTriangeTest() {
+	public ZoneSequenceTestWithSim<DifferentialDriveRobotPC> createTriangeTest() {
 		return createSequenceTest(getTriangleTestSequence(), 30000,
 				"createEquilateralTriangleController", 1.0f);
 	}
 
-	public ZoneSequenceTest<DifferentialDriveRobotPC> createSquareTest() {
+	public ZoneSequenceTestWithSim<DifferentialDriveRobotPC> createSquareTest() {
 		return createSequenceTest(getSquareTestSequence(), 40000,
 				"createSquareController", 1.0f);
 	}
 
-	public ZoneSequenceTest<DifferentialDriveRobotPC> createDecahendroTest() {
-		return createSequenceTest(getDecahendronSequence(), 50000,
-				"createDecahedronController", 0.2f);
+	public ZoneSequenceTestWithSim<DifferentialDriveRobotPC> createDecagonTest() {
+		return createSequenceTest(getDecagonSequence(), 50000,
+				"createDecagonController", 0.2f);
 	}
 
 	@Test
 	public void triangleTest() {
+		System.out.println("Running triangle test");
 		runSequenceTest(createTriangeTest());
 	}
 
 	@Test
 	public void squareTest() {
+		System.out.println("Running square test");
 		runSequenceTest(createSquareTest());
 	}
 
 	@Test
-	public void decahedronTest() {
-		runSequenceTest(createDecahendroTest());
+	public void decagonTest() {
+		System.out.println("Running decagon test");
+		runSequenceTest(createDecagonTest());
 	}
 
 }

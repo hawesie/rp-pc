@@ -71,7 +71,7 @@ public class DifferentialDriveSim {
 		frame.pack();
 		frame.setSize(viz.getMinimumSize());
 		frame.setVisible(true);
-		
+
 		return frame;
 	}
 

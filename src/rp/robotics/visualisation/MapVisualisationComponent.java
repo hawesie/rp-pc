@@ -262,8 +262,6 @@ public class MapVisualisationComponent extends JComponent {
 
 	}
 
-	
-
 	private void renderRobot(Graphics2D _g2, DifferentialDriveRobotPC _robot) {
 		_g2.setStroke(new BasicStroke(2));
 		_g2.setPaint(Color.BLACK);
@@ -277,8 +275,10 @@ public class MapVisualisationComponent extends JComponent {
 
 		renderRelative(_robot.getFootprint(), _robot.getPose(), _g2);
 
-		for (Line[] footprint : _robot.getTouchSensors()) {
-			renderRelative(footprint, _robot.getPose(), _g2);
+		if (_robot.getTouchSensors() != null) {
+			for (Line[] footprint : _robot.getTouchSensors()) {
+				renderRelative(footprint, _robot.getPose(), _g2);
+			}
 		}
 
 		if (m_trackRobots) {
@@ -301,7 +301,7 @@ public class MapVisualisationComponent extends JComponent {
 					if (range == 2.55f) {
 						_g2.setStroke(new BasicStroke(1));
 						_g2.setPaint(Color.RED);
-//						range = 2.55f;
+						// range = 2.55f;
 
 					} else {
 						_g2.setStroke(new BasicStroke(1));

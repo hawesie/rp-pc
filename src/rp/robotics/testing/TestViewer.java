@@ -17,27 +17,26 @@ import rp.robotics.visualisation.MapVisualisationComponent;
 public class TestViewer {
 
 	private final ZoneSequenceTest<DifferentialDriveRobotPC> m_test;
+	private final MapBasedSimulation m_sim;
 
-	public TestViewer(ZoneSequenceTest<DifferentialDriveRobotPC> _test) {
+	public TestViewer(ZoneSequenceTest<DifferentialDriveRobotPC> _test,
+			MapBasedSimulation _sim) {
 		m_test = _test;
+		m_sim = _sim;
 	}
 
 	public void run() {
 
-		// Create the simulation using the given map. This simulation can run
-		// with a GUI.
-		MapBasedSimulation sim = new MapBasedSimulation(TestMaps.EMPTY_8_x_6);
-
 		// Create visualisation JComponent that renders map, robots etc
 		MapVisualisationComponent viz = TestVisualisationComponent
-				.createVisulationForTest(sim, m_test);
+				.createVisulationForTest(m_sim, m_test);
 
 		// Add the visualisation to a JFrame to display it
 		displayVisualisation(viz);
-		Thread simThread = new Thread(sim);
+		Thread simThread = new Thread(m_sim);
 		simThread.start();
 		m_test.run();
-		sim.stop();
+		m_sim.stop();
 		try {
 			simThread.join();
 		} catch (InterruptedException e) {

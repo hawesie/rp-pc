@@ -12,6 +12,7 @@ import rp.robotics.simulation.SimulatedRobots;
 import rp.robotics.testing.TestMaps;
 import rp.robotics.testing.ZoneSequence;
 import rp.robotics.testing.ZoneSequenceTest;
+import rp.robotics.testing.ZoneSequenceTestWithSim;
 import rp.systems.StoppableRunnable;
 
 public class AbstractTestHarness {
@@ -109,7 +110,7 @@ public class AbstractTestHarness {
 		test.run();
 	}
 
-	public ZoneSequenceTest<DifferentialDriveRobotPC> createSequenceTest(
+	public ZoneSequenceTestWithSim<DifferentialDriveRobotPC> createSequenceTest(
 			ZoneSequence _sequence, long _timeoutMillis, String _method,
 			Object... _args) {
 		MapBasedSimulation sim = new MapBasedSimulation(TestMaps.EMPTY_8_x_6);
@@ -127,8 +128,8 @@ public class AbstractTestHarness {
 
 		StoppableRunnable controller = getController(_method, args);
 
-		ZoneSequenceTest<DifferentialDriveRobotPC> test = new ZoneSequenceTest<DifferentialDriveRobotPC>(
-				_sequence, controller, robot, _timeoutMillis, false);
+		ZoneSequenceTestWithSim<DifferentialDriveRobotPC> test = new ZoneSequenceTestWithSim<DifferentialDriveRobotPC>(
+				_sequence, controller, robot, _timeoutMillis, false, sim);
 		return test;
 	}
 
