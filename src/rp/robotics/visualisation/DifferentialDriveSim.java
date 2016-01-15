@@ -70,6 +70,7 @@ public class DifferentialDriveSim {
 
 		frame.pack();
 		frame.setSize(viz.getMinimumSize());
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setVisible(true);
 
 		return frame;
