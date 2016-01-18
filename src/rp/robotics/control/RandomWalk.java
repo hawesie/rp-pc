@@ -46,7 +46,7 @@ public class RandomWalk implements StoppableRunnable, TouchSensorListener {
 			m_pilot.travel(move, true);
 
 			r = new Rate(40);
-			while (m_running && m_pilot.isMoving() && !m_bumped) {
+			while (m_pilot.isMoving() && !m_bumped) {
 				if (m_ranger != null) {
 					if (m_ranger.getRange() < m_robot.getRobotLength()) {
 						System.out.println("Watch out for that wall!");
@@ -63,9 +63,7 @@ public class RandomWalk implements StoppableRunnable, TouchSensorListener {
 				m_bumped = false;
 			}
 
-			if (m_running) {
-				m_pilot.rotate(turnMin + (Math.random() * turnDiff));
-			}
+			m_pilot.rotate(turnMin + (Math.random() * turnDiff));
 		}
 	}
 
@@ -85,7 +83,7 @@ public class RandomWalk implements StoppableRunnable, TouchSensorListener {
 	}
 
 	@Override
-	public void sensorBumoed(TouchSensorEvent _e) {
+	public void sensorBumped(TouchSensorEvent _e) {
 		// Doesn't work in simulation
 
 	}
