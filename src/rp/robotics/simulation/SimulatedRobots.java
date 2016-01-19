@@ -39,4 +39,19 @@ public class SimulatedRobots {
 		CASTOR_BOT_WITH_BUMPER.addTouchSensor();
 	}
 
+	public static WheeledRobotConfiguration makeConfiguration(
+			boolean _touchSensor, boolean _rangeSensor) {
+		WheeledRobotConfiguration config = new WheeledRobotConfiguration(
+				0.056f, 0.12f, 0.23f, new SimulatedMotor(),
+				new SimulatedMotor());
+
+		if (_touchSensor) {
+			config.addTouchSensor();
+		}
+		if (_rangeSensor) {
+			config.addRangeScanner();
+		}
+		return config;
+	}
+
 }

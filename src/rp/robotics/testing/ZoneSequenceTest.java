@@ -111,6 +111,7 @@ public class ZoneSequenceTest<T extends PoseProvider, C extends StoppableRunnabl
 				assertFalse(
 						"Controller must not be alive 100 milliseconds after stop is called",
 						t.isAlive());
+
 			} else {
 				t.join(5000);
 			}

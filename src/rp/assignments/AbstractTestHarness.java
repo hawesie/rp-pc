@@ -130,7 +130,7 @@ public class AbstractTestHarness {
 		Pose start = _sequence.getStart();
 
 		DifferentialDriveRobotPC robot = sim.addRobot(
-				SimulatedRobots.CASTOR_BOT_WITH_SENSORS, start);
+				SimulatedRobots.makeConfiguration(true, true), start);
 
 		Object[] args = new Object[_args.length + 1];
 		args[0] = robot;
