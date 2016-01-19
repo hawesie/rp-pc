@@ -1,12 +1,13 @@
 package rp.assignments.individual.ex1;
 
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 
 import lejos.geom.Point;
-import lejos.robotics.RangeFinder;
 import lejos.robotics.navigation.Pose;
+import lejos.util.Delay;
 
 import org.junit.Test;
 
@@ -17,8 +18,10 @@ import rp.robotics.EventBasedTouchSensor;
 import rp.robotics.LocalisedRangeScanner;
 import rp.robotics.TouchSensorEventSource;
 import rp.robotics.TouchSensorListener;
+import rp.robotics.testing.MockRangeFinder;
 import rp.robotics.testing.TargetZone;
 import rp.robotics.testing.TestMaps;
+import rp.robotics.testing.TouchListenerTest;
 import rp.robotics.testing.ZoneSequence;
 import rp.robotics.testing.ZoneSequenceTestWithSim;
 
@@ -135,7 +138,7 @@ public class Ex1Tests extends AbstractTestHarness {
 		DifferentialDriveRobotPC robot = test.getSimulation().iterator().next();
 		Object controller = test.getController();
 
-		if (controller instanceof TouchSensorEventSource) {
+		if (controller instanceof TouchSensorListener) {
 			test.getSimulation().addTouchSensorListener(robot,
 					(TouchSensorListener) controller);
 		} else {
@@ -194,8 +197,76 @@ public class Ex1Tests extends AbstractTestHarness {
 	}
 
 	@Test
-	public void virtualBumnerTest() {
-		System.out.println("Running virtual bumper tests");
+	public void virtualBumperTest() {
+		System.out.println("Running virtual bumper robot test");
 		runSequenceTest(createVirtualBumperTest(), true);
 	}
+
+	@Test
+	public void virtualBumperUnitTests() throws InterruptedException {
+		System.out.println("Running virtual bumper unit tests");
+
+		RangeFinderDescription description = new RangeFinderDescription(
+				new Pose(0, 0, 0), 2.4f, 0.03f, 0.03f);
+		float touchRange = 0.2f;
+
+		testSensorWithDescription(description, touchRange);
+		// System.out.println("Test done");
+
+	}
+
+	private void testSensorWithDescription(RangeFinderDescription description,
+			float touchRange) throws InterruptedException {
+		MockRangeFinder ranger = new MockRangeFinder();
+		ranger.setRange(description.getMaxRange());
+
+		TouchListenerTest listener = new TouchListenerTest();
+
+		EventBasedTouchSensor sensor = getTouchSensor("createVirtualBumper",
+				description, ranger, touchRange);
+		sensor.addTouchSensorListener(listener);
+
+		assertTrue("No events at this range",
+				listener.eventStatus(false, false, false));
+
+		ranger.setRange(touchRange + description.getNoise() + 0.01f);
+		ranger.waitForReading();
+		Delay.msDelay(100);
+		assertTrue("Out of of touch range", !sensor.isPressed());
+		assertTrue("No events at this range - still outside noise range",
+				listener.eventStatus(false, false, false));
+
+		ranger.setRange(touchRange + description.getNoise()
+				- (description.getNoise() / 2));
+		listener.waitForEvent(100);
+
+		// wait for the range value to be updated
+
+		assertTrue("Within noise range of touch range", sensor.isPressed());
+		assertTrue("Within noise range of touch range",
+				listener.eventStatus(true, false, false));
+
+		listener.reset();
+
+		ranger.setRange(touchRange + description.getNoise()
+				- (description.getNoise()));
+		ranger.waitForReading();
+		Delay.msDelay(100);
+
+		assertTrue("Within noise range of touch range", sensor.isPressed());
+		assertTrue("Further within touch range, no need for extra event",
+				listener.eventStatus(false, false, false));
+
+		listener.reset();
+
+		ranger.setRange(touchRange + description.getNoise()
+				+ (description.getNoise() * 2));
+		listener.waitForEvent(100);
+
+		assertTrue("Out of touch range", !sensor.isPressed());
+		assertTrue(
+				"Moved out of range, so should get release and bumper events",
+				listener.eventStatus(false, true, true));
+	}
+
 }

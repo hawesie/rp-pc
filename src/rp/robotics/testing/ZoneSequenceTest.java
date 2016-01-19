@@ -119,7 +119,7 @@ public class ZoneSequenceTest<T extends PoseProvider, C extends StoppableRunnabl
 			fail(e.getMessage());
 			e.printStackTrace();
 		}
-		System.out.println("Test done");
+		// System.out.println("Test done");
 
 	}
 
