@@ -11,9 +11,9 @@ import java.util.Stack;
 
 import lejos.robotics.localization.PoseProvider;
 import lejos.robotics.navigation.Pose;
-import rp.robotics.simulation.Rate;
 import rp.robotics.testing.TargetZone.Status;
 import rp.systems.StoppableRunnable;
+import rp.util.Rate;
 
 /**
  * 

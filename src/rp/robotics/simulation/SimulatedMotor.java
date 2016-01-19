@@ -2,6 +2,7 @@ package rp.robotics.simulation;
 
 import java.util.function.Predicate;
 
+import rp.util.Rate;
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.RegulatedMotorListener;
 import lejos.robotics.localization.OdometryPoseProvider;

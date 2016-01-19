@@ -5,8 +5,8 @@ import lejos.robotics.navigation.DifferentialPilot;
 import rp.robotics.DifferentialDriveRobot;
 import rp.robotics.TouchSensorEvent;
 import rp.robotics.TouchSensorListener;
-import rp.robotics.simulation.Rate;
 import rp.systems.StoppableRunnable;
+import rp.util.Rate;
 
 /**
  * A controller that randomly moves the robot around with some care for its

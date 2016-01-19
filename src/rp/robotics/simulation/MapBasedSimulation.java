@@ -18,6 +18,7 @@ import rp.robotics.TouchSensorListener;
 import rp.robotics.mapping.RPLineMap;
 import rp.robotics.visualisation.MapVisualisationComponent;
 import rp.systems.StoppableRunnable;
+import rp.util.Rate;
 
 /**
  * This combines a simulated robot with a map to create a simple simulation of
