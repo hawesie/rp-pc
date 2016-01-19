@@ -28,11 +28,15 @@ public class SimulatedRobots {
 	public static final WheeledRobotConfiguration CASTOR_BOT_WITH_SENSORS = new WheeledRobotConfiguration(
 			0.056f, 0.12f, 0.23f, new SimulatedMotor(), new SimulatedMotor());
 
+	public static final WheeledRobotConfiguration CASTOR_BOT_WITH_BUMPER = new WheeledRobotConfiguration(
+			0.056f, 0.12f, 0.23f, new SimulatedMotor(), new SimulatedMotor());
+
 	static {
 		EXPRESS_BOT_WITH_SENSORS.addTouchSensor();
 		EXPRESS_BOT_WITH_SENSORS.addRangeScanner();
 		CASTOR_BOT_WITH_SENSORS.addTouchSensor();
 		CASTOR_BOT_WITH_SENSORS.addRangeScanner();
+		CASTOR_BOT_WITH_BUMPER.addTouchSensor();
 	}
 
 }

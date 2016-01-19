@@ -16,10 +16,10 @@ import rp.robotics.visualisation.MapVisualisationComponent;
  */
 public class TestViewer {
 
-	private final ZoneSequenceTest<DifferentialDriveRobotPC> m_test;
+	private final ZoneSequenceTest<DifferentialDriveRobotPC, ?> m_test;
 	private final MapBasedSimulation m_sim;
 
-	public TestViewer(ZoneSequenceTest<DifferentialDriveRobotPC> _test,
+	public TestViewer(ZoneSequenceTest<DifferentialDriveRobotPC, ?> _test,
 			MapBasedSimulation _sim) {
 		m_test = _test;
 		m_sim = _sim;

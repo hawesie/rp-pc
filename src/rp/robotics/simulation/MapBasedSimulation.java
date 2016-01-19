@@ -1,5 +1,7 @@
 package rp.robotics.simulation;
 
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -60,6 +62,11 @@ public class MapBasedSimulation implements StoppableRunnable,
 				RangeScannerDescription _desc) {
 			poser = _poser;
 			scannerDesc = _desc;
+		}
+
+		@Override
+		public RangeScannerDescription getDescription() {
+			return scannerDesc;
 		}
 
 		/**
@@ -123,9 +130,14 @@ public class MapBasedSimulation implements StoppableRunnable,
 								sensor.footprint)) {
 							if (!sensor.triggered) {
 								sensor.triggered = true;
+
+								long start = System.currentTimeMillis();
 								sensor.listener
 										.sensorPressed(new TouchSensorEvent(
 												100, 3));
+								if (System.currentTimeMillis() - start > 100) {
+									fail("TouchSensorListener must respond faster than 100ms");
+								}
 							}
 						} else if (sensor.triggered) {
 							sensor.triggered = false;
@@ -205,7 +217,7 @@ public class MapBasedSimulation implements StoppableRunnable,
 
 				if (robot.getTouchSensors() == null) {
 					throw new NullPointerException(
-							"Robot has no touch scanners in description");
+							"Robot has no touch sensors in description");
 				}
 
 				if (_sensorIndex >= robot.getTouchSensors().size()) {

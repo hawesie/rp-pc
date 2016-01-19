@@ -7,9 +7,10 @@ import java.lang.reflect.Method;
 
 import lejos.robotics.navigation.Pose;
 import rp.robotics.DifferentialDriveRobotPC;
+import rp.robotics.EventBasedTouchSensor;
+import rp.robotics.mapping.RPLineMap;
 import rp.robotics.simulation.MapBasedSimulation;
 import rp.robotics.simulation.SimulatedRobots;
-import rp.robotics.testing.TestMaps;
 import rp.robotics.testing.ZoneSequence;
 import rp.robotics.testing.ZoneSequenceTest;
 import rp.robotics.testing.ZoneSequenceTestWithSim;
@@ -43,7 +44,9 @@ public class AbstractTestHarness {
 	 * @throws IllegalArgumentException
 	 * @throws InvocationTargetException
 	 */
-	public StoppableRunnable getController(String _string, Object... _args) {
+	@SuppressWarnings("unchecked")
+	public <Cls, Obj extends Cls> Obj getTestObject(String _string,
+			Class<Cls> _cls, Object... _args) {
 
 		try {
 
@@ -65,13 +68,13 @@ public class AbstractTestHarness {
 				throw e.getCause();
 			}
 
-			StoppableRunnable casted = StoppableRunnable.class.cast(controller);
+			Cls casted = _cls.cast(controller);
 			if (casted == null) {
 				fail(m_solutionCls.getName() + "." + _string
 						+ " returned a null controller, so failing");
 			}
 
-			return casted;
+			return (Obj) controller;
 
 		} catch (Throwable e) {
 			fail(e.getClass().getName() + ": " + e.getMessage());
@@ -106,19 +109,28 @@ public class AbstractTestHarness {
 		return getContollerMethod;
 	}
 
-	public void runSequenceTest(ZoneSequenceTest<?> test) {
-		test.run();
+	public void runSequenceTest(ZoneSequenceTest<?, ?> test,
+			boolean _failOnStopTimeout) {
+		test.run(_failOnStopTimeout);
 	}
 
-	public ZoneSequenceTestWithSim<DifferentialDriveRobotPC> createSequenceTest(
-			ZoneSequence _sequence, long _timeoutMillis, String _method,
-			Object... _args) {
-		MapBasedSimulation sim = new MapBasedSimulation(TestMaps.EMPTY_8_x_6);
+	public void runSequenceTest(ZoneSequenceTest<?, ?> test) {
+		runSequenceTest(test, false);
+	}
+
+	public EventBasedTouchSensor getTouchSensor(String _method, Object... _args) {
+		return getTestObject(_method, EventBasedTouchSensor.class, _args);
+	}
+
+	public <C extends StoppableRunnable> ZoneSequenceTestWithSim<DifferentialDriveRobotPC, C> createSequenceTest(
+			RPLineMap _map, ZoneSequence _sequence, long _timeoutMillis,
+			String _method, Object... _args) {
+		MapBasedSimulation sim = new MapBasedSimulation(_map);
 
 		Pose start = _sequence.getStart();
 
 		DifferentialDriveRobotPC robot = sim.addRobot(
-				SimulatedRobots.CASTOR_BOT, start);
+				SimulatedRobots.CASTOR_BOT_WITH_SENSORS, start);
 
 		Object[] args = new Object[_args.length + 1];
 		args[0] = robot;
@@ -126,9 +138,9 @@ public class AbstractTestHarness {
 			args[i] = _args[i - 1];
 		}
 
-		StoppableRunnable controller = getController(_method, args);
+		C controller = getTestObject(_method, StoppableRunnable.class, args);
 
-		ZoneSequenceTestWithSim<DifferentialDriveRobotPC> test = new ZoneSequenceTestWithSim<DifferentialDriveRobotPC>(
+		ZoneSequenceTestWithSim<DifferentialDriveRobotPC, C> test = new ZoneSequenceTestWithSim<DifferentialDriveRobotPC, C>(
 				_sequence, controller, robot, _timeoutMillis, false, sim);
 		return test;
 	}

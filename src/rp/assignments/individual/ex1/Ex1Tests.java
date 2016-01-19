@@ -1,15 +1,24 @@
 package rp.assignments.individual.ex1;
 
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 
 import lejos.geom.Point;
+import lejos.robotics.RangeFinder;
 import lejos.robotics.navigation.Pose;
 
 import org.junit.Test;
 
 import rp.assignments.AbstractTestHarness;
+import rp.config.RangeFinderDescription;
 import rp.robotics.DifferentialDriveRobotPC;
+import rp.robotics.EventBasedTouchSensor;
+import rp.robotics.LocalisedRangeScanner;
+import rp.robotics.TouchSensorEventSource;
+import rp.robotics.TouchSensorListener;
 import rp.robotics.testing.TargetZone;
+import rp.robotics.testing.TestMaps;
 import rp.robotics.testing.ZoneSequence;
 import rp.robotics.testing.ZoneSequenceTestWithSim;
 
@@ -65,8 +74,8 @@ public class Ex1Tests extends AbstractTestHarness {
 	}
 
 	/**
-	 * Example test for Individual Exercise 1c: a decagon with side length
-	 * of 0.2m
+	 * Example test for Individual Exercise 1c: a decagon with side length of
+	 * 0.2m
 	 * 
 	 * @return
 	 */
@@ -86,19 +95,78 @@ public class Ex1Tests extends AbstractTestHarness {
 		return new ZoneSequence(start, zones);
 	}
 
-	public ZoneSequenceTestWithSim<DifferentialDriveRobotPC> createTriangeTest() {
-		return createSequenceTest(getTriangleTestSequence(), 30000,
+	public static ZoneSequence getBumperSequence() {
+		Pose start = new Pose(0.2f, 0.5f, 0.0f);
+		ArrayList<TargetZone> zones = new ArrayList<TargetZone>(4);
+		zones.add(new TargetZone(new Point(1.8000001f, 0.5f), 0.2f));
+		zones.add(new TargetZone(new Point(0.20000005f, 0.5f), 0.2f));
+		zones.add(new TargetZone(new Point(1.8000001f, 0.5f), 0.2f));
+		zones.add(new TargetZone(new Point(0.20000005f, 0.5f), 0.2f));
+
+		return new ZoneSequence(start, zones);
+
+	}
+
+	public ZoneSequenceTestWithSim<DifferentialDriveRobotPC, ?> createTriangeTest() {
+		return createSequenceTest(TestMaps.EMPTY_8_x_6,
+				getTriangleTestSequence(), 30000,
 				"createEquilateralTriangleController", 1.0f);
 	}
 
-	public ZoneSequenceTestWithSim<DifferentialDriveRobotPC> createSquareTest() {
-		return createSequenceTest(getSquareTestSequence(), 40000,
-				"createSquareController", 1.0f);
+	public ZoneSequenceTestWithSim<DifferentialDriveRobotPC, ?> createSquareTest() {
+		return createSequenceTest(TestMaps.EMPTY_8_x_6,
+				getSquareTestSequence(), 40000, "createSquareController", 1.0f);
 	}
 
-	public ZoneSequenceTestWithSim<DifferentialDriveRobotPC> createDecagonTest() {
-		return createSequenceTest(getDecagonSequence(), 50000,
-				"createDecagonController", 0.2f);
+	public ZoneSequenceTestWithSim<DifferentialDriveRobotPC, ?> createDecagonTest() {
+		return createSequenceTest(TestMaps.EMPTY_8_x_6, getDecagonSequence(),
+				50000, "createDecagonController", 0.2f);
+	}
+
+	public ZoneSequenceTestWithSim<DifferentialDriveRobotPC, ?> createBumperTest() {
+
+		// test with bumper controller, this doesn't include the touch sensor.
+		ZoneSequenceTestWithSim<DifferentialDriveRobotPC, ?> test = createSequenceTest(
+				TestMaps.EMPTY_2_x_1, getBumperSequence(), 50000,
+				"createBumperController");
+
+		// this adds the touch sensor for the simulator if the controller
+		// accepts it
+		DifferentialDriveRobotPC robot = test.getSimulation().iterator().next();
+		Object controller = test.getController();
+
+		if (controller instanceof TouchSensorEventSource) {
+			test.getSimulation().addTouchSensorListener(robot,
+					(TouchSensorListener) controller);
+		} else {
+			fail("Controller does not implement TouchSensorListener");
+		}
+
+		return test;
+	}
+
+	public ZoneSequenceTestWithSim<DifferentialDriveRobotPC, ?> createVirtualBumperTest() {
+
+		// test with bumper controller
+		ZoneSequenceTestWithSim<DifferentialDriveRobotPC, ?> test = createSequenceTest(
+				TestMaps.EMPTY_2_x_1, getBumperSequence(), 50000,
+				"createBumperController");
+
+		DifferentialDriveRobotPC robot = test.getSimulation().iterator().next();
+		LocalisedRangeScanner ranger = test.getSimulation().getRanger(robot);
+
+		EventBasedTouchSensor sensor = getTouchSensor("createVirtualBumper",
+				ranger.getDescription(), ranger, 0.2f);
+
+		Object controller = test.getController();
+
+		if (controller instanceof TouchSensorListener) {
+			sensor.addTouchSensorListener((TouchSensorListener) controller);
+		} else {
+			fail("Controller does not implement TouchSensorListener");
+		}
+
+		return test;
 	}
 
 	@Test
@@ -119,4 +187,15 @@ public class Ex1Tests extends AbstractTestHarness {
 		runSequenceTest(createDecagonTest());
 	}
 
+	@Test
+	public void bumperTest() {
+		System.out.println("Running bumper test");
+		runSequenceTest(createBumperTest(), true);
+	}
+
+	@Test
+	public void virtualBumnerTest() {
+		System.out.println("Running virtual bumper tests");
+		runSequenceTest(createVirtualBumperTest(), true);
+	}
 }

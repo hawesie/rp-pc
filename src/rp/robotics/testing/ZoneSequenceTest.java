@@ -23,23 +23,30 @@ import rp.systems.StoppableRunnable;
  * @author Nick Hawes
  *
  */
-public class ZoneSequenceTest<T extends PoseProvider> implements
-		Iterable<TargetZone> {
+public class ZoneSequenceTest<T extends PoseProvider, C extends StoppableRunnable>
+		implements Iterable<TargetZone> {
 
-	private StoppableRunnable m_controller;
+	private C m_controller;
 	private T m_poser;
 	private long m_timeout;
 	private boolean m_failIfOutOfSequence;
 	private final ZoneSequence m_sequence;
 
-	public ZoneSequenceTest(ZoneSequence _sequence,
-			StoppableRunnable _controller, T _poser, long _timeout,
-			boolean _failIfOutOfSequence) {
+	public ZoneSequenceTest(ZoneSequence _sequence, C _controller, T _poser,
+			long _timeout, boolean _failIfOutOfSequence) {
 		m_sequence = _sequence;
 		m_controller = _controller;
 		m_poser = _poser;
 		m_timeout = _timeout;
 		m_failIfOutOfSequence = _failIfOutOfSequence;
+	}
+
+	public void run() {
+		run(false);
+	}
+
+	public C getController() {
+		return m_controller;
 	}
 
 	/**
@@ -49,7 +56,7 @@ public class ZoneSequenceTest<T extends PoseProvider> implements
 	 * @param _poser
 	 * @throws InterruptedException
 	 */
-	public void run() {
+	public void run(boolean _failOnStopTimeout) {
 
 		Stack<TargetZone> zones = new Stack<TargetZone>();
 		zones.addAll(m_sequence.getZones());
@@ -95,14 +102,24 @@ public class ZoneSequenceTest<T extends PoseProvider> implements
 					m_timeout, zones.size()));
 		}
 
+		// System.out.println("Tests all passed, stopping controller");
 		m_controller.stop();
 		try {
-			t.join(5000);
+			// If we should test the stopping time of this controller
+			if (_failOnStopTimeout) {
+				t.join(100);
+				assertFalse(
+						"Controller must not be alive 100 milliseconds after stop is called",
+						t.isAlive());
+			} else {
+				t.join(5000);
+			}
+
 		} catch (InterruptedException e) {
 			fail(e.getMessage());
 			e.printStackTrace();
 		}
-		// System.out.println("Test done");
+		System.out.println("Test done");
 
 	}
 
