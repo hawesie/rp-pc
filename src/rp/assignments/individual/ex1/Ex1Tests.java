@@ -1,7 +1,7 @@
 package rp.assignments.individual.ex1;
 
-import static org.junit.Assert.fail;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 
@@ -16,7 +16,6 @@ import rp.config.RangeFinderDescription;
 import rp.robotics.DifferentialDriveRobotPC;
 import rp.robotics.EventBasedTouchSensor;
 import rp.robotics.LocalisedRangeScanner;
-import rp.robotics.TouchSensorEventSource;
 import rp.robotics.TouchSensorListener;
 import rp.robotics.testing.MockRangeFinder;
 import rp.robotics.testing.TargetZone;
