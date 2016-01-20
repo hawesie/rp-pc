@@ -206,7 +206,7 @@ public class Ex1Tests extends AbstractTestHarness {
 		System.out.println("Running virtual bumper unit tests");
 
 		RangeFinderDescription description = new RangeFinderDescription(
-				new Pose(0, 0, 0), 2.4f, 0.03f, 0.03f);
+				new Pose(0, 0, 0), 2.4f, 0.03f, 0.03f, 10f);
 		float touchRange = 0.2f;
 
 		testSensorWithDescription(description, touchRange);
@@ -216,6 +216,8 @@ public class Ex1Tests extends AbstractTestHarness {
 
 	private void testSensorWithDescription(RangeFinderDescription description,
 			float touchRange) throws InterruptedException {
+
+		long delayMs = (long) (1000 / description.getRate());
 		MockRangeFinder ranger = new MockRangeFinder();
 		ranger.setRange(description.getMaxRange());
 
@@ -230,14 +232,14 @@ public class Ex1Tests extends AbstractTestHarness {
 
 		ranger.setRange(touchRange + description.getNoise() + 0.01f);
 		ranger.waitForReading();
-		Delay.msDelay(100);
+		Delay.msDelay(delayMs);
 		assertTrue("Out of of touch range", !sensor.isPressed());
 		assertTrue("No events at this range - still outside noise range",
 				listener.eventStatus(false, false, false));
 
 		ranger.setRange(touchRange + description.getNoise()
 				- (description.getNoise() / 2));
-		listener.waitForEvent(100);
+		listener.waitForEvent(delayMs);
 
 		// wait for the range value to be updated
 
@@ -250,7 +252,7 @@ public class Ex1Tests extends AbstractTestHarness {
 		ranger.setRange(touchRange + description.getNoise()
 				- (description.getNoise()));
 		ranger.waitForReading();
-		Delay.msDelay(100);
+		Delay.msDelay(delayMs);
 
 		assertTrue("Within noise range of touch range", sensor.isPressed());
 		assertTrue("Further within touch range, no need for extra event",
@@ -260,7 +262,7 @@ public class Ex1Tests extends AbstractTestHarness {
 
 		ranger.setRange(touchRange + description.getNoise()
 				+ (description.getNoise() * 2));
-		listener.waitForEvent(100);
+		listener.waitForEvent(delayMs);
 
 		assertTrue("Out of touch range", !sensor.isPressed());
 		assertTrue(
