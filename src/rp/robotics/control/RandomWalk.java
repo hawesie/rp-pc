@@ -5,6 +5,7 @@ import lejos.robotics.navigation.DifferentialPilot;
 import rp.robotics.DifferentialDriveRobot;
 import rp.robotics.TouchSensorEvent;
 import rp.robotics.TouchSensorListener;
+import rp.systems.ControllerWithTouchSensor;
 import rp.systems.StoppableRunnable;
 import rp.util.Rate;
 
@@ -16,7 +17,7 @@ import rp.util.Rate;
  * @author Nick Hawes
  *
  */
-public class RandomWalk implements StoppableRunnable, TouchSensorListener {
+public class RandomWalk implements ControllerWithTouchSensor {
 
 	private final DifferentialDriveRobot m_robot;
 	private boolean m_running = false;

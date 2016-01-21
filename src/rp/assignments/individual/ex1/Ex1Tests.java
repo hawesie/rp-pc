@@ -109,7 +109,7 @@ public class Ex1Tests extends AbstractTestHarness {
 
 	}
 
-	public ZoneSequenceTestWithSim<DifferentialDriveRobotPC, ?> createTriangeTest() {
+	public ZoneSequenceTestWithSim<DifferentialDriveRobotPC, ?> createTriangleTest() {
 		return createSequenceTest(TestMaps.EMPTY_8_x_6,
 				getTriangleTestSequence(), 30000,
 				"createEquilateralTriangleController", 1.0f);
@@ -174,7 +174,7 @@ public class Ex1Tests extends AbstractTestHarness {
 	@Test
 	public void triangleTest() {
 		System.out.println("Running triangle test");
-		runSequenceTest(createTriangeTest());
+		runSequenceTest(createTriangleTest());
 	}
 
 	@Test
@@ -217,8 +217,10 @@ public class Ex1Tests extends AbstractTestHarness {
 	private void testSensorWithDescription(RangeFinderDescription description,
 			float touchRange) throws InterruptedException {
 
-		long delayMs = (long) (1000 / description.getRate());
+		long delayMs = (long) (1000 / description.getRate()) * 2;
+
 		MockRangeFinder ranger = new MockRangeFinder();
+
 		ranger.setRange(description.getMaxRange());
 
 		TouchListenerTest listener = new TouchListenerTest();
@@ -227,14 +229,17 @@ public class Ex1Tests extends AbstractTestHarness {
 				description, ranger, touchRange);
 		sensor.addTouchSensorListener(listener);
 
-		assertTrue("No events at this range",
+		assertTrue("No events should occur when readings at max range",
 				listener.eventStatus(false, false, false));
 
 		ranger.setRange(touchRange + description.getNoise() + 0.01f);
 		ranger.waitForReading();
 		Delay.msDelay(delayMs);
-		assertTrue("Out of of touch range", !sensor.isPressed());
-		assertTrue("No events at this range - still outside noise range",
+
+		assertTrue("The readings should still be out of touch range",
+				!sensor.isPressed());
+		assertTrue(
+				"The readings should still be out of touch range so no events should be received",
 				listener.eventStatus(false, false, false));
 
 		ranger.setRange(touchRange + description.getNoise()
@@ -243,18 +248,20 @@ public class Ex1Tests extends AbstractTestHarness {
 
 		// wait for the range value to be updated
 
-		assertTrue("Within noise range of touch range", sensor.isPressed());
-		assertTrue("Within noise range of touch range",
+		assertTrue(
+				"The reading is within the noise range of the touch range, so sensor is pressed",
+				sensor.isPressed());
+		assertTrue(
+				"The reading is within the noise range of the touch range, so a pressed event should occcur",
 				listener.eventStatus(true, false, false));
 
 		listener.reset();
 
-		ranger.setRange(touchRange + description.getNoise()
-				- (description.getNoise()));
+		ranger.setRange(touchRange - description.getNoise());
 		ranger.waitForReading();
 		Delay.msDelay(delayMs);
 
-		assertTrue("Within noise range of touch range", sensor.isPressed());
+		assertTrue("Within touch range so sensor should be pressed", sensor.isPressed());
 		assertTrue("Further within touch range, no need for extra event",
 				listener.eventStatus(false, false, false));
 
@@ -264,9 +271,9 @@ public class Ex1Tests extends AbstractTestHarness {
 				+ (description.getNoise() * 2));
 		listener.waitForEvent(delayMs);
 
-		assertTrue("Out of touch range", !sensor.isPressed());
+		assertTrue("Reading is out of touch range", !sensor.isPressed());
 		assertTrue(
-				"Moved out of range, so should get release and bumper events",
+				"Moved out of touch range, so should get release and bumper events",
 				listener.eventStatus(false, true, true));
 	}
 

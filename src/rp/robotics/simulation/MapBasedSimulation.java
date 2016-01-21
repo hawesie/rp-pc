@@ -207,6 +207,7 @@ public class MapBasedSimulation implements StoppableRunnable,
 		// if the first robot was added, the start sim running
 		if (m_robots.size() == 1) {
 			m_simThread = new Thread(this);
+			m_simThread.setDaemon(true);
 			m_simThread.setPriority(9);
 			m_simThread.start();
 		}
