@@ -217,18 +217,30 @@ public class Ex1Tests extends AbstractTestHarness {
 	private void testSensorWithDescription(RangeFinderDescription description,
 			float touchRange) throws InterruptedException {
 
+		// This defines how long to wait after changing the value reported by
+		// the ranger before querying the sensor under test.
+		//
+
 		long delayMs = (long) (1000 / description.getRate()) * 2;
 
+		// This is a fake range finder device which allows us to control which
+		// range values are received by the sensor under test
 		MockRangeFinder ranger = new MockRangeFinder();
 
+		// By called setRange we change the value received by the sensor
 		ranger.setRange(description.getMaxRange());
 
+		// This is a mock listener which we use to test the results of event
+		// generation
 		TouchListenerTest listener = new TouchListenerTest();
 
+		// This is where we instantiate the sensor under test
 		EventBasedTouchSensor sensor = getTouchSensor("createVirtualBumper",
 				description, ranger, touchRange);
+		// and register our mock listener with it
 		sensor.addTouchSensorListener(listener);
 
+		// This is how we test whether an event has been received
 		assertTrue("No events should occur when readings at max range",
 				listener.eventStatus(false, false, false));
 
@@ -261,7 +273,8 @@ public class Ex1Tests extends AbstractTestHarness {
 		ranger.waitForReading();
 		Delay.msDelay(delayMs);
 
-		assertTrue("Within touch range so sensor should be pressed", sensor.isPressed());
+		assertTrue("Within touch range so sensor should be pressed",
+				sensor.isPressed());
 		assertTrue("Further within touch range, no need for extra event",
 				listener.eventStatus(false, false, false));
 
