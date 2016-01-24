@@ -282,7 +282,8 @@ public class Ex1Tests extends AbstractTestHarness {
 
 		ranger.setRange(touchRange + description.getNoise()
 				+ (description.getNoise() * 2));
-		listener.waitForEvent(delayMs);
+		
+		listener.waitForEvent(delayMs, 2);
 
 		assertTrue("Reading is out of touch range", !sensor.isPressed());
 		assertTrue(

@@ -88,6 +88,22 @@ public class TouchListenerTest implements TouchSensorListener {
 		}
 	}
 
+	public void waitForEvent(long _timeout, int _count)
+			throws InterruptedException {
+		int remainingCount = _count;
+		long stopTime = System.currentTimeMillis() + _timeout;
+		long remainingTime = _timeout;
+
+		synchronized (m_OnEvent) {
+			while (remainingCount > 0 && System.currentTimeMillis() < stopTime) {
+
+				m_OnEvent.wait(remainingTime);
+				remainingCount--;
+				remainingTime = stopTime - System.currentTimeMillis();
+			}
+		}
+	}
+
 	private void onEvent(TouchSensorEvent _e) {
 		m_lastEvent = _e;
 		m_OnEvent.notifyAll();
