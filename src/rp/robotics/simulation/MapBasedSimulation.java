@@ -38,15 +38,19 @@ public class MapBasedSimulation implements StoppableRunnable,
 	private boolean m_running = false;
 	private Thread m_simThread;
 	private ArrayList<FootprintTouchPair> m_touchSensors;
+	private ArrayList<SimulatorListener> m_simulatorListeners;
 
 	private class FootprintTouchPair {
 		final PoseProvider poser;
 		final Line[] footprint;
 		final TouchSensorListener listener;
 		boolean triggered = false;
+		final DifferentialDriveRobotPC robot;
 
-		public FootprintTouchPair(Line[] _footprint, PoseProvider _poser,
+		public FootprintTouchPair(DifferentialDriveRobotPC _robot,
+				Line[] _footprint, PoseProvider _poser,
 				TouchSensorListener _listener) {
+			robot = _robot;
 			footprint = _footprint;
 			listener = _listener;
 			poser = _poser;
@@ -116,6 +120,13 @@ public class MapBasedSimulation implements StoppableRunnable,
 		m_map = _map;
 	}
 
+	public void addSimulatorListener(SimulatorListener _listener) {
+		if (m_simulatorListeners == null) {
+			m_simulatorListeners = new ArrayList<SimulatorListener>();
+		}
+		m_simulatorListeners.add(_listener);
+	}
+
 	@Override
 	public void run() {
 		Rate r = new Rate(m_simulationRateHz);
@@ -134,14 +145,11 @@ public class MapBasedSimulation implements StoppableRunnable,
 								sensor.listener
 										.sensorPressed(new TouchSensorEvent(
 												100, 3));
+
 								long responseTime = System.currentTimeMillis()
 										- start;
-								if (responseTime > 100) {
-									// fail("TouchSensorListener must respond faster than 100ms");
-									System.out
-											.println("WARNING: TouchSensorListener must respond faster than 100ms. Response time was "
-													+ responseTime + "ms");
-								}
+								callListenersSensorPressed(sensor.robot,
+										responseTime);
 							}
 						} else if (sensor.triggered) {
 							sensor.triggered = false;
@@ -160,6 +168,17 @@ public class MapBasedSimulation implements StoppableRunnable,
 			}
 
 			r.sleep();
+		}
+	}
+
+	private void callListenersSensorPressed(DifferentialDriveRobotPC _robot,
+			long _responseTime) {
+		if (m_simulatorListeners != null) {
+			synchronized (m_simulatorListeners) {
+				for (SimulatorListener listener : m_simulatorListeners) {
+					listener.touchSensorPressed(_robot, _responseTime);
+				}
+			}
 		}
 	}
 
@@ -234,7 +253,7 @@ public class MapBasedSimulation implements StoppableRunnable,
 								1);
 					}
 					synchronized (m_touchSensors) {
-						m_touchSensors.add(new FootprintTouchPair(robot
+						m_touchSensors.add(new FootprintTouchPair(robot, robot
 								.getTouchSensors().get(_sensorIndex), robot,
 								_listener));
 					}

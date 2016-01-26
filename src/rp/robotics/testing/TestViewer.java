@@ -2,7 +2,6 @@ package rp.robotics.testing;
 
 import javax.swing.JFrame;
 
-import rp.robotics.DifferentialDriveRobotPC;
 import rp.robotics.simulation.MapBasedSimulation;
 import rp.robotics.visualisation.KillMeNow;
 import rp.robotics.visualisation.MapVisualisationComponent;
@@ -16,11 +15,10 @@ import rp.robotics.visualisation.MapVisualisationComponent;
  */
 public class TestViewer {
 
-	private final ZoneSequenceTest<DifferentialDriveRobotPC, ?> m_test;
+	private final ZoneSequenceTest<?> m_test;
 	private final MapBasedSimulation m_sim;
 
-	public TestViewer(ZoneSequenceTest<DifferentialDriveRobotPC, ?> _test,
-			MapBasedSimulation _sim) {
+	public TestViewer(ZoneSequenceTest<?> _test, MapBasedSimulation _sim) {
 		m_test = _test;
 		m_sim = _sim;
 	}

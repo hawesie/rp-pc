@@ -109,27 +109,28 @@ public class Ex1Tests extends AbstractTestHarness {
 
 	}
 
-	public ZoneSequenceTestWithSim<DifferentialDriveRobotPC, ?> createTriangleTest() {
+	public ZoneSequenceTestWithSim<?> createTriangleTest() {
 		return createSequenceTest(TestMaps.EMPTY_8_x_6,
-				getTriangleTestSequence(), 30000,
+				getTriangleTestSequence(), false, 30000,
 				"createEquilateralTriangleController", 1.0f);
 	}
 
-	public ZoneSequenceTestWithSim<DifferentialDriveRobotPC, ?> createSquareTest() {
+	public ZoneSequenceTestWithSim<?> createSquareTest() {
 		return createSequenceTest(TestMaps.EMPTY_8_x_6,
-				getSquareTestSequence(), 40000, "createSquareController", 1.0f);
+				getSquareTestSequence(), false, 40000,
+				"createSquareController", 1.0f);
 	}
 
-	public ZoneSequenceTestWithSim<DifferentialDriveRobotPC, ?> createDecagonTest() {
+	public ZoneSequenceTestWithSim<?> createDecagonTest() {
 		return createSequenceTest(TestMaps.EMPTY_8_x_6, getDecagonSequence(),
-				50000, "createDecagonController", 0.2f);
+				false, 50000, "createDecagonController", 0.2f);
 	}
 
-	public ZoneSequenceTestWithSim<DifferentialDriveRobotPC, ?> createBumperTest() {
+	public ZoneSequenceTestWithSim<?> createBumperTest() {
 
 		// test with bumper controller, this doesn't include the touch sensor.
-		ZoneSequenceTestWithSim<DifferentialDriveRobotPC, ?> test = createSequenceTest(
-				TestMaps.EMPTY_2_x_1, getBumperSequence(), 50000,
+		ZoneSequenceTestWithSim<?> test = createSequenceTest(
+				TestMaps.EMPTY_2_x_1, getBumperSequence(), true, 50000,
 				"createBumperController");
 
 		// this adds the touch sensor for the simulator if the controller
@@ -147,11 +148,11 @@ public class Ex1Tests extends AbstractTestHarness {
 		return test;
 	}
 
-	public ZoneSequenceTestWithSim<DifferentialDriveRobotPC, ?> createVirtualBumperTest() {
+	public ZoneSequenceTestWithSim<?> createVirtualBumperTest() {
 
 		// test with bumper controller
-		ZoneSequenceTestWithSim<DifferentialDriveRobotPC, ?> test = createSequenceTest(
-				TestMaps.EMPTY_2_x_1, getBumperSequence(), 50000,
+		ZoneSequenceTestWithSim<?> test = createSequenceTest(
+				TestMaps.EMPTY_2_x_1, getBumperSequence(), false, 50000,
 				"createBumperController");
 
 		DifferentialDriveRobotPC robot = test.getSimulation().iterator().next();
@@ -192,13 +193,13 @@ public class Ex1Tests extends AbstractTestHarness {
 	@Test
 	public void bumperTest() {
 		System.out.println("Running bumper test");
-		runSequenceTest(createBumperTest(), true);
+		runSequenceTest(createBumperTest());
 	}
 
 	@Test
 	public void virtualBumperTest() {
 		System.out.println("Running virtual bumper robot test");
-		runSequenceTest(createVirtualBumperTest(), true);
+		runSequenceTest(createVirtualBumperTest());
 	}
 
 	@Test
@@ -214,7 +215,7 @@ public class Ex1Tests extends AbstractTestHarness {
 
 	}
 
-	private void testSensorWithDescription(RangeFinderDescription description,
+	public void testSensorWithDescription(RangeFinderDescription description,
 			float touchRange) throws InterruptedException {
 
 		// This defines how long to wait after changing the value reported by
@@ -282,7 +283,7 @@ public class Ex1Tests extends AbstractTestHarness {
 
 		ranger.setRange(touchRange + description.getNoise()
 				+ (description.getNoise() * 2));
-		
+
 		listener.waitForEvent(delayMs, 2);
 
 		assertTrue("Reading is out of touch range", !sensor.isPressed());

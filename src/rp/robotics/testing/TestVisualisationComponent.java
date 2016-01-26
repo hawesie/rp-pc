@@ -21,9 +21,9 @@ public class TestVisualisationComponent extends MapVisualisationComponent {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private final ZoneSequenceTest<?, ?> m_zst;
+	private final ZoneSequenceTest<?> m_zst;
 
-	public TestVisualisationComponent(RPLineMap _map, ZoneSequenceTest<?, ?> _test) {
+	public TestVisualisationComponent(RPLineMap _map, ZoneSequenceTest<?> _test) {
 		super(_map);
 		m_zst = _test;
 	}
@@ -64,8 +64,7 @@ public class TestVisualisationComponent extends MapVisualisationComponent {
 	}
 
 	public static MapVisualisationComponent createVisulationForTest(
-			MapBasedSimulation _sim,
-			ZoneSequenceTest<DifferentialDriveRobotPC, ?> _test) {
+			MapBasedSimulation _sim, ZoneSequenceTest<?> _test) {
 		MapVisualisationComponent visualisation = new TestVisualisationComponent(
 				_sim.getMap(), _test);
 		for (DifferentialDriveRobotPC robot : _sim) {

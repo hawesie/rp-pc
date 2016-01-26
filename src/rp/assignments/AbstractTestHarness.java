@@ -11,6 +11,7 @@ import rp.robotics.EventBasedTouchSensor;
 import rp.robotics.mapping.RPLineMap;
 import rp.robotics.simulation.MapBasedSimulation;
 import rp.robotics.simulation.SimulatedRobots;
+import rp.robotics.simulation.SimulatorListener;
 import rp.robotics.testing.ZoneSequence;
 import rp.robotics.testing.ZoneSequenceTest;
 import rp.robotics.testing.ZoneSequenceTestWithSim;
@@ -109,22 +110,27 @@ public class AbstractTestHarness {
 		return getContollerMethod;
 	}
 
-	public void runSequenceTest(ZoneSequenceTest<?, ?> test,
-			boolean _failOnStopTimeout) {
-		test.run(_failOnStopTimeout);
-	}
-
-	public void runSequenceTest(ZoneSequenceTest<?, ?> test) {
-		runSequenceTest(test, false);
+	public void runSequenceTest(ZoneSequenceTest<?> test) {
+		test.run();
 	}
 
 	public EventBasedTouchSensor getTouchSensor(String _method, Object... _args) {
 		return getTestObject(_method, EventBasedTouchSensor.class, _args);
 	}
 
-	public <C extends StoppableRunnable> ZoneSequenceTestWithSim<DifferentialDriveRobotPC, C> createSequenceTest(
-			RPLineMap _map, ZoneSequence _sequence, long _timeoutMillis,
-			String _method, Object... _args) {
+	public <C extends StoppableRunnable> ZoneSequenceTestWithSim<?> createSequenceTest(
+			RPLineMap _map, ZoneSequence _sequence, boolean _failOnStopTimeout,
+			long _timeoutMillis, String _method, Object... _args) {
+
+		return createSequenceTest(_map, _sequence, _failOnStopTimeout,
+				_timeoutMillis, null, _method, _args);
+
+	}
+
+	public <C extends StoppableRunnable> ZoneSequenceTestWithSim<?> createSequenceTest(
+			RPLineMap _map, ZoneSequence _sequence, boolean _failOnStopTimeout,
+			long _timeoutMillis, SimulatorListener _listener, String _method,
+			Object... _args) {
 		MapBasedSimulation sim = new MapBasedSimulation(_map);
 
 		Pose start = _sequence.getStart();
@@ -140,8 +146,12 @@ public class AbstractTestHarness {
 
 		C controller = getTestObject(_method, StoppableRunnable.class, args);
 
-		ZoneSequenceTestWithSim<DifferentialDriveRobotPC, C> test = new ZoneSequenceTestWithSim<DifferentialDriveRobotPC, C>(
+		ZoneSequenceTestWithSim<?> test = new ZoneSequenceTestWithSim(
 				_sequence, controller, robot, _timeoutMillis, false, sim);
+		if (_listener != null) {
+			sim.addSimulatorListener(_listener);
+			test.addSimulatorListener(_listener);
+		}
 		return test;
 	}
 

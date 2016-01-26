@@ -4,6 +4,7 @@ import javax.swing.JFrame;
 
 import lejos.robotics.RangeFinder;
 import lejos.robotics.navigation.Pose;
+import lejos.util.Delay;
 import rp.robotics.DifferentialDriveRobotPC;
 import rp.robotics.control.RandomWalk;
 import rp.robotics.simulation.MapBasedSimulation;
@@ -56,7 +57,10 @@ public class DifferentialDriveSim {
 		displayVisualisation(viz);
 
 		// Start the controller running
-		controller.run();
+
+		new Thread(controller).start();
+		Delay.msDelay(10000);
+		controller.stop();
 
 	}
 

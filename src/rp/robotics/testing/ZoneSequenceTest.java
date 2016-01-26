@@ -5,12 +5,14 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static rp.robotics.testing.PoseMatcher.is;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Stack;
 
-import lejos.robotics.localization.PoseProvider;
 import lejos.robotics.navigation.Pose;
+import rp.robotics.DifferentialDriveRobotPC;
+import rp.robotics.simulation.SimulatorListener;
 import rp.robotics.testing.TargetZone.Status;
 import rp.systems.StoppableRunnable;
 import rp.util.Rate;
@@ -23,17 +25,19 @@ import rp.util.Rate;
  * @author Nick Hawes
  *
  */
-public class ZoneSequenceTest<T extends PoseProvider, C extends StoppableRunnable>
-		implements Iterable<TargetZone> {
+public class ZoneSequenceTest<C extends StoppableRunnable> implements
+		Iterable<TargetZone>, Runnable {
 
 	private C m_controller;
-	private T m_poser;
+	private DifferentialDriveRobotPC m_poser;
 	private long m_timeout;
 	private boolean m_failIfOutOfSequence;
 	private final ZoneSequence m_sequence;
+	private ArrayList<SimulatorListener> m_simulatorListeners;
 
-	public ZoneSequenceTest(ZoneSequence _sequence, C _controller, T _poser,
-			long _timeout, boolean _failIfOutOfSequence) {
+	public ZoneSequenceTest(ZoneSequence _sequence, C _controller,
+			DifferentialDriveRobotPC _poser, long _timeout,
+			boolean _failIfOutOfSequence) {
 		m_sequence = _sequence;
 		m_controller = _controller;
 		m_poser = _poser;
@@ -41,22 +45,35 @@ public class ZoneSequenceTest<T extends PoseProvider, C extends StoppableRunnabl
 		m_failIfOutOfSequence = _failIfOutOfSequence;
 	}
 
-	public void run() {
-		run(false);
-	}
-
 	public C getController() {
 		return m_controller;
 	}
 
+	public void addSimulatorListener(SimulatorListener _listener) {
+		if (m_simulatorListeners == null) {
+			m_simulatorListeners = new ArrayList<SimulatorListener>();
+		}
+		m_simulatorListeners.add(_listener);
+	}
+
+	private void callListenersControllerStopped(
+			DifferentialDriveRobotPC _robot, long _responseTime) {
+		if (m_simulatorListeners != null) {
+			synchronized (m_simulatorListeners) {
+				for (SimulatorListener listener : m_simulatorListeners) {
+					listener.controllerStopped(_robot, _responseTime);
+				}
+			}
+		}
+	}
+
 	/**
-	 * Run this test on the given controller/pose provider pair.
+	 * Run this test on the given configuration.
 	 * 
-	 * @param _controller
-	 * @param _poser
-	 * @throws InterruptedException
+	 * 
 	 */
-	public void run(boolean _failOnStopTimeout) {
+	@Override
+	public void run() {
 
 		Stack<TargetZone> zones = new Stack<TargetZone>();
 		zones.addAll(m_sequence.getZones());
@@ -74,54 +91,51 @@ public class ZoneSequenceTest<T extends PoseProvider, C extends StoppableRunnabl
 		zones.peek().setStatus(Status.LIVE);
 
 		t.start();
-		while (System.currentTimeMillis() < timeoutAt && zones.size() > 0) {
-
-			Pose p = m_poser.getPose();
-
-			if (zones.peek().inZone(p)) {
-				zones.pop().setStatus(Status.HIT);
-
-				if (!zones.isEmpty()) {
-					zones.peek().setStatus(Status.LIVE);
-				}
-				// System.out.println("Zone done");
-			} else if (m_failIfOutOfSequence) {
-				for (TargetZone zone : m_sequence) {
-					assertFalse(
-							"Test must not visit other zones before next target",
-							zone.inZone(p));
-				}
-			}
-
-			r.sleep();
-		}
-
-		if (zones.size() > 0) {
-			fail(String.format(
-					"Test timed out after %d milliseconds with %d zones left.",
-					m_timeout, zones.size()));
-		}
-
-		// System.out.println("Tests all passed, stopping controller");
-		m_controller.stop();
 		try {
-			// If we should test the stopping time of this controller
-			if (_failOnStopTimeout) {
-				t.join(100);
-				assertFalse(
-						"Controller must not be alive 100 milliseconds after stop is called",
-						t.isAlive());
+			while (System.currentTimeMillis() < timeoutAt && zones.size() > 0) {
 
-			} else {
-				t.join(5000);
+				Pose p = m_poser.getPose();
+
+				if (zones.peek().inZone(p)) {
+					zones.pop().setStatus(Status.HIT);
+
+					if (!zones.isEmpty()) {
+						zones.peek().setStatus(Status.LIVE);
+					}
+					// System.out.println("Zone done");
+				} else if (m_failIfOutOfSequence) {
+					for (TargetZone zone : m_sequence) {
+						assertFalse(
+								"Test must not visit other zones before next target",
+								zone.inZone(p));
+					}
+				}
+
+				r.sleep();
 			}
 
-		} catch (InterruptedException e) {
-			fail(e.getMessage());
-			e.printStackTrace();
-		}
-		// System.out.println("Test done");
+			if (zones.size() > 0) {
+				fail(String
+						.format("Test timed out after %d milliseconds with %d zones left.",
+								m_timeout, zones.size()));
+			}
 
+		} finally {
+
+			// System.out.println("Tests all passed, stopping controller");
+			long stopCalledAt = System.currentTimeMillis();
+			m_controller.stop();
+			try {
+				t.join(10000);
+				callListenersControllerStopped(m_poser,
+						System.currentTimeMillis() - stopCalledAt);
+
+			} catch (InterruptedException e) {
+				fail(e.getMessage());
+				e.printStackTrace();
+			}
+			// System.out.println("Test done");
+		}
 	}
 
 	@Override
@@ -129,7 +143,7 @@ public class ZoneSequenceTest<T extends PoseProvider, C extends StoppableRunnabl
 		return m_sequence.iterator();
 	}
 
-	public T getPoseProvider() {
+	public DifferentialDriveRobotPC getPoseProvider() {
 		return m_poser;
 	}
 }
