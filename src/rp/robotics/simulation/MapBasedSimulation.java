@@ -1,5 +1,6 @@
 package rp.robotics.simulation;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -17,8 +18,6 @@ import rp.robotics.TouchSensorEvent;
 import rp.robotics.TouchSensorListener;
 import rp.robotics.mapping.RPLineMap;
 import rp.robotics.visualisation.MapVisualisationComponent;
-import rp.systems.StoppableRunnable;
-import rp.util.Rate;
 
 /**
  * This combines a simulated robot with a map to create a simple simulation of
@@ -29,8 +28,7 @@ import rp.util.Rate;
  * @author Nick Hawes
  *
  */
-public class MapBasedSimulation implements StoppableRunnable,
-		Iterable<DifferentialDriveRobotPC> {
+public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 
 	protected final RPLineMap m_map;
 	protected final ArrayList<DifferentialDriveRobotPC> m_robots = new ArrayList<DifferentialDriveRobotPC>();
@@ -127,48 +125,58 @@ public class MapBasedSimulation implements StoppableRunnable,
 		m_simulatorListeners.add(_listener);
 	}
 
-	@Override
-	public void run() {
-		Rate r = new Rate(m_simulationRateHz);
+	private void start() {
+
 		m_running = true;
-		while (m_running) {
+		SimulationCore.getSimulationCore().addSteppable(
+				new SimulationSteppable() {
 
-			if (m_touchSensors != null) {
-				synchronized (m_touchSensors) {
-					for (FootprintTouchPair sensor : m_touchSensors) {
-						if (isInCollision(sensor.poser.getPose(),
-								sensor.footprint)) {
-							if (!sensor.triggered) {
-								sensor.triggered = true;
+					@Override
+					public void step(Duration _stepInterval) {
 
-								long start = System.currentTimeMillis();
-								sensor.listener
-										.sensorPressed(new TouchSensorEvent(
-												100, 3));
+						if (m_touchSensors != null) {
+							synchronized (m_touchSensors) {
+								for (FootprintTouchPair sensor : m_touchSensors) {
+									if (isInCollision(sensor.poser.getPose(),
+											sensor.footprint)) {
+										if (!sensor.triggered) {
+											sensor.triggered = true;
 
-								long responseTime = System.currentTimeMillis()
-										- start;
-								callListenersSensorPressed(sensor.robot,
-										responseTime);
+											long start = System
+													.currentTimeMillis();
+											sensor.listener
+													.sensorPressed(new TouchSensorEvent(
+															100, 3));
+
+											long responseTime = System
+													.currentTimeMillis()
+													- start;
+											callListenersSensorPressed(
+													sensor.robot, responseTime);
+										}
+									} else if (sensor.triggered) {
+										sensor.triggered = false;
+									}
+								}
 							}
-						} else if (sensor.triggered) {
-							sensor.triggered = false;
+						}
+
+						synchronized (m_robots) {
+							for (DifferentialDriveRobotPC robot : m_robots) {
+
+								if (isInCollision(robot)) {
+									robot.startCollision();
+								}
+							}
 						}
 					}
-				}
-			}
 
-			synchronized (m_robots) {
-				for (DifferentialDriveRobotPC robot : m_robots) {
-
-					if (isInCollision(robot)) {
-						robot.startCollision();
+					@Override
+					public boolean remove() {
+						return !m_running;
 					}
-				}
-			}
+				}, 2);
 
-			r.sleep();
-		}
 	}
 
 	private void callListenersSensorPressed(DifferentialDriveRobotPC _robot,
@@ -201,7 +209,6 @@ public class MapBasedSimulation implements StoppableRunnable,
 
 	}
 
-	@Override
 	public void stop() {
 		m_running = false;
 	}
@@ -225,10 +232,7 @@ public class MapBasedSimulation implements StoppableRunnable,
 
 		// if the first robot was added, the start sim running
 		if (m_robots.size() == 1) {
-			m_simThread = new Thread(this);
-			m_simThread.setDaemon(true);
-			m_simThread.setPriority(9);
-			m_simThread.start();
+			start();
 		}
 
 		return robot;

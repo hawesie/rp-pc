@@ -78,7 +78,8 @@ public class AbstractTestHarness {
 			return (Obj) controller;
 
 		} catch (Throwable e) {
-			fail(e.getClass().getName() + ": " + e.getMessage());
+//			fail(e.getClass().getName() + ": " + e.getMessage());
+			System.out.println(e.getClass().getName() + ": " + e.getMessage());
 			return null;
 		}
 

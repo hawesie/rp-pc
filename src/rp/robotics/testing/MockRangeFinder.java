@@ -31,8 +31,12 @@ public class MockRangeFinder implements RangeFinder {
 	}
 
 	public void waitForReading() throws InterruptedException {
+		waitForReading(0);
+	}
+
+	public void waitForReading(long _timeout) throws InterruptedException {
 		synchronized (m_OnReading) {
-			m_OnReading.wait();
+			m_OnReading.wait(_timeout);
 		}
 	}
 

@@ -1,5 +1,6 @@
 package rp.robotics.testing;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -74,6 +75,9 @@ public class ZoneSequenceTest<C extends StoppableRunnable> implements
 	 */
 	@Override
 	public void run() {
+
+		assertTrue("Controller could not be created for this test.",
+				m_controller != null);
 
 		Stack<TargetZone> zones = new Stack<TargetZone>();
 		zones.addAll(m_sequence.getZones());

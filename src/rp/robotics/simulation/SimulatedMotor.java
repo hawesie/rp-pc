@@ -1,12 +1,12 @@
 package rp.robotics.simulation;
 
+import java.time.Duration;
 import java.util.function.Predicate;
 
-import rp.util.Rate;
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.RegulatedMotorListener;
-import lejos.robotics.localization.OdometryPoseProvider;
-import lejos.robotics.navigation.DifferentialPilot;
+import rp.util.Rate;
+import rp.util.Timer;
 
 /**
  * This class simulates the desired behaviour of a regulated motor. It does not
@@ -68,28 +68,45 @@ public class SimulatedMotor implements RegulatedMotor {
 	 */
 	private void regulate() {
 
-		double cycleTimeSecs = 0.8;
-		Rate rate = new Rate(1 / cycleTimeSecs);
-		double lastReading = getTachoCount(), currentReading, difference;
+		SimulationSteppable regulateSteppable = new SimulationSteppable() {
 
-		while (m_isMoving) {
-			currentReading = getTachoCount();
-			difference = Math.abs(currentReading - lastReading);
-			m_measuredSpeed = difference / cycleTimeSecs;
-			difference = m_targetSpeed - m_measuredSpeed;
-			// System.out.println("spped diff: " + difference);
-			// System.out.println("measured: " + m_measuredSpeed);
+			double lastReading = getTachoCount(), currentReading, difference;
 
-			if (m_state == MotorState.REGULATING) {
-				m_commandedSpeed = m_commandedSpeed + 1
-						* (cycleTimeSecs * difference);
+			Timer t = new Timer();
+
+			@Override
+			public void step(Duration _stepInterval) {
+
+				double cycleTimeSecs = t.intervalSeconds();
+
+				currentReading = getTachoCount();
+				difference = Math.abs(currentReading - lastReading);
+				System.out.println("diff: " + difference);
+				System.out.println("cycle: " + cycleTimeSecs);
+				
+				m_measuredSpeed = difference / cycleTimeSecs;
+
+				difference = m_targetSpeed - m_measuredSpeed;
+
+				// System.out.println("spped diff: " + difference);
+				System.out.println("measured: " + m_measuredSpeed);
+
+				if (m_state == MotorState.REGULATING) {
+					// m_commandedSpeed = m_commandedSpeed
+					// + (0.0001 * difference);
+				}
+
+				lastReading = currentReading;
 			}
 
-			lastReading = currentReading;
+			@Override
+			public boolean remove() {
 
-			rate.sleep();
+				return !m_isMoving;
+			}
+		};
 
-		}
+		SimulationCore.getSimulationCore().waitSteppable(regulateSteppable, 4);
 
 		m_measuredSpeed = 0;
 	}
@@ -106,32 +123,49 @@ public class SimulatedMotor implements RegulatedMotor {
 		// tacho should have a resolution of 4 degrees (+/- 2) so this loop
 		// needs to increment in smaller steps, e.g. 2 degree steps
 
-		Rate rate = new Rate(m_targetSpeed / 2d);
-		double cycleTimeSecs = 2d / m_targetSpeed;
-
 		notifyListener(true);
 
 		m_state = MotorState.ACCELERATING;
-		while (m_isMoving && !_tachoPredicate.test(getTachoCount())) {
 
-			if (m_state == MotorState.ACCELERATING) {
-				if (m_commandedSpeed < m_targetSpeed) {
-					// don't accelerate past target speed
-					m_commandedSpeed = Math.min(m_commandedSpeed
-							+ (m_acceleration * cycleTimeSecs), m_targetSpeed);
-					// System.out.println("accelerating to speed: "
-					// + m_commandedSpeed);
+		SimulationSteppable moveSteppable = new SimulationSteppable() {
 
-				} else {
-					m_state = MotorState.REGULATING;
+			Timer t = new Timer();
+
+			@Override
+			public void step(Duration _stepInterval) {
+
+				// System.out.println("inner step");
+				//
+				// System.out.println(_stepInterval.toMillis());
+				double cycleTimeSecs = t.intervalSeconds();
+
+				if (m_state == MotorState.ACCELERATING) {
+
+					if (m_commandedSpeed < m_targetSpeed) {
+						// don't accelerate past target speed
+						m_commandedSpeed = Math.min(m_commandedSpeed
+								+ (m_acceleration * cycleTimeSecs),
+								m_targetSpeed);
+						// System.out.println(cycleTimeSecs);
+						System.out.println("accelerating to speed: "
+								+ m_commandedSpeed);
+
+					} else {
+						m_state = MotorState.REGULATING;
+					}
 				}
+
+				m_tachoCount += (cycleTimeSecs * m_commandedSpeed * m_direction);
+
 			}
 
-			m_tachoCount += (cycleTimeSecs * m_commandedSpeed * m_direction);
+			@Override
+			public boolean remove() {
+				return !(m_isMoving && !_tachoPredicate.test(getTachoCount()));
+			}
+		};
 
-			rate.sleep();
-
-		}
+		SimulationCore.getSimulationCore().waitSteppable(moveSteppable, 2);
 
 		// need to set this if the tacho predicate stopped the move
 		m_isMoving = false;
@@ -362,16 +396,19 @@ public class SimulatedMotor implements RegulatedMotor {
 	}
 
 	public static void main(String[] args) {
-		// SimulatedMotor motor = new SimulatedMotor();
-		// motor.forward();
-		// int prev = 0;
-		// Rate rate = new Rate(0.5);
-		// for (int i = 0; i < 20; i++) {
-		// int curr = motor.getTachoCount();
-		// System.out.println(motor.getSpeed() + " " + (curr - prev));
-		// prev = curr;
-		// rate.sleep();
-		// }
+		SimulatedMotor motor = new SimulatedMotor();
+		motor.forward();
+		int prev = 0;
+		Rate rate = new Rate(10);
+
+		for (int i = 0; i < 20; i++) {
+
+			int curr = motor.getTachoCount();
+//			System.out.println(motor.getSpeed() + " " + (curr - prev));
+			prev = curr;
+			rate.sleep();
+
+		}
 
 		// RegulatedMotor motor = new SimulatedMotor();
 		// int[] targets = { 0, 361, -33, 400, 404, -27, -666, 1024 };
@@ -381,20 +418,20 @@ public class SimulatedMotor implements RegulatedMotor {
 		// motor.getTachoCount());
 		// }
 
-		DifferentialPilot dp = new DifferentialPilot(56, 163,
-				new SimulatedMotor(), new SimulatedMotor());
-
-		OdometryPoseProvider pp = new OdometryPoseProvider(dp);
-
-		System.out.println(pp.getPose());
-
-		double distanceMm = 500;
-
-		dp.travel(distanceMm);
-		dp.rotate(-90);
-		dp.travel(distanceMm);
-
-		System.out.println(pp.getPose());
+		// DifferentialPilot dp = new DifferentialPilot(56, 163,
+		// new SimulatedMotor(), new SimulatedMotor());
+		//
+		// OdometryPoseProvider pp = new OdometryPoseProvider(dp);
+		//
+		// System.out.println(pp.getPose());
+		//
+		// double distanceMm = 500;
+		//
+		// dp.travel(distanceMm);
+		// dp.rotate(-90);
+		// dp.travel(distanceMm);
+		//
+		// System.out.println(pp.getPose());
 	}
 
 }

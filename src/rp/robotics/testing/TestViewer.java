@@ -31,15 +31,8 @@ public class TestViewer {
 
 		// Add the visualisation to a JFrame to display it
 		displayVisualisation(viz);
-		Thread simThread = new Thread(m_sim);
-		simThread.start();
 		m_test.run();
 		m_sim.stop();
-		try {
-			simThread.join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
 
 	}
 

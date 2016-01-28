@@ -33,8 +33,8 @@ public class SimulatedMotorTest {
 		double estimatedSpeed = Math.min(acceleration * delaySecs, targetSpeed);
 		int currentSpeed = motor.getRotationSpeed();
 
-		assertTrue("Speed has exceeded target speed",
-				currentSpeed <= targetSpeed);
+		assertTrue("Speed " + currentSpeed + " exceeded target speed of"
+				+ targetSpeed, currentSpeed <= targetSpeed);
 		assertTrue("Speed is not fast enough",
 				currentSpeed > estimatedSpeed * 0.95);
 		assertTrue("Speed is too fast", currentSpeed < estimatedSpeed * 1.05);

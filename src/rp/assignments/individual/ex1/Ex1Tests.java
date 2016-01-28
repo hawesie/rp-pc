@@ -138,11 +138,13 @@ public class Ex1Tests extends AbstractTestHarness {
 		DifferentialDriveRobotPC robot = test.getSimulation().iterator().next();
 		Object controller = test.getController();
 
-		if (controller instanceof TouchSensorListener) {
-			test.getSimulation().addTouchSensorListener(robot,
-					(TouchSensorListener) controller);
-		} else {
-			fail("Controller does not implement TouchSensorListener");
+		if (controller != null) {
+			if (controller instanceof TouchSensorListener) {
+				test.getSimulation().addTouchSensorListener(robot,
+						(TouchSensorListener) controller);
+			} else {
+				fail("Controller does not implement TouchSensorListener");
+			}
 		}
 
 		return test;
@@ -163,10 +165,12 @@ public class Ex1Tests extends AbstractTestHarness {
 
 		Object controller = test.getController();
 
-		if (controller instanceof TouchSensorListener) {
-			sensor.addTouchSensorListener((TouchSensorListener) controller);
-		} else {
-			fail("Controller does not implement TouchSensorListener");
+		if (controller != null) {
+			if (controller instanceof TouchSensorListener) {
+				sensor.addTouchSensorListener((TouchSensorListener) controller);
+			} else {
+				fail("Controller does not implement TouchSensorListener");
+			}
 		}
 
 		return test;
@@ -238,6 +242,9 @@ public class Ex1Tests extends AbstractTestHarness {
 		// This is where we instantiate the sensor under test
 		EventBasedTouchSensor sensor = getTouchSensor("createVirtualBumper",
 				description, ranger, touchRange);
+		
+		assertTrue("Virtual bumper could not be created from SolutionFactory", sensor != null);
+
 		// and register our mock listener with it
 		sensor.addTouchSensorListener(listener);
 
@@ -246,7 +253,7 @@ public class Ex1Tests extends AbstractTestHarness {
 				listener.eventStatus(false, false, false));
 
 		ranger.setRange(touchRange + description.getNoise() + 0.01f);
-		ranger.waitForReading();
+		ranger.waitForReading(delayMs);
 		Delay.msDelay(delayMs);
 
 		assertTrue("The readings should still be out of touch range",
@@ -271,7 +278,7 @@ public class Ex1Tests extends AbstractTestHarness {
 		listener.reset();
 
 		ranger.setRange(touchRange - description.getNoise());
-		ranger.waitForReading();
+		ranger.waitForReading(delayMs);
 		Delay.msDelay(delayMs);
 
 		assertTrue("Within touch range so sensor should be pressed",
