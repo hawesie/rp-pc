@@ -2,7 +2,6 @@ package rp.robotics.simulation;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -10,7 +9,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import rp.util.Pair;
 import rp.util.Rate;
-import rp.util.Timer;
 
 /**
  * Class to manage the core components of the simulation to ensure they run in
