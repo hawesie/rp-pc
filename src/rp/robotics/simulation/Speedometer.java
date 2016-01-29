@@ -2,30 +2,20 @@ package rp.robotics.simulation;
 
 import java.util.LinkedList;
 
+import rp.util.Pair;
+
 public class Speedometer {
-
-	private class Pair<K, V> {
-		K item1;
-		V item2;
-
-		public Pair(K _item1, V _item2) {
-			super();
-			item1 = _item1;
-			item2 = _item2;
-		}
-
-	}
 
 	private final LinkedList<Pair<Integer, Long>> readings = new LinkedList<Pair<Integer, Long>>();
 	private int m_window;
 
 	public Speedometer(int _tachoCount, long _timeMS, int window) {
-		readings.add(new Pair<Integer, Long>(_tachoCount, _timeMS));
+		readings.add(Pair.makePair(_tachoCount, _timeMS));
 		m_window = window;
 	}
 
 	public double update(int _tachoCount, long _timeMs) {
-		readings.addLast(new Pair<Integer, Long>(_tachoCount, _timeMs));
+		readings.addLast(Pair.makePair(_tachoCount, _timeMs));
 		if (readings.size() > m_window) {
 			readings.removeFirst();
 		}
@@ -33,8 +23,24 @@ public class Speedometer {
 	}
 
 	private double caculateSpeed() {
-		return (readings.getLast().item1 - readings.getLast().item1)
-				/ (readings.getLast().item2 - readings.getLast().item2);
+		// System.out
+		// .println(readings.getLast().item1 - readings.getFirst().item1);
+		// System.out
+		// .println(readings.getLast().item2 - readings.getFirst().item2);
+		return (Math.abs(readings.getLast().getItem1()
+				- readings.getFirst().getItem1()) / (double) (readings
+				.getLast().getItem2() - readings.getFirst().getItem2())) * 1000d;
 	}
 
+	public static void main(String[] args) {
+		Speedometer speedo = new Speedometer(0, 0, 5);
+		System.out.println(speedo.update(100, 1000));
+		System.out.println(speedo.update(200, 2000));
+		System.out.println(speedo.update(300, 3000));
+		System.out.println(speedo.update(400, 4000));
+		System.out.println(speedo.update(500, 5000));
+		System.out.println(speedo.update(600, 6000));
+		System.out.println(speedo.update(700, 7000));
+
+	}
 }

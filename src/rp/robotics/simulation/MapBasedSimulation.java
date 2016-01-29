@@ -1,6 +1,7 @@
 package rp.robotics.simulation;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -32,9 +33,9 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 
 	protected final RPLineMap m_map;
 	protected final ArrayList<DifferentialDriveRobotPC> m_robots = new ArrayList<DifferentialDriveRobotPC>();
-	private float m_simulationRateHz = 30;
+
 	private boolean m_running = false;
-	private Thread m_simThread;
+
 	private ArrayList<FootprintTouchPair> m_touchSensors;
 	private ArrayList<SimulatorListener> m_simulatorListeners;
 
@@ -132,7 +133,7 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 				new SimulationSteppable() {
 
 					@Override
-					public void step(Duration _stepInterval) {
+					public void step(Instant _now, Duration _stepInterval) {
 
 						if (m_touchSensors != null) {
 							synchronized (m_touchSensors) {
@@ -165,6 +166,7 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 							for (DifferentialDriveRobotPC robot : m_robots) {
 
 								if (isInCollision(robot)) {
+									System.out.println("In collision");
 									robot.startCollision();
 								}
 							}
@@ -175,7 +177,7 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 					public boolean remove() {
 						return !m_running;
 					}
-				}, 2);
+				}, 4);
 
 	}
 

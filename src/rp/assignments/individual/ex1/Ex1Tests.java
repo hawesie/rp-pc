@@ -242,8 +242,9 @@ public class Ex1Tests extends AbstractTestHarness {
 		// This is where we instantiate the sensor under test
 		EventBasedTouchSensor sensor = getTouchSensor("createVirtualBumper",
 				description, ranger, touchRange);
-		
-		assertTrue("Virtual bumper could not be created from SolutionFactory", sensor != null);
+
+		assertTrue("Virtual bumper could not be created from SolutionFactory",
+				sensor != null);
 
 		// and register our mock listener with it
 		sensor.addTouchSensorListener(listener);

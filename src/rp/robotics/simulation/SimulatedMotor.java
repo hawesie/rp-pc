@@ -1,12 +1,12 @@
 package rp.robotics.simulation;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.function.Predicate;
 
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.RegulatedMotorListener;
 import rp.util.Rate;
-import rp.util.Timer;
 
 /**
  * This class simulates the desired behaviour of a regulated motor. It does not
@@ -70,33 +70,26 @@ public class SimulatedMotor implements RegulatedMotor {
 
 		SimulationSteppable regulateSteppable = new SimulationSteppable() {
 
-			double lastReading = getTachoCount(), currentReading, difference;
-
-			Timer t = new Timer();
+			Speedometer speedo = new Speedometer(getTachoCount(), Instant.now()
+					.toEpochMilli(), 20);
 
 			@Override
-			public void step(Duration _stepInterval) {
+			public void step(Instant _now, Duration _stepInterval) {
 
-				double cycleTimeSecs = t.intervalSeconds();
+				// System.out.println("regulate: " + _stepInterval);
 
-				currentReading = getTachoCount();
-				difference = Math.abs(currentReading - lastReading);
-				System.out.println("diff: " + difference);
-				System.out.println("cycle: " + cycleTimeSecs);
-				
-				m_measuredSpeed = difference / cycleTimeSecs;
+				m_measuredSpeed = speedo.update(getTachoCount(),
+						_now.toEpochMilli());
 
-				difference = m_targetSpeed - m_measuredSpeed;
+				double difference = m_targetSpeed - m_measuredSpeed;
 
 				// System.out.println("spped diff: " + difference);
-				System.out.println("measured: " + m_measuredSpeed);
+				// System.out.println("measured: " + m_measuredSpeed);
 
 				if (m_state == MotorState.REGULATING) {
-					// m_commandedSpeed = m_commandedSpeed
-					// + (0.0001 * difference);
+					m_commandedSpeed = m_commandedSpeed + (0.0001 * difference);
 				}
 
-				lastReading = currentReading;
 			}
 
 			@Override
@@ -106,7 +99,8 @@ public class SimulatedMotor implements RegulatedMotor {
 			}
 		};
 
-		SimulationCore.getSimulationCore().waitSteppable(regulateSteppable, 4);
+		SimulationCore.getSimulationCore().addAndWaitSteppable(
+				regulateSteppable, 2);
 
 		m_measuredSpeed = 0;
 	}
@@ -129,15 +123,15 @@ public class SimulatedMotor implements RegulatedMotor {
 
 		SimulationSteppable moveSteppable = new SimulationSteppable() {
 
-			Timer t = new Timer();
-
 			@Override
-			public void step(Duration _stepInterval) {
+			public void step(Instant _now, Duration _stepInterval) {
+
+				//				System.out.println("move: " + _stepInterval);
 
 				// System.out.println("inner step");
 				//
 				// System.out.println(_stepInterval.toMillis());
-				double cycleTimeSecs = t.intervalSeconds();
+				double cycleTimeSecs = _stepInterval.toMillis() / 1000.0;
 
 				if (m_state == MotorState.ACCELERATING) {
 
@@ -147,8 +141,8 @@ public class SimulatedMotor implements RegulatedMotor {
 								+ (m_acceleration * cycleTimeSecs),
 								m_targetSpeed);
 						// System.out.println(cycleTimeSecs);
-						System.out.println("accelerating to speed: "
-								+ m_commandedSpeed);
+						// System.out.println("accelerating to speed: "
+						// + m_commandedSpeed);
 
 					} else {
 						m_state = MotorState.REGULATING;
@@ -156,7 +150,7 @@ public class SimulatedMotor implements RegulatedMotor {
 				}
 
 				m_tachoCount += (cycleTimeSecs * m_commandedSpeed * m_direction);
-
+				// System.out.println("Count: " + m_tachoCount);
 			}
 
 			@Override
@@ -165,7 +159,8 @@ public class SimulatedMotor implements RegulatedMotor {
 			}
 		};
 
-		SimulationCore.getSimulationCore().waitSteppable(moveSteppable, 2);
+		SimulationCore.getSimulationCore()
+				.addAndWaitSteppable(moveSteppable);
 
 		// need to set this if the tacho predicate stopped the move
 		m_isMoving = false;
@@ -396,15 +391,17 @@ public class SimulatedMotor implements RegulatedMotor {
 	}
 
 	public static void main(String[] args) {
-		SimulatedMotor motor = new SimulatedMotor();
-		motor.forward();
+		SimulatedMotor motor1 = new SimulatedMotor();
+		SimulatedMotor motor2 = new SimulatedMotor();
+		motor1.forward();
+		motor2.forward();
 		int prev = 0;
 		Rate rate = new Rate(10);
 
 		for (int i = 0; i < 20; i++) {
 
-			int curr = motor.getTachoCount();
-//			System.out.println(motor.getSpeed() + " " + (curr - prev));
+			int curr = motor1.getTachoCount();
+			System.out.println(motor1.getSpeed() + " " + (curr - prev));
 			prev = curr;
 			rate.sleep();
 
