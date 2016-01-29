@@ -124,11 +124,11 @@ public class SimulationCore extends Thread {
 
 		Pair<SimulationSteppable, Integer> pair = m_toAdd.poll();
 
-		//		int in = 0;
+		// int in = 0;
 
 		while (pair != null) {
 
-//			System.out.println("Adding: " + ++in);
+			// System.out.println("Adding: " + ++in);
 
 			SimulationSteppable _steppable = pair.getItem1();
 			Integer _stepRate = pair.getItem2();
@@ -180,6 +180,8 @@ public class SimulationCore extends Thread {
 	public void run() {
 		Rate r = new Rate(m_targetRate);
 
+		Duration step = Duration.ofMillis((long) (1000.0 / m_targetRate));
+
 		Instant now = Instant.now();
 
 		while (true) {
@@ -187,7 +189,7 @@ public class SimulationCore extends Thread {
 			try {
 				addSteppablesFromQueue();
 
-				now = Instant.now();
+				now = now.plus(step);
 
 				for (SteppableWrapper wrapper : m_wrappers) {
 					wrapper.step(now);
