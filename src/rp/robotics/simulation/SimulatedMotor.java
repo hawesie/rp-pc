@@ -100,7 +100,7 @@ public class SimulatedMotor implements RegulatedMotor {
 		};
 
 		SimulationCore.getSimulationCore().addAndWaitSteppable(
-				regulateSteppable, 2);
+				regulateSteppable);
 
 		m_measuredSpeed = 0;
 	}

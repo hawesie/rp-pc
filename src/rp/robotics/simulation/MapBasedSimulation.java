@@ -177,7 +177,7 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 					public boolean remove() {
 						return !m_running;
 					}
-				}, 4);
+				});
 
 	}
 

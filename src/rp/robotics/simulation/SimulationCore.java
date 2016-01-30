@@ -116,7 +116,7 @@ public class SimulationCore extends Thread {
 	 *            The multiple of the target rate to run at. 1 runs every
 	 *            simulation step, 2 runs every other step etc.
 	 */
-	public void addSteppable(SimulationSteppable _steppable, int _stepRate) {
+	private void addSteppable(SimulationSteppable _steppable, int _stepRate) {
 		m_toAdd.add(Pair.makePair(_steppable, _stepRate));
 	}
 
@@ -214,7 +214,7 @@ public class SimulationCore extends Thread {
 	 * @param _steppable
 	 * @param _stepRate
 	 */
-	public void addAndWaitSteppable(SimulationSteppable _steppable,
+	private void addAndWaitSteppable(SimulationSteppable _steppable,
 			int _stepRate) {
 
 		addSteppable(_steppable, _stepRate);

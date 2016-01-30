@@ -51,9 +51,9 @@ public class Ex1Tests extends AbstractTestHarness {
 		Pose start = new Pose(3f, 3f, 0f);
 
 		ArrayList<TargetZone> zones = new ArrayList<TargetZone>();
-		zones.add(new TargetZone(new Point(4.0f, 3.0f), 0.1f));
-		zones.add(new TargetZone(new Point(3.5f, 3.87f), 0.1f));
-		zones.add(new TargetZone(new Point(3.0f, 3.0f), 0.1f));
+		zones.add(new TargetZone(new Point(4.0f, 3.0f), 0.15f));
+		zones.add(new TargetZone(new Point(3.5f, 3.87f), 0.15f));
+		zones.add(new TargetZone(new Point(3.0f, 3.0f), 0.15f));
 
 		return new ZoneSequence(start, zones);
 	}
@@ -68,10 +68,10 @@ public class Ex1Tests extends AbstractTestHarness {
 
 		Pose start = new Pose(3.0f, 3.0f, 0.0f);
 		ArrayList<TargetZone> zones = new ArrayList<TargetZone>(4);
-		zones.add(new TargetZone(new Point(4.0f, 3.0f), 0.1f));
-		zones.add(new TargetZone(new Point(4.0f, 4.0f), 0.1f));
-		zones.add(new TargetZone(new Point(3.0f, 4.0f), 0.1f));
-		zones.add(new TargetZone(new Point(3.0f, 3.0f), 0.1f));
+		zones.add(new TargetZone(new Point(4.0f, 3.0f), 0.15f));
+		zones.add(new TargetZone(new Point(4.0f, 4.0f), 0.15f));
+		zones.add(new TargetZone(new Point(3.0f, 4.0f), 0.15f));
+		zones.add(new TargetZone(new Point(3.0f, 3.0f), 0.15f));
 		return new ZoneSequence(start, zones);
 	}
 
@@ -84,26 +84,26 @@ public class Ex1Tests extends AbstractTestHarness {
 	public static ZoneSequence getDecagonSequence() {
 		Pose start = new Pose(3.0f, 3.0f, 0.0f);
 		ArrayList<TargetZone> zones = new ArrayList<TargetZone>(10);
-		zones.add(new TargetZone(new Point(3.2f, 3.0f), 0.1f));
-		zones.add(new TargetZone(new Point(3.3618035f, 3.117557f), 0.1f));
-		zones.add(new TargetZone(new Point(3.4236069f, 3.3077683f), 0.1f));
-		zones.add(new TargetZone(new Point(3.3618035f, 3.4979796f), 0.1f));
-		zones.add(new TargetZone(new Point(3.2f, 3.6155367f), 0.1f));
-		zones.add(new TargetZone(new Point(3.0f, 3.6155367f), 0.1f));
-		zones.add(new TargetZone(new Point(2.8381965f, 3.4979796f), 0.1f));
-		zones.add(new TargetZone(new Point(2.7763932f, 3.3077683f), 0.1f));
-		zones.add(new TargetZone(new Point(2.8381965f, 3.117557f), 0.1f));
-		zones.add(new TargetZone(new Point(3.0f, 3.0f), 0.1f));
+		zones.add(new TargetZone(new Point(3.2f, 3.0f), 0.15f));
+		zones.add(new TargetZone(new Point(3.3618035f, 3.117557f), 0.15f));
+		zones.add(new TargetZone(new Point(3.4236069f, 3.3077683f), 0.15f));
+		zones.add(new TargetZone(new Point(3.3618035f, 3.4979796f), 0.15f));
+		zones.add(new TargetZone(new Point(3.2f, 3.6155367f), 0.15f));
+		zones.add(new TargetZone(new Point(3.0f, 3.6155367f), 0.15f));
+		zones.add(new TargetZone(new Point(2.8381965f, 3.4979796f), 0.15f));
+		zones.add(new TargetZone(new Point(2.7763932f, 3.3077683f), 0.15f));
+		zones.add(new TargetZone(new Point(2.8381965f, 3.117557f), 0.15f));
+		zones.add(new TargetZone(new Point(3.0f, 3.0f), 0.15f));
 		return new ZoneSequence(start, zones);
 	}
 
 	public static ZoneSequence getBumperSequence() {
 		Pose start = new Pose(0.2f, 0.5f, 0.0f);
 		ArrayList<TargetZone> zones = new ArrayList<TargetZone>(4);
-		zones.add(new TargetZone(new Point(1.8000001f, 0.5f), 0.2f));
-		zones.add(new TargetZone(new Point(0.20000005f, 0.5f), 0.2f));
-		zones.add(new TargetZone(new Point(1.8000001f, 0.5f), 0.2f));
-		zones.add(new TargetZone(new Point(0.20000005f, 0.5f), 0.2f));
+		zones.add(new TargetZone(new Point(1.8000001f, 0.5f), 0.25f));
+		zones.add(new TargetZone(new Point(0.20000005f, 0.5f), 0.25f));
+		zones.add(new TargetZone(new Point(1.8000001f, 0.5f), 0.25f));
+		zones.add(new TargetZone(new Point(0.20000005f, 0.5f), 0.25f));
 
 		return new ZoneSequence(start, zones);
 
