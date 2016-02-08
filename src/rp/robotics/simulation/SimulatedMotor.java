@@ -36,7 +36,7 @@ public class SimulatedMotor implements RegulatedMotor {
 	private RegulatedMotorListener m_listener = null;
 
 	private enum MotorState {
-		ACCELERATING, REGULATING, STOPPED
+		ACCELERATING, DECELERATING, REGULATING, STOPPED
 	};
 
 	private MotorState m_state = MotorState.STOPPED;
@@ -126,7 +126,7 @@ public class SimulatedMotor implements RegulatedMotor {
 			@Override
 			public void step(Instant _now, Duration _stepInterval) {
 
-				//				System.out.println("move: " + _stepInterval);
+				// System.out.println("move: " + _stepInterval);
 
 				// System.out.println("inner step");
 				//
@@ -147,6 +147,19 @@ public class SimulatedMotor implements RegulatedMotor {
 					} else {
 						m_state = MotorState.REGULATING;
 					}
+				} else if (m_state == MotorState.DECELERATING) {
+
+					if (m_commandedSpeed > m_targetSpeed) {
+						// don't accelerate past target speed
+						m_commandedSpeed = Math.max(m_commandedSpeed
+								- (m_acceleration * cycleTimeSecs),
+								m_targetSpeed);
+						// System.out.println(cycleTimeSecs);
+						// System.out.println("accelerating to speed: "
+						// + m_commandedSpeed);
+					} else {
+						m_state = MotorState.REGULATING;
+					}
 				}
 
 				m_tachoCount += (cycleTimeSecs * m_commandedSpeed * m_direction);
@@ -159,8 +172,7 @@ public class SimulatedMotor implements RegulatedMotor {
 			}
 		};
 
-		SimulationCore.getSimulationCore()
-				.addAndWaitSteppable(moveSteppable);
+		SimulationCore.getSimulationCore().addAndWaitSteppable(moveSteppable);
 
 		// need to set this if the tacho predicate stopped the move
 		m_isMoving = false;
@@ -347,12 +359,25 @@ public class SimulatedMotor implements RegulatedMotor {
 
 	@Override
 	public void setSpeed(int _speed) {
-		if (_speed > 0 && _speed <= getMaxSpeed()) {
+		if (_speed >= 0 && _speed <= getMaxSpeed()) {
+			if (m_state == MotorState.REGULATING) {
+				if (_speed > m_targetSpeed) {
+					m_state = MotorState.ACCELERATING;
+				} else if (_speed < m_targetSpeed) {
+					m_state = MotorState.DECELERATING;
+				}
+			} else if (m_state == MotorState.ACCELERATING
+					&& _speed < getSpeed()) {
+				m_state = MotorState.DECELERATING;
+
+			} else if (m_state == MotorState.DECELERATING
+					&& _speed > getSpeed()) {
+				m_state = MotorState.ACCELERATING;
+			}
 			m_targetSpeed = _speed;
 		} else {
-			throw new IllegalArgumentException(
-					"Speed must be greater than 0 and less than or equal to "
-							+ getMaxSpeed());
+			throw new IllegalArgumentException("Speed must be >= 0 and <= "
+					+ getMaxSpeed());
 		}
 
 	}
