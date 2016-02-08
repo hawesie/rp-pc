@@ -128,52 +128,66 @@ public class Ex1Tests extends AbstractTestHarness {
 
 	public ZoneSequenceTestWithSim<?> createBumperTest() {
 
-		// test with bumper controller, this doesn't include the touch sensor.
-		ZoneSequenceTestWithSim<?> test = createSequenceTest(
-				TestMaps.EMPTY_2_x_1, getBumperSequence(), true, 50000,
-				"createBumperController");
+		try {
+			// test with bumper controller, this doesn't include the touch
+			// sensor.
+			ZoneSequenceTestWithSim<?> test = createSequenceTest(
+					TestMaps.EMPTY_2_x_1, getBumperSequence(), true, 50000,
+					"createBumperController");
 
-		// this adds the touch sensor for the simulator if the controller
-		// accepts it
-		DifferentialDriveRobotPC robot = test.getSimulation().iterator().next();
-		Object controller = test.getController();
+			// this adds the touch sensor for the simulator if the controller
+			// accepts it
+			DifferentialDriveRobotPC robot = test.getSimulation().iterator()
+					.next();
+			Object controller = test.getController();
 
-		if (controller != null) {
-			if (controller instanceof TouchSensorListener) {
-				test.getSimulation().addTouchSensorListener(robot,
-						(TouchSensorListener) controller);
-			} else {
-				fail("Controller does not implement TouchSensorListener");
+			if (controller != null) {
+				if (controller instanceof TouchSensorListener) {
+					test.getSimulation().addTouchSensorListener(robot,
+							(TouchSensorListener) controller);
+				} else {
+					fail("Controller does not implement TouchSensorListener");
+				}
 			}
+			return test;
+		} catch (Throwable t) {
+			t.printStackTrace();
+			return null;
 		}
 
-		return test;
 	}
 
 	public ZoneSequenceTestWithSim<?> createVirtualBumperTest() {
+		try {
+			// test with bumper controller
+			ZoneSequenceTestWithSim<?> test = createSequenceTest(
+					TestMaps.EMPTY_2_x_1, getBumperSequence(), false, 50000,
+					"createBumperController");
 
-		// test with bumper controller
-		ZoneSequenceTestWithSim<?> test = createSequenceTest(
-				TestMaps.EMPTY_2_x_1, getBumperSequence(), false, 50000,
-				"createBumperController");
+			DifferentialDriveRobotPC robot = test.getSimulation().iterator()
+					.next();
+			LocalisedRangeScanner ranger = test.getSimulation()
+					.getRanger(robot);
 
-		DifferentialDriveRobotPC robot = test.getSimulation().iterator().next();
-		LocalisedRangeScanner ranger = test.getSimulation().getRanger(robot);
+			EventBasedTouchSensor sensor = getTouchSensor(
+					"createVirtualBumper", ranger.getDescription(), ranger,
+					0.2f);
 
-		EventBasedTouchSensor sensor = getTouchSensor("createVirtualBumper",
-				ranger.getDescription(), ranger, 0.2f);
+			Object controller = test.getController();
 
-		Object controller = test.getController();
-
-		if (controller != null) {
-			if (controller instanceof TouchSensorListener) {
-				sensor.addTouchSensorListener((TouchSensorListener) controller);
-			} else {
-				fail("Controller does not implement TouchSensorListener");
+			if (controller != null) {
+				if (controller instanceof TouchSensorListener) {
+					sensor.addTouchSensorListener((TouchSensorListener) controller);
+				} else {
+					fail("Controller does not implement TouchSensorListener");
+				}
 			}
-		}
 
-		return test;
+			return test;
+		} catch (Throwable t) {
+			t.printStackTrace();
+			return null;
+		}
 	}
 
 	@Test

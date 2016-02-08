@@ -78,7 +78,7 @@ public class AbstractTestHarness {
 			return (Obj) controller;
 
 		} catch (Throwable e) {
-//			fail(e.getClass().getName() + ": " + e.getMessage());
+			// fail(e.getClass().getName() + ": " + e.getMessage());
 			System.out.println(e.getClass().getName() + ": " + e.getMessage());
 			return null;
 		}
@@ -132,28 +132,32 @@ public class AbstractTestHarness {
 			RPLineMap _map, ZoneSequence _sequence, boolean _failOnStopTimeout,
 			long _timeoutMillis, SimulatorListener _listener, String _method,
 			Object... _args) {
-		MapBasedSimulation sim = new MapBasedSimulation(_map);
+		try {
+			MapBasedSimulation sim = new MapBasedSimulation(_map);
 
-		Pose start = _sequence.getStart();
+			Pose start = _sequence.getStart();
 
-		DifferentialDriveRobotPC robot = sim.addRobot(
-				SimulatedRobots.makeConfiguration(true, true), start);
+			DifferentialDriveRobotPC robot = sim.addRobot(
+					SimulatedRobots.makeConfiguration(true, true), start);
 
-		Object[] args = new Object[_args.length + 1];
-		args[0] = robot;
-		for (int i = 1; i < args.length; i++) {
-			args[i] = _args[i - 1];
+			Object[] args = new Object[_args.length + 1];
+			args[0] = robot;
+			for (int i = 1; i < args.length; i++) {
+				args[i] = _args[i - 1];
+			}
+
+			C controller = getTestObject(_method, StoppableRunnable.class, args);
+
+			ZoneSequenceTestWithSim<?> test = new ZoneSequenceTestWithSim(
+					_sequence, controller, robot, _timeoutMillis, false, sim);
+			if (_listener != null) {
+				sim.addSimulatorListener(_listener);
+				test.addSimulatorListener(_listener);
+			}
+			return test;
+		} catch (Throwable t) {
+			t.printStackTrace();
+			return null;
 		}
-
-		C controller = getTestObject(_method, StoppableRunnable.class, args);
-
-		ZoneSequenceTestWithSim<?> test = new ZoneSequenceTestWithSim(
-				_sequence, controller, robot, _timeoutMillis, false, sim);
-		if (_listener != null) {
-			sim.addSimulatorListener(_listener);
-			test.addSimulatorListener(_listener);
-		}
-		return test;
 	}
-
 }

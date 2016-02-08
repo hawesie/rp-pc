@@ -223,15 +223,26 @@ public class SimulationCore extends Thread {
 	}
 
 	public void waitSteppable(SimulationSteppable _steppable) {
+		boolean except = false;
 		while (!_steppable.remove()) {
+//			if (except) {
+//				System.out.println("restart loop");
+//			}
+
 			synchronized (_steppable) {
 				try {
 					// wait on a loop as it helps deal with sync errors
 					_steppable.wait(100);
 				} catch (InterruptedException e) {
+					except = true;
+					System.out.println("caught: " + e.getMessage());
 					e.printStackTrace();
+					return;
 				}
 			}
 		}
+//		if (except) {
+//			System.out.println("done wait");
+//		}
 	}
 }

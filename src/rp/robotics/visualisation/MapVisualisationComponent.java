@@ -24,8 +24,10 @@ import lejos.robotics.navigation.Pose;
 import rp.config.RangeScannerDescription;
 import rp.geom.GeometryUtils;
 import rp.robotics.DifferentialDriveRobotPC;
+import rp.robotics.LocalisedRangeScanner;
 import rp.robotics.mapping.MapUtils;
 import rp.robotics.mapping.RPLineMap;
+import rp.robotics.simulation.DynamicObstacle;
 
 /**
  * 
@@ -71,8 +73,9 @@ public class MapVisualisationComponent extends JComponent {
 	private ArrayList<PoseProvider> m_poseProviders = new ArrayList<PoseProvider>(
 			1);
 
-	private ArrayList<DifferentialDriveRobotPC> m_robots = new ArrayList<DifferentialDriveRobotPC>(
-			1);
+	private ArrayList<DifferentialDriveRobotPC> m_robots = new ArrayList<>(1);
+	private ArrayList<DynamicObstacle> m_obstacles = new ArrayList<>(1);
+	private ArrayList<LocalisedRangeScanner> m_rangers = new ArrayList<>(1);
 
 	private boolean m_trackRobots = true;
 
@@ -243,9 +246,17 @@ public class MapVisualisationComponent extends JComponent {
 
 		}
 
+		for (DynamicObstacle obstacle : m_obstacles) {
+			renderRelative(obstacle.getFootprint(), obstacle.getPose(), g2);
+		}
+
 		// if the robot can give us a pose
 		for (DifferentialDriveRobotPC r : m_robots) {
 			renderRobot(g2, r);
+		}
+
+		for (LocalisedRangeScanner ranger : m_rangers) {
+			renderRanger(g2, ranger);
 		}
 
 		for (PoseProvider pp : m_poseProviders) {
@@ -258,6 +269,38 @@ public class MapVisualisationComponent extends JComponent {
 			for (Point p : m_robotTracks) {
 				renderPoint(p, g2, 0.005);
 			}
+		}
+
+	}
+
+	private void renderRanger(Graphics2D _g2, LocalisedRangeScanner _ranger) {
+
+		// System.out.println("renderRAnger");
+
+		Pose sensorPose = _ranger.getPose();
+
+		RangeReadings readings = _ranger.getRangeValues();
+
+		for (RangeReading reading : readings) {
+
+			float range = reading.getRange();
+
+			if (!RangeScannerDescription.isValidReading(range)) {
+
+				range = 2.55f;
+
+				_g2.setStroke(new BasicStroke(1));
+				_g2.setPaint(Color.RED);
+				// range = 2.55f;
+
+			} else {
+				_g2.setStroke(new BasicStroke(1));
+				_g2.setPaint(Color.BLUE);
+
+			}
+
+			drawLineToHeading(_g2, sensorPose.getX(), sensorPose.getY(),
+					sensorPose.getHeading() + reading.getAngle(), range);
 		}
 
 	}
@@ -283,37 +326,6 @@ public class MapVisualisationComponent extends JComponent {
 
 		if (m_trackRobots) {
 			m_robotTracks.add(p.getLocation());
-		}
-
-		ArrayList<RangeScannerDescription> rangers = _robot.getRangeScanners();
-
-		// if the robot can give us some range readings too
-		if (rangers != null) {
-
-			for (RangeScannerDescription ranger : rangers) {
-				Pose sensorPose = GeometryUtils.transform(p,
-						ranger.getScannerPose());
-
-				RangeReadings readings = m_lineMap.takeReadings(p, ranger);
-				for (RangeReading reading : readings) {
-					float range = reading.getRange();
-
-					if (range == 2.55f) {
-						_g2.setStroke(new BasicStroke(1));
-						_g2.setPaint(Color.RED);
-						// range = 2.55f;
-
-					} else {
-						_g2.setStroke(new BasicStroke(1));
-						_g2.setPaint(Color.BLUE);
-
-					}
-
-					drawLineToHeading(_g2, sensorPose.getX(),
-							sensorPose.getY(), sensorPose.getHeading()
-									+ reading.getAngle(), range);
-				}
-			}
 		}
 
 	}
@@ -458,6 +470,14 @@ public class MapVisualisationComponent extends JComponent {
 
 	public void addRobot(DifferentialDriveRobotPC _robot) {
 		m_robots.add(_robot);
+	}
+
+	public void addObstacle(DynamicObstacle _obstacle) {
+		m_obstacles.add(_obstacle);
+	}
+
+	public void addRangeScanner(LocalisedRangeScanner _scanner) {
+		m_rangers.add(_scanner);
 	}
 
 	// public void addRobot(PoseProvider _robot) {

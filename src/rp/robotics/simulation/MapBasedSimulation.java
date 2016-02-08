@@ -6,10 +6,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import lejos.geom.Line;
+import lejos.geom.Point;
 import lejos.robotics.RangeFinder;
 import lejos.robotics.RangeReadings;
 import lejos.robotics.localization.PoseProvider;
 import lejos.robotics.navigation.Pose;
+import rp.config.RangeFinderDescription;
 import rp.config.RangeScannerDescription;
 import rp.config.WheeledRobotConfiguration;
 import rp.geom.GeometryUtils;
@@ -38,6 +40,8 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 
 	private ArrayList<FootprintTouchPair> m_touchSensors;
 	private ArrayList<SimulatorListener> m_simulatorListeners;
+	private ArrayList<DynamicObstacle> m_obstacles;
+	private ArrayList<RelativeRangeScanner> m_rangers;
 
 	private class FootprintTouchPair {
 		final PoseProvider poser;
@@ -88,7 +92,39 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 
 		@Override
 		public RangeReadings getRangeValues() {
-			return m_map.takeReadings(poser.getPose(), scannerDesc);
+
+			RangeReadings obstacleReadings = takeReadingsToObstacle(
+					poser.getPose(), scannerDesc);
+			RangeReadings mapReadings = m_map.takeReadings(poser.getPose(),
+					scannerDesc);
+
+			RangeReadings jointReadings = new RangeReadings(
+					obstacleReadings.getNumReadings());
+
+			for (int i = 0; i < obstacleReadings.getNumReadings(); i++) {
+				float map = mapReadings.getRange(i);
+				float obs = obstacleReadings.getRange(i);
+
+				// System.out.println("map: " + mapReadings.getRange(i));
+				// System.out.println("obs: " + obstacleReadings.getRange(i));
+
+				if (RangeScannerDescription.isValidReading(map)
+						&& RangeScannerDescription.isValidReading(obs)) {
+
+					// System.out.println("AAA");
+					jointReadings.setRange(i, mapReadings.getAngle(i),
+							Math.min(map, obs));
+				} else if (!RangeScannerDescription.isValidReading(map)) {
+					// System.out.println("BBB");
+					jointReadings.setRange(i, mapReadings.getAngle(i), obs);
+				} else {
+					// System.out.println("CCC");
+					jointReadings.setRange(i, mapReadings.getAngle(i), map);
+				}
+
+				// System.out.println("chosen: " + jointReadings.getRange(i));
+			}
+			return jointReadings;
 		}
 
 		@Override
@@ -104,7 +140,6 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 
 		@Override
 		public float getRange() {
-			// TODO improve efficiency by only getting the first reading
 			return getRangeValues().get(0).getRange();
 		}
 
@@ -166,7 +201,7 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 							for (DifferentialDriveRobotPC robot : m_robots) {
 
 								if (isInCollision(robot)) {
-									System.out.println("In collision");
+									// System.out.println("In collision");
 									robot.startCollision();
 								}
 							}
@@ -178,6 +213,129 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 						return !m_running;
 					}
 				});
+
+	}
+
+	/**
+	 * Calculate the range from the robot to the nearest dynamic obstacle.
+	 * Copied from RPLineMap.
+	 * 
+	 * @param pose
+	 *            the pose of the robot
+	 * @return the range or -1 if not in range
+	 */
+	private float rangeToObstacle(Pose pose) {
+
+		float largestDimension = Math.max(m_map.getBoundingRect().width,
+				m_map.getBoundingRect().width);
+		Line l = new Line(pose.getX(), pose.getY(), pose.getX()
+				+ largestDimension
+				* (float) Math.cos(Math.toRadians(pose.getHeading())),
+				pose.getY() + largestDimension
+						* (float) Math.sin(Math.toRadians(pose.getHeading())));
+		Line rl = null;
+		// System.out.println("ray: " + l.x1 + " " + l.y1 + ", " + l.x2 + " "
+		// + l.y2);
+
+		if (m_obstacles != null) {
+
+			for (DynamicObstacle obstacle : m_obstacles) {
+
+				Line[] footprint = new Line[obstacle.getFootprint().length];
+
+				// transform footprint to it's pose location
+				GeometryUtils.transform(obstacle.getPose(),
+						obstacle.getFootprint(), footprint);
+
+				for (int i = 0; i < footprint.length; i++) {
+
+					Line target = footprint[i];
+
+					// System.out.println("target: " + target.x1 + " " +
+					// target.y1
+					// + ", " + target.x2 + " " + target.y2);
+
+					Point p = RPLineMap.intersectsAt(target, l);
+
+					// System.out.println("p: " + p);
+
+					if (p == null) {
+						// Does not intersect
+						// System.out.println(i + " checking against: " +
+						// lines[i].x1
+						// + " " + lines[i].y1 + ", " + lines[i].x2 + " "
+						// + lines[i].y2);
+						//
+						// System.out.println("does not intersect");
+						continue;
+					}
+
+					Line tl = new Line(pose.getX(), pose.getY(), p.x, p.y);
+
+					// System.out.println(i + " checking against: " +
+					// lines[i].x1 +
+					// " "
+					// + lines[i].y1 + ", " + lines[i].x2 + " " + lines[i].y2);
+					//
+					// System.out.println("does intersect: " + tl.length());
+
+					// If the range line intersects more than one map line
+					// then take the shortest distance.
+					if (rl == null || tl.length() < rl.length()) {
+						rl = tl;
+					}
+				}
+
+			}
+			return (rl == null ? -1 : rl.length());
+		} else {
+			return RangeScannerDescription.OUT_OF_RANGE_VALUE;
+		}
+	}
+
+	/**
+	 * Obtain range readings from obstacles at the predefined angles relative to
+	 * the robot
+	 */
+	private RangeReadings takeReadingsToObstacle(Pose _robotPose,
+			RangeScannerDescription _ranger) {
+
+		float[] readingAngles = _ranger.getReadingAngles();
+
+		RangeReadings readings = new RangeReadings(readingAngles.length);
+
+		// the pose to use for taking range readings
+		Pose readingPose = GeometryUtils.transform(_robotPose,
+				_ranger.getScannerPose());
+
+		float readingPoseHeading = readingPose.getHeading();
+
+		for (int i = 0; i < readingAngles.length; i++) {
+
+			// rotate the reading pose to the angle of the sensor
+			readingPose.setHeading(readingPoseHeading + readingAngles[i]);
+
+			// and take a reading from there
+			float obsRange = rangeToObstacle(readingPose);
+
+			// System.out.println("obsRange: " + obsRange);
+			// System.out.println(_ranger.getMaxRange());
+			// System.out.println(_ranger.getMinRange());
+
+			// bound reading to configured parameters
+			if (obsRange > _ranger.getMaxRange()) {
+				obsRange = RangeFinderDescription.OUT_OF_RANGE_VALUE;
+			} else if (obsRange < _ranger.getMinRange()) {
+				obsRange = 0;
+			}
+
+			readings.setRange(i, readingAngles[i], obsRange);
+
+			// System.out.println(mapRange);
+
+		}
+
+		return readings;
 
 	}
 
@@ -279,6 +437,16 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 		addTouchSensorListener(_robot, _listener, 0);
 	}
 
+	public void addObstacle(DynamicObstacle _obstacle) {
+		if (m_obstacles == null) {
+			m_obstacles = new ArrayList<>();
+
+		}
+
+		m_obstacles.add(_obstacle);
+		SimulationCore.getSimulationCore().addSteppable(_obstacle);
+	}
+
 	public LocalisedRangeScanner getRanger(DifferentialDriveRobotPC _robot) {
 		return getRanger(_robot, 0);
 	}
@@ -296,13 +464,14 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 					throw new IndexOutOfBoundsException(
 							"Sensor index is out of bounds");
 				} else {
-					if (m_touchSensors == null) {
-						m_touchSensors = new ArrayList<MapBasedSimulation.FootprintTouchPair>(
-								1);
+					if (m_rangers == null) {
+						m_rangers = new ArrayList<RelativeRangeScanner>(1);
 					}
 
-					return new RelativeRangeScanner(robot, robot
-							.getRangeScanners().get(_sensorIndex));
+					RelativeRangeScanner ranger = new RelativeRangeScanner(
+							robot, robot.getRangeScanners().get(_sensorIndex));
+					m_rangers.add(ranger);
+					return ranger;
 
 				}
 
@@ -324,6 +493,19 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 		for (DifferentialDriveRobotPC robot : _sim.m_robots) {
 			visualisation.addRobot(robot);
 		}
+
+		if (_sim.m_obstacles != null) {
+			for (DynamicObstacle obstacle : _sim.m_obstacles) {
+				visualisation.addObstacle(obstacle);
+			}
+		}
+
+		if (_sim.m_rangers != null) {
+			for (RelativeRangeScanner ranger : _sim.m_rangers) {
+				visualisation.addRangeScanner(ranger);
+			}
+		}
+
 		return visualisation;
 	}
 

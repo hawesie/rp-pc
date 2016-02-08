@@ -32,6 +32,8 @@ public class MySimulationClass {
 				SimulatedRobots.EXPRESS_BOT_WITH_SENSORS, new Pose(3f, 3f,
 						0));
 
+		sim.getRanger(robot);
+		
 		// This is the controller that actually makes the robot move
 		MyRobotController controller = new MyRobotController(robot);
 
