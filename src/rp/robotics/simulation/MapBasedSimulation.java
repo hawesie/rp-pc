@@ -19,7 +19,7 @@ import rp.robotics.DifferentialDriveRobotPC;
 import rp.robotics.LocalisedRangeScanner;
 import rp.robotics.TouchSensorEvent;
 import rp.robotics.TouchSensorListener;
-import rp.robotics.mapping.RPLineMap;
+import rp.robotics.mapping.LineMap;
 import rp.robotics.visualisation.MapVisualisationComponent;
 
 /**
@@ -33,7 +33,7 @@ import rp.robotics.visualisation.MapVisualisationComponent;
  */
 public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 
-	protected final RPLineMap m_map;
+	protected final LineMap m_map;
 	protected final ArrayList<DifferentialDriveRobotPC> m_robots = new ArrayList<DifferentialDriveRobotPC>();
 
 	private boolean m_running = false;
@@ -150,7 +150,7 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 
 	}
 
-	public MapBasedSimulation(RPLineMap _map) {
+	public MapBasedSimulation(LineMap _map) {
 		m_map = _map;
 	}
 
@@ -255,7 +255,7 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 					// target.y1
 					// + ", " + target.x2 + " " + target.y2);
 
-					Point p = RPLineMap.intersectsAt(target, l);
+					Point p = LineMap.intersectsAt(target, l);
 
 					// System.out.println("p: " + p);
 
@@ -509,7 +509,7 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 		return visualisation;
 	}
 
-	public RPLineMap getMap() {
+	public LineMap getMap() {
 		return m_map;
 	}
 

@@ -6,7 +6,7 @@ import java.awt.Graphics2D;
 
 import lejos.geom.Point;
 import rp.robotics.mapping.IGridMap;
-import rp.robotics.mapping.RPLineMap;
+import rp.robotics.mapping.LineMap;
 
 /***
  * Visualise an IGridMap on top of a LineMap.
@@ -23,7 +23,7 @@ public class GridMapVisualisation extends MapVisualisationComponent {
 
 	protected IGridMap m_gridMap;
 
-	public GridMapVisualisation(IGridMap _gridMap, RPLineMap _lineMap,
+	public GridMapVisualisation(IGridMap _gridMap, LineMap _lineMap,
 			float _scaleFactor) {
 		super(_lineMap, _scaleFactor);
 		m_gridMap = _gridMap;
@@ -54,7 +54,7 @@ public class GridMapVisualisation extends MapVisualisationComponent {
 				if (!m_gridMap.isObstructed(x, y)) {
 					Point gridPoint = m_gridMap.getCoordinatesOfGridPosition(x,
 							y);
-					renderPoint(gridPoint, _g2);
+					renderPoint(gridPoint, _g2, 2);
 				}
 			}
 		}

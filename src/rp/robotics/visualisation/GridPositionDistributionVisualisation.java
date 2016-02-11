@@ -6,7 +6,7 @@ import java.awt.Graphics2D;
 
 import lejos.geom.Point;
 import rp.robotics.localisation.GridPositionDistribution;
-import rp.robotics.mapping.RPLineMap;
+import rp.robotics.mapping.LineMap;
 
 public class GridPositionDistributionVisualisation extends MapVisualisationComponent {
 
@@ -20,7 +20,7 @@ public class GridPositionDistributionVisualisation extends MapVisualisationCompo
 	protected GridPositionDistribution m_gridDistribution;
 
 	public GridPositionDistributionVisualisation(
-			GridPositionDistribution _distribution, RPLineMap _lineMap,
+			GridPositionDistribution _distribution, LineMap _lineMap,
 			float _scaleFactor) {
 		super(_lineMap, _scaleFactor);
 		m_gridDistribution = _distribution;

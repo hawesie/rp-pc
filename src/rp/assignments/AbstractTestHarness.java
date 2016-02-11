@@ -8,7 +8,7 @@ import java.lang.reflect.Method;
 import lejos.robotics.navigation.Pose;
 import rp.robotics.DifferentialDriveRobotPC;
 import rp.robotics.EventBasedTouchSensor;
-import rp.robotics.mapping.RPLineMap;
+import rp.robotics.mapping.LineMap;
 import rp.robotics.simulation.MapBasedSimulation;
 import rp.robotics.simulation.SimulatedRobots;
 import rp.robotics.simulation.SimulatorListener;
@@ -120,7 +120,7 @@ public class AbstractTestHarness {
 	}
 
 	public <C extends StoppableRunnable> ZoneSequenceTestWithSim<?> createSequenceTest(
-			RPLineMap _map, ZoneSequence _sequence, boolean _failOnStopTimeout,
+			LineMap _map, ZoneSequence _sequence, boolean _failOnStopTimeout,
 			long _timeoutMillis, String _method, Object... _args) {
 
 		return createSequenceTest(_map, _sequence, _failOnStopTimeout,
@@ -129,7 +129,7 @@ public class AbstractTestHarness {
 	}
 
 	public <C extends StoppableRunnable> ZoneSequenceTestWithSim<?> createSequenceTest(
-			RPLineMap _map, ZoneSequence _sequence, boolean _failOnStopTimeout,
+			LineMap _map, ZoneSequence _sequence, boolean _failOnStopTimeout,
 			long _timeoutMillis, SimulatorListener _listener, String _method,
 			Object... _args) {
 		try {

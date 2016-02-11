@@ -19,14 +19,13 @@ import lejos.geom.Point;
 import lejos.robotics.RangeReading;
 import lejos.robotics.RangeReadings;
 import lejos.robotics.localization.PoseProvider;
-import lejos.robotics.mapping.LineMap;
 import lejos.robotics.navigation.Pose;
 import rp.config.RangeScannerDescription;
 import rp.geom.GeometryUtils;
 import rp.robotics.DifferentialDriveRobotPC;
 import rp.robotics.LocalisedRangeScanner;
 import rp.robotics.mapping.MapUtils;
-import rp.robotics.mapping.RPLineMap;
+import rp.robotics.mapping.LineMap;
 import rp.robotics.simulation.DynamicObstacle;
 
 /**
@@ -64,7 +63,7 @@ public class MapVisualisationComponent extends JComponent {
 
 	private final Rectangle m_visualisationDimensions;
 
-	private final RPLineMap m_lineMap;
+	private final LineMap m_lineMap;
 
 	private final float m_scaleFactor;
 
@@ -81,7 +80,7 @@ public class MapVisualisationComponent extends JComponent {
 
 	private ArrayList<Point> m_robotTracks = new ArrayList<Point>();
 
-	public MapVisualisationComponent(RPLineMap _lineMap, float _scaleFactor) {
+	public MapVisualisationComponent(LineMap _lineMap, float _scaleFactor) {
 
 		int _width = (int) _lineMap.getBoundingRect().getWidth();
 		int _height = (int) _lineMap.getBoundingRect().getHeight();
@@ -116,7 +115,7 @@ public class MapVisualisationComponent extends JComponent {
 	 * 
 	 * @param _lineMap
 	 */
-	public MapVisualisationComponent(RPLineMap _lineMap) {
+	public MapVisualisationComponent(LineMap _lineMap) {
 		this(_lineMap, 100f);
 	}
 
@@ -132,7 +131,7 @@ public class MapVisualisationComponent extends JComponent {
 		return createVisualisation(_width, _height);
 	}
 
-	public static MapVisualisationComponent createVisualisation(RPLineMap _map) {
+	public static MapVisualisationComponent createVisualisation(LineMap _map) {
 		return new MapVisualisationComponent(_map);
 	}
 

@@ -1,6 +1,5 @@
 package rp.util;
 
-
 public class Pair<T1, T2> {
 	private T1 item1;
 	private T2 item2;

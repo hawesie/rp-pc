@@ -3,7 +3,7 @@ package rp.robotics.visualisation;
 import javax.swing.JFrame;
 
 import rp.robotics.mapping.MapUtils;
-import rp.robotics.mapping.RPLineMap;
+import rp.robotics.mapping.LineMap;
 
 public class LineMapViewer {
 
@@ -13,7 +13,7 @@ public class LineMapViewer {
 		JFrame frame = new JFrame("Map Viewer");
 
 		// Get the line map to display
-		RPLineMap lineMap = MapUtils.create2015Map1();
+		LineMap lineMap = MapUtils.create2015Map1();
 
 		// Create the visualisation of this map with 2 pixels as 1 cm
 		MapVisualisationComponent mapVis = new MapVisualisationComponent(lineMap, 2f);
