@@ -29,17 +29,16 @@ public class MySimulationClass {
 		// The dimensions of the simulated robot are defined in metres, thus all
 		// other parts of your code should use metres too.
 		DifferentialDriveRobotPC robot = sim.addRobot(
-				SimulatedRobots.EXPRESS_BOT_WITH_SENSORS, new Pose(3f, 3f,
-						0));
+				SimulatedRobots.EXPRESS_BOT_WITH_SENSORS, new Pose(3f, 3f, 0));
 
 		sim.getRanger(robot);
-		
+
 		// This is the controller that actually makes the robot move
 		MyRobotController controller = new MyRobotController(robot);
 
 		// Create visualisation JComponent that renders map, robots etc
-		MapVisualisationComponent viz = MapBasedSimulation
-				.createVisulation(sim);
+		MapVisualisationComponent viz = MapVisualisationComponent
+				.createFromSimulation(sim);
 
 		// Add the visualisation to a JFrame to display it
 		DifferentialDriveSim.displayVisualisation(viz);

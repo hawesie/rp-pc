@@ -19,7 +19,8 @@ public interface SimulationSteppable {
 	 *            When the step is called in the simulation
 	 * 
 	 * @param _stepInterval
-	 *            The amount of time between steps for this steppable.
+	 *            The amount of time between this step and the previous step in
+	 *            the simulation.
 	 */
 	void step(Instant _now, Duration _stepInterval);
 }

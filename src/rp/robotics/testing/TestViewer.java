@@ -15,10 +15,10 @@ import rp.robotics.visualisation.MapVisualisationComponent;
  */
 public class TestViewer {
 
-	private final ZoneSequenceTest<?> m_test;
+	private final RobotTest<?> m_test;
 	private final MapBasedSimulation m_sim;
 
-	public TestViewer(ZoneSequenceTest<?> _test, MapBasedSimulation _sim) {
+	public TestViewer(RobotTest<?> _test, MapBasedSimulation _sim) {
 		m_test = _test;
 		m_sim = _sim;
 	}
@@ -27,7 +27,7 @@ public class TestViewer {
 
 		// Create visualisation JComponent that renders map, robots etc
 		MapVisualisationComponent viz = TestVisualisationComponent
-				.createVisulationForTest(m_sim, m_test);
+				.createVisualisationForTest(m_sim, m_test);
 
 		// Add the visualisation to a JFrame to display it
 		displayVisualisation(viz);

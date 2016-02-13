@@ -32,6 +32,7 @@ import rp.robotics.testing.ZoneSequenceTestWithSim;
  *
  */
 
+@SuppressWarnings("deprecation")
 public class Ex1Tests extends AbstractTestHarness {
 
 	private static final String TEST_CLASS = "rp.assignments.individual.ex1.SolutionFactory";

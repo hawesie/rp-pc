@@ -124,7 +124,7 @@ public class SimulationCore extends Thread {
 
 		Pair<SimulationSteppable, Integer> pair = m_toAdd.poll();
 
-		// int in = 0;
+		int in = 0;
 
 		while (pair != null) {
 
@@ -214,7 +214,7 @@ public class SimulationCore extends Thread {
 	 * @param _steppable
 	 * @param _stepRate
 	 */
-	private void addAndWaitSteppable(SimulationSteppable _steppable,
+	public void addAndWaitSteppable(SimulationSteppable _steppable,
 			int _stepRate) {
 
 		addSteppable(_steppable, _stepRate);
@@ -225,9 +225,9 @@ public class SimulationCore extends Thread {
 	public void waitSteppable(SimulationSteppable _steppable) {
 		boolean except = false;
 		while (!_steppable.remove()) {
-//			if (except) {
-//				System.out.println("restart loop");
-//			}
+			// if (except) {
+			// System.out.println("restart loop");
+			// }
 
 			synchronized (_steppable) {
 				try {
@@ -241,8 +241,8 @@ public class SimulationCore extends Thread {
 				}
 			}
 		}
-//		if (except) {
-//			System.out.println("done wait");
-//		}
+		if (except) {
+			System.out.println("done wait");
+		}
 	}
 }

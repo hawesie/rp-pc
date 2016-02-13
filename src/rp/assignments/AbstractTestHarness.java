@@ -12,11 +12,13 @@ import rp.robotics.mapping.LineMap;
 import rp.robotics.simulation.MapBasedSimulation;
 import rp.robotics.simulation.SimulatedRobots;
 import rp.robotics.simulation.SimulatorListener;
+import rp.robotics.testing.RobotTest;
 import rp.robotics.testing.ZoneSequence;
 import rp.robotics.testing.ZoneSequenceTest;
 import rp.robotics.testing.ZoneSequenceTestWithSim;
 import rp.systems.StoppableRunnable;
 
+@SuppressWarnings("deprecation")
 public class AbstractTestHarness {
 
 	private final Class<?> m_solutionCls;
@@ -111,7 +113,21 @@ public class AbstractTestHarness {
 		return getContollerMethod;
 	}
 
+	/**
+	 * Wrapper for a test run in case we need to add additional stuff later.
+	 * 
+	 * @param test
+	 */
 	public void runSequenceTest(ZoneSequenceTest<?> test) {
+		runTest(test);
+	}
+
+	/**
+	 * Wrapper for a test run in case we need to add additional stuff later.
+	 * 
+	 * @param test
+	 */
+	public void runTest(RobotTest<?> test) {
 		test.run();
 	}
 
@@ -119,7 +135,7 @@ public class AbstractTestHarness {
 		return getTestObject(_method, EventBasedTouchSensor.class, _args);
 	}
 
-	public <C extends StoppableRunnable> ZoneSequenceTestWithSim<?> createSequenceTest(
+	public <C extends StoppableRunnable> ZoneSequenceTestWithSim<C> createSequenceTest(
 			LineMap _map, ZoneSequence _sequence, boolean _failOnStopTimeout,
 			long _timeoutMillis, String _method, Object... _args) {
 
@@ -128,7 +144,7 @@ public class AbstractTestHarness {
 
 	}
 
-	public <C extends StoppableRunnable> ZoneSequenceTestWithSim<?> createSequenceTest(
+	public <C extends StoppableRunnable> ZoneSequenceTestWithSim<C> createSequenceTest(
 			LineMap _map, ZoneSequence _sequence, boolean _failOnStopTimeout,
 			long _timeoutMillis, SimulatorListener _listener, String _method,
 			Object... _args) {
@@ -148,7 +164,7 @@ public class AbstractTestHarness {
 
 			C controller = getTestObject(_method, StoppableRunnable.class, args);
 
-			ZoneSequenceTestWithSim<?> test = new ZoneSequenceTestWithSim(
+			ZoneSequenceTestWithSim<C> test = new ZoneSequenceTestWithSim<C>(
 					_sequence, controller, robot, _timeoutMillis, false, sim);
 			if (_listener != null) {
 				sim.addSimulatorListener(_listener);
@@ -160,4 +176,5 @@ public class AbstractTestHarness {
 			return null;
 		}
 	}
+
 }

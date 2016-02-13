@@ -27,6 +27,7 @@ import rp.robotics.LocalisedRangeScanner;
 import rp.robotics.mapping.MapUtils;
 import rp.robotics.mapping.LineMap;
 import rp.robotics.simulation.DynamicObstacle;
+import rp.robotics.simulation.MapBasedSimulation;
 
 /**
  * 
@@ -483,4 +484,43 @@ public class MapVisualisationComponent extends JComponent {
 	// m_poseProviders.add(_robot);
 	// }
 
+	/**
+	 * Creates a visualisation for the given simulation.
+	 * 
+	 * @param _sim
+	 * @return
+	 */
+	public static MapVisualisationComponent createFromSimulation(
+			MapBasedSimulation _sim) {
+		MapVisualisationComponent visualisation = new MapVisualisationComponent(
+				_sim.getMap(), 75f);
+		populateVisualisation(visualisation, _sim);
+		return visualisation;
+	}
+
+	/**
+	 * Populates a visualisation for the given simulation.
+	 * 
+	 * @param _sim
+	 * @return
+	 */
+	public static void populateVisualisation(MapVisualisationComponent _viz,
+			MapBasedSimulation _sim) {
+		for (DifferentialDriveRobotPC robot : _sim.getRobots()) {
+			_viz.addRobot(robot);
+		}
+
+		if (_sim.getObstacles() != null) {
+			for (DynamicObstacle obstacle : _sim.getObstacles()) {
+				_viz.addObstacle(obstacle);
+			}
+		}
+
+		if (_sim.getRangers() != null) {
+			for (LocalisedRangeScanner ranger : _sim.getRangers()) {
+				_viz.addRangeScanner(ranger);
+			}
+		}
+
+	}
 }

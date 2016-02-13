@@ -20,7 +20,6 @@ import rp.robotics.LocalisedRangeScanner;
 import rp.robotics.TouchSensorEvent;
 import rp.robotics.TouchSensorListener;
 import rp.robotics.mapping.LineMap;
-import rp.robotics.visualisation.MapVisualisationComponent;
 
 /**
  * This combines a simulated robot with a map to create a simple simulation of
@@ -480,35 +479,6 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 		throw new IllegalArgumentException("Robot is not part of simulation");
 	}
 
-	/**
-	 * Creates a visualisation for the given simulation.
-	 * 
-	 * @param _sim
-	 * @return
-	 */
-	public static MapVisualisationComponent createVisulation(
-			MapBasedSimulation _sim) {
-		MapVisualisationComponent visualisation = MapVisualisationComponent
-				.createVisualisation(_sim.m_map);
-		for (DifferentialDriveRobotPC robot : _sim.m_robots) {
-			visualisation.addRobot(robot);
-		}
-
-		if (_sim.m_obstacles != null) {
-			for (DynamicObstacle obstacle : _sim.m_obstacles) {
-				visualisation.addObstacle(obstacle);
-			}
-		}
-
-		if (_sim.m_rangers != null) {
-			for (RelativeRangeScanner ranger : _sim.m_rangers) {
-				visualisation.addRangeScanner(ranger);
-			}
-		}
-
-		return visualisation;
-	}
-
 	public LineMap getMap() {
 		return m_map;
 	}
@@ -516,6 +486,18 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 	@Override
 	public Iterator<DifferentialDriveRobotPC> iterator() {
 		return m_robots.iterator();
+	}
+
+	public ArrayList<DifferentialDriveRobotPC> getRobots() {
+		return m_robots;
+	}
+
+	public ArrayList<DynamicObstacle> getObstacles() {
+		return m_obstacles;
+	}
+
+	public ArrayList<RelativeRangeScanner> getRangers() {
+		return m_rangers;
 	}
 
 }

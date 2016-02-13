@@ -50,8 +50,8 @@ public class DifferentialDriveSim {
 		controller.setRangeScanner(ranger);
 
 		// Create visualisation JComponent that renders map, robots etc
-		MapVisualisationComponent viz = MapBasedSimulation
-				.createVisulation(sim);
+		MapVisualisationComponent viz = MapVisualisationComponent
+				.createFromSimulation(sim);
 
 		// Add the visualisation to a JFrame to display it
 		displayVisualisation(viz);
