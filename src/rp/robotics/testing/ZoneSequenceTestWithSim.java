@@ -1,6 +1,6 @@
 package rp.robotics.testing;
 
-import rp.robotics.DifferentialDriveRobotPC;
+import rp.robotics.MobileRobot;
 import rp.robotics.simulation.MapBasedSimulation;
 import rp.systems.StoppableRunnable;
 
@@ -15,7 +15,7 @@ public class ZoneSequenceTestWithSim<C extends StoppableRunnable> extends
 		ZoneSequenceTest<C> {
 
 	public ZoneSequenceTestWithSim(ZoneSequence _sequence, C _controller,
-			DifferentialDriveRobotPC _poser, long _timeout,
+			MobileRobot _poser, long _timeout,
 			boolean _failIfOutOfSequence, MapBasedSimulation _sim) {
 		super(_sim, _sequence, _controller, _poser, _timeout,
 				_failIfOutOfSequence);

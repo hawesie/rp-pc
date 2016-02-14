@@ -7,7 +7,7 @@ import java.time.Duration;
 import java.time.Instant;
 
 import lejos.robotics.RangeFinder;
-import rp.robotics.DifferentialDriveRobotPC;
+import rp.robotics.MobileRobot;
 import rp.robotics.simulation.MapBasedSimulation;
 import rp.robotics.simulation.SimulationCore;
 import rp.robotics.simulation.SimulationSteppable;
@@ -30,7 +30,7 @@ public class RangeLimitTest<C extends StoppableRunnable> extends RobotTest<C> {
 	private final RangeFinder m_ranger;
 
 	public RangeLimitTest(MapBasedSimulation _sim, RangeFinder _ranger,
-			float _limit, C _controller, DifferentialDriveRobotPC _poser,
+			float _limit, C _controller, MobileRobot _poser,
 			Duration _timeout, Duration _allowableOutsideLimit,
 			Duration _startupTime) {
 		super(_sim, _controller, _poser, _timeout);

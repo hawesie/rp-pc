@@ -5,7 +5,8 @@ import javax.swing.JFrame;
 import lejos.robotics.RangeFinder;
 import lejos.robotics.navigation.Pose;
 import lejos.util.Delay;
-import rp.robotics.DifferentialDriveRobotPC;
+import rp.robotics.DifferentialDriveRobot;
+import rp.robotics.MobileRobotWrapper;
 import rp.robotics.control.RandomWalk;
 import rp.robotics.simulation.MapBasedSimulation;
 import rp.robotics.simulation.SimulatedRobots;
@@ -31,20 +32,20 @@ public class DifferentialDriveSim {
 		//
 		// The dimensions of the simulated robot are defined in metres, thus all
 		// other parts of your code should use metres too.
-		DifferentialDriveRobotPC robot = sim.addRobot(
+		MobileRobotWrapper<DifferentialDriveRobot> wrapper = sim.addRobot(
 				SimulatedRobots.EXPRESS_BOT_WITH_SENSORS, new Pose(0.5f, 0.5f,
 						0));
 
 		// This is the controller that actually makes the robot move
-		RandomWalk controller = new RandomWalk(robot);
+		RandomWalk controller = new RandomWalk(wrapper.getRobot());
 
 		// This call attaches an event listener to the robot's touch sensor in
 		// the simulator
-		sim.addTouchSensorListener(robot, controller);
+		sim.addTouchSensorListener(wrapper, controller);
 
 		// This gets the object used for range measurement for the robot in the
 		// simulator
-		RangeFinder ranger = sim.getRanger(robot);
+		RangeFinder ranger = sim.getRanger(wrapper);
 
 		// This gives the controller the range scanner to use.
 		controller.setRangeScanner(ranger);

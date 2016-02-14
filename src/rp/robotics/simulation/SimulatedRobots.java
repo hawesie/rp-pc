@@ -1,5 +1,6 @@
 package rp.robotics.simulation;
 
+import rp.config.MobileRobotConfiguration;
 import rp.config.WheeledRobotConfiguration;
 
 public class SimulatedRobots {
@@ -39,11 +40,25 @@ public class SimulatedRobots {
 		CASTOR_BOT_WITH_BUMPER.addTouchSensor();
 	}
 
-	public static WheeledRobotConfiguration makeConfiguration(
+	public static WheeledRobotConfiguration makeWheeledConfiguration(
 			boolean _touchSensor, boolean _rangeSensor) {
 		WheeledRobotConfiguration config = new WheeledRobotConfiguration(
 				0.056f, 0.12f, 0.23f, new SimulatedMotor(),
 				new SimulatedMotor());
+
+		if (_touchSensor) {
+			config.addTouchSensor();
+		}
+		if (_rangeSensor) {
+			config.addRangeScanner();
+		}
+		return config;
+	}
+
+	public static MobileRobotConfiguration makeConfiguration(
+			boolean _touchSensor, boolean _rangeSensor) {
+		MobileRobotConfiguration config = new MobileRobotConfiguration(0.12f,
+				0.23f);
 
 		if (_touchSensor) {
 			config.addTouchSensor();

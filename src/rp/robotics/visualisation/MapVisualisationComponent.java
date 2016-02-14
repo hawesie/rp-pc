@@ -22,10 +22,11 @@ import lejos.robotics.localization.PoseProvider;
 import lejos.robotics.navigation.Pose;
 import rp.config.RangeScannerDescription;
 import rp.geom.GeometryUtils;
-import rp.robotics.DifferentialDriveRobotPC;
 import rp.robotics.LocalisedRangeScanner;
-import rp.robotics.mapping.MapUtils;
+import rp.robotics.MobileRobot;
+import rp.robotics.MobileRobotWrapper;
 import rp.robotics.mapping.LineMap;
+import rp.robotics.mapping.MapUtils;
 import rp.robotics.simulation.DynamicObstacle;
 import rp.robotics.simulation.MapBasedSimulation;
 
@@ -73,7 +74,7 @@ public class MapVisualisationComponent extends JComponent {
 	private ArrayList<PoseProvider> m_poseProviders = new ArrayList<PoseProvider>(
 			1);
 
-	private ArrayList<DifferentialDriveRobotPC> m_robots = new ArrayList<>(1);
+	private ArrayList<MobileRobot> m_robots = new ArrayList<>(1);
 	private ArrayList<DynamicObstacle> m_obstacles = new ArrayList<>(1);
 	private ArrayList<LocalisedRangeScanner> m_rangers = new ArrayList<>(1);
 
@@ -251,7 +252,7 @@ public class MapVisualisationComponent extends JComponent {
 		}
 
 		// if the robot can give us a pose
-		for (DifferentialDriveRobotPC r : m_robots) {
+		for (MobileRobot r : m_robots) {
 			renderRobot(g2, r);
 		}
 
@@ -305,7 +306,7 @@ public class MapVisualisationComponent extends JComponent {
 
 	}
 
-	private void renderRobot(Graphics2D _g2, DifferentialDriveRobotPC _robot) {
+	private void renderRobot(Graphics2D _g2, MobileRobot _robot) {
 		_g2.setStroke(new BasicStroke(2));
 		_g2.setPaint(Color.BLACK);
 
@@ -468,7 +469,7 @@ public class MapVisualisationComponent extends JComponent {
 	// m_robots.add(_robot);
 	// }
 
-	public void addRobot(DifferentialDriveRobotPC _robot) {
+	public void addRobot(MobileRobot _robot) {
 		m_robots.add(_robot);
 	}
 
@@ -506,8 +507,8 @@ public class MapVisualisationComponent extends JComponent {
 	 */
 	public static void populateVisualisation(MapVisualisationComponent _viz,
 			MapBasedSimulation _sim) {
-		for (DifferentialDriveRobotPC robot : _sim.getRobots()) {
-			_viz.addRobot(robot);
+		for (MobileRobotWrapper<?> wrapper : _sim.getRobots()) {
+			_viz.addRobot(wrapper.getRobot());
 		}
 
 		if (_sim.getObstacles() != null) {

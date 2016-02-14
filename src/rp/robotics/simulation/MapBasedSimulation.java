@@ -11,12 +11,15 @@ import lejos.robotics.RangeFinder;
 import lejos.robotics.RangeReadings;
 import lejos.robotics.localization.PoseProvider;
 import lejos.robotics.navigation.Pose;
+import rp.config.MobileRobotConfiguration;
 import rp.config.RangeFinderDescription;
 import rp.config.RangeScannerDescription;
 import rp.config.WheeledRobotConfiguration;
 import rp.geom.GeometryUtils;
-import rp.robotics.DifferentialDriveRobotPC;
+import rp.robotics.DifferentialDriveRobot;
 import rp.robotics.LocalisedRangeScanner;
+import rp.robotics.MobileRobot;
+import rp.robotics.MobileRobotWrapper;
 import rp.robotics.TouchSensorEvent;
 import rp.robotics.TouchSensorListener;
 import rp.robotics.mapping.LineMap;
@@ -30,10 +33,11 @@ import rp.robotics.mapping.LineMap;
  * @author Nick Hawes
  *
  */
-public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
+@SuppressWarnings("rawtypes")
+public class MapBasedSimulation implements Iterable<MobileRobotWrapper> {
 
 	protected final LineMap m_map;
-	protected final ArrayList<DifferentialDriveRobotPC> m_robots = new ArrayList<DifferentialDriveRobotPC>();
+	protected final ArrayList<MobileRobotWrapper> m_robots = new ArrayList<MobileRobotWrapper>();
 
 	private boolean m_running = false;
 
@@ -47,11 +51,10 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 		final Line[] footprint;
 		final TouchSensorListener listener;
 		boolean triggered = false;
-		final DifferentialDriveRobotPC robot;
+		final MobileRobot robot;
 
-		public FootprintTouchPair(DifferentialDriveRobotPC _robot,
-				Line[] _footprint, PoseProvider _poser,
-				TouchSensorListener _listener) {
+		public FootprintTouchPair(MobileRobot _robot, Line[] _footprint,
+				PoseProvider _poser, TouchSensorListener _listener) {
 			robot = _robot;
 			footprint = _footprint;
 			listener = _listener;
@@ -197,11 +200,11 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 						}
 
 						synchronized (m_robots) {
-							for (DifferentialDriveRobotPC robot : m_robots) {
+							for (MobileRobotWrapper robot : m_robots) {
 
-								if (isInCollision(robot)) {
+								if (isInCollision(robot.getRobot())) {
 									// System.out.println("In collision");
-									robot.startCollision();
+									robot.getRobot().startCollision();
 								}
 							}
 						}
@@ -338,7 +341,7 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 
 	}
 
-	private void callListenersSensorPressed(DifferentialDriveRobotPC _robot,
+	private void callListenersSensorPressed(MobileRobot _robot,
 			long _responseTime) {
 		if (m_simulatorListeners != null) {
 			synchronized (m_simulatorListeners) {
@@ -358,7 +361,7 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 
 	}
 
-	private boolean isInCollision(DifferentialDriveRobotPC _robot) {
+	private boolean isInCollision(MobileRobot _robot) {
 		Line[] m_footprint = new Line[_robot.getFootprint().length];
 		// transform robot footprint to it's pose location
 		GeometryUtils.transform(_robot.getPose(), _robot.getFootprint(),
@@ -378,15 +381,37 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 	 * 
 	 * @param _config
 	 */
-	public DifferentialDriveRobotPC addRobot(WheeledRobotConfiguration _config,
+	public MobileRobotWrapper<DifferentialDriveRobot> addRobot(
+			WheeledRobotConfiguration _config, Pose _start) {
+		DifferentialDriveRobot robot = new DifferentialDriveRobot(_config);
+		return addRobot(robot, _start);
+	}
+
+	/**
+	 * Add a robot to the simulation with the given configuration at the given
+	 * pose.
+	 * 
+	 * @param _config
+	 */
+	public MobileRobotWrapper<MovableRobot> addRobot(MobileRobotConfiguration _config,
+			Pose _start) {
+		MovableRobot robot = new MovableRobot(_config, new MovablePilot(_start));
+		return addRobot(robot, _start);
+	}
+
+	// public MobileRobotWrapper<DifferentialDriveRobot> addRobot(
+	// MobileRobotConfiguration _config, Pose _start) {
+	// MobileRobot robot = new MobileRobot(_config);
+	// return addRobot(robot, _start);
+	// }
+
+	private <R extends MobileRobot> MobileRobotWrapper<R> addRobot(R _robot,
 			Pose _start) {
 
-		DifferentialDriveRobotPC robot = new DifferentialDriveRobotPC(_config);
-		robot.setPose(_start);
+		MobileRobotWrapper<R> wrapper = new MobileRobotWrapper<>(_robot);
+		_robot.setPose(_start);
 		synchronized (m_robots) {
-			if (_config != null && !m_robots.contains(_config)) {
-				m_robots.add(robot);
-			}
+			m_robots.add(wrapper);
 		}
 
 		// if the first robot was added, the start sim running
@@ -394,20 +419,20 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 			start();
 		}
 
-		return robot;
+		return wrapper;
 	}
 
-	public void addTouchSensorListener(DifferentialDriveRobotPC _robot,
+	public void addTouchSensorListener(MobileRobotWrapper<?> _robot,
 			TouchSensorListener _listener, int _sensorIndex) {
-		for (DifferentialDriveRobotPC robot : m_robots) {
+		for (MobileRobotWrapper<?> robot : m_robots) {
 			if (robot.equals(_robot)) {
 
-				if (robot.getTouchSensors() == null) {
+				if (robot.getRobot().getTouchSensors() == null) {
 					throw new NullPointerException(
 							"Robot has no touch sensors in description");
 				}
 
-				if (_sensorIndex >= robot.getTouchSensors().size()) {
+				if (_sensorIndex >= robot.getRobot().getTouchSensors().size()) {
 					throw new IndexOutOfBoundsException(
 							"Sensor index is out of bounds");
 				} else {
@@ -416,9 +441,11 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 								1);
 					}
 					synchronized (m_touchSensors) {
-						m_touchSensors.add(new FootprintTouchPair(robot, robot
-								.getTouchSensors().get(_sensorIndex), robot,
-								_listener));
+						m_touchSensors
+								.add(new FootprintTouchPair(robot.getRobot(),
+										robot.getRobot().getTouchSensors()
+												.get(_sensorIndex), robot
+												.getRobot(), _listener));
 					}
 					return;
 				}
@@ -431,7 +458,7 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 	/*
 	 * Add a touch sensor listener to the first touch sensor on the robot.
 	 */
-	public void addTouchSensorListener(DifferentialDriveRobotPC _robot,
+	public void addTouchSensorListener(MobileRobotWrapper<?> _robot,
 			TouchSensorListener _listener) {
 		addTouchSensorListener(_robot, _listener, 0);
 	}
@@ -446,13 +473,14 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 		SimulationCore.getSimulationCore().addSteppable(_obstacle);
 	}
 
-	public LocalisedRangeScanner getRanger(DifferentialDriveRobotPC _robot) {
+	public LocalisedRangeScanner getRanger(MobileRobotWrapper<?> _robot) {
 		return getRanger(_robot, 0);
 	}
 
-	public LocalisedRangeScanner getRanger(DifferentialDriveRobotPC _robot,
+	public LocalisedRangeScanner getRanger(MobileRobotWrapper<?> _robot,
 			int _sensorIndex) {
-		for (DifferentialDriveRobotPC robot : m_robots) {
+		for (MobileRobotWrapper<?> wrapper : m_robots) {
+			MobileRobot robot = wrapper.getRobot();
 			if (robot.equals(_robot)) {
 
 				if (robot.getRangeScanners() == null) {
@@ -484,11 +512,11 @@ public class MapBasedSimulation implements Iterable<DifferentialDriveRobotPC> {
 	}
 
 	@Override
-	public Iterator<DifferentialDriveRobotPC> iterator() {
+	public Iterator<MobileRobotWrapper> iterator() {
 		return m_robots.iterator();
 	}
 
-	public ArrayList<DifferentialDriveRobotPC> getRobots() {
+	public ArrayList<MobileRobotWrapper> getRobots() {
 		return m_robots;
 	}
 

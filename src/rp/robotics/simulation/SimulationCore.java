@@ -124,7 +124,7 @@ public class SimulationCore extends Thread {
 
 		Pair<SimulationSteppable, Integer> pair = m_toAdd.poll();
 
-		int in = 0;
+//		int in = 0;
 
 		while (pair != null) {
 

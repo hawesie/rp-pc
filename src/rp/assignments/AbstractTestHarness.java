@@ -6,7 +6,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import lejos.robotics.navigation.Pose;
-import rp.robotics.DifferentialDriveRobotPC;
+import rp.robotics.DifferentialDriveRobot;
+import rp.robotics.MobileRobotWrapper;
 import rp.robotics.EventBasedTouchSensor;
 import rp.robotics.mapping.LineMap;
 import rp.robotics.simulation.MapBasedSimulation;
@@ -153,11 +154,11 @@ public class AbstractTestHarness {
 
 			Pose start = _sequence.getStart();
 
-			DifferentialDriveRobotPC robot = sim.addRobot(
-					SimulatedRobots.makeConfiguration(true, true), start);
+			MobileRobotWrapper<DifferentialDriveRobot> wrapper = sim.addRobot(
+					SimulatedRobots.makeWheeledConfiguration(true, true), start);
 
 			Object[] args = new Object[_args.length + 1];
-			args[0] = robot;
+			args[0] = wrapper.getRobot();
 			for (int i = 1; i < args.length; i++) {
 				args[i] = _args[i - 1];
 			}
@@ -165,7 +166,8 @@ public class AbstractTestHarness {
 			C controller = getTestObject(_method, StoppableRunnable.class, args);
 
 			ZoneSequenceTestWithSim<C> test = new ZoneSequenceTestWithSim<C>(
-					_sequence, controller, robot, _timeoutMillis, false, sim);
+					_sequence, controller, wrapper.getRobot(), _timeoutMillis,
+					false, sim);
 			if (_listener != null) {
 				sim.addSimulatorListener(_listener);
 				test.addSimulatorListener(_listener);

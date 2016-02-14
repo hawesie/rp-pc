@@ -9,10 +9,10 @@ import org.junit.Test;
 
 import rp.assignments.AbstractTestHarness;
 import rp.config.RangeScannerDescription;
-import rp.robotics.DifferentialDriveRobotPC;
 import rp.robotics.LocalisedRangeScanner;
+import rp.robotics.MobileRobotWrapper;
 import rp.robotics.mapping.MapUtils;
-import rp.robotics.simulation.LinearTranslation;
+import rp.robotics.simulation.Drive;
 import rp.robotics.simulation.MapBasedSimulation;
 import rp.robotics.simulation.SimulatedRobots;
 import rp.robotics.simulation.SimulatorListener;
@@ -103,25 +103,26 @@ public class Ex2Tests extends AbstractTestHarness {
 					.ofMillis((long) (1000d * testMaxDurationSecs));
 
 			sim.addObstacle(new TranslationObstacle(new Line[] { new Line(0,
-					0.5f, 0, -0.5f) }, new LinearTranslation(new Pose(
+					0.5f, 0, -0.5f) }, new Drive(new Pose(
 					_obstacleStartX, 0.5f, 0f), _obstacleSpeed, 13f)));
 
 			Pose start = new Pose(_robotStartX, 0.5f, 0f);
 
-			DifferentialDriveRobotPC robot = sim.addRobot(
-					SimulatedRobots.makeConfiguration(false, true), start);
-			LocalisedRangeScanner ranger = sim.getRanger(robot);
-			RangeScannerDescription desc = robot.getRangeScanners().get(0);
+			MobileRobotWrapper<?> wrapper = sim.addRobot(
+					SimulatedRobots.makeWheeledConfiguration(false, true), start);
+			LocalisedRangeScanner ranger = sim.getRanger(wrapper);
+			RangeScannerDescription desc = wrapper.getRobot()
+					.getRangeScanners().get(0);
 
-			Object[] args = new Object[] { robot, desc, ranger,
+			Object[] args = new Object[] { wrapper, desc, ranger,
 					new Float(_limit) };
 
 			C controller = getTestObject("createRangeController",
 					StoppableRunnable.class, args);
 
 			RangeLimitTest<C> test = new RangeLimitTest<C>(sim, ranger, _limit,
-					controller, robot, timeout, _allowableOutsideLimit,
-					_startupTime);
+					controller, wrapper.getRobot(), timeout,
+					_allowableOutsideLimit, _startupTime);
 
 			if (_listener != null) {
 				sim.addSimulatorListener(_listener);

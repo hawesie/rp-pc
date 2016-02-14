@@ -1,6 +1,6 @@
 package rp.robotics.simulation;
 
-import rp.robotics.DifferentialDriveRobotPC;
+import rp.robotics.MobileRobot;
 
 /**
  * 
@@ -16,10 +16,10 @@ public interface SimulatorListener {
 	 * 
 	 * @param _responseTime
 	 */
-	public void touchSensorPressed(DifferentialDriveRobotPC _robot,
+	public void touchSensorPressed(MobileRobot _robot,
 			long _responseTime);
 
-	public void controllerStopped(DifferentialDriveRobotPC _robot,
+	public void controllerStopped(MobileRobot _robot,
 			long _responseTime);
 
 }

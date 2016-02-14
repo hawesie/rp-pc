@@ -5,9 +5,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Ellipse2D;
 
-import rp.robotics.DifferentialDriveRobotPC;
 import rp.robotics.mapping.LineMap;
-import rp.robotics.simulation.MapBasedSimulation;
 import rp.robotics.testing.TargetZone.Status;
 import rp.robotics.visualisation.MapVisualisationComponent;
 

@@ -4,9 +4,7 @@ import lejos.robotics.RangeFinder;
 import lejos.robotics.navigation.DifferentialPilot;
 import rp.robotics.DifferentialDriveRobot;
 import rp.robotics.TouchSensorEvent;
-import rp.robotics.TouchSensorListener;
 import rp.systems.ControllerWithTouchSensor;
-import rp.systems.StoppableRunnable;
 import rp.util.Rate;
 
 /**

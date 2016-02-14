@@ -13,7 +13,7 @@ import java.util.Iterator;
 import java.util.Stack;
 
 import lejos.robotics.navigation.Pose;
-import rp.robotics.DifferentialDriveRobotPC;
+import rp.robotics.MobileRobot;
 import rp.robotics.simulation.MapBasedSimulation;
 import rp.robotics.simulation.SimulationCore;
 import rp.robotics.simulation.SimulationSteppable;
@@ -35,7 +35,7 @@ public class ZoneSequenceTest<C extends StoppableRunnable> extends RobotTest<C>
 	private final ZoneSequence m_sequence;
 
 	public ZoneSequenceTest(MapBasedSimulation _sim, ZoneSequence _sequence, C _controller,
-			DifferentialDriveRobotPC _poser, long _timeout,
+			MobileRobot _poser, long _timeout,
 			boolean _failIfOutOfSequence) {
 		super(_sim, _controller, _poser, _timeout);
 		m_sequence = _sequence;

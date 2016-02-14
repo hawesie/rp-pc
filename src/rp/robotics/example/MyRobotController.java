@@ -1,6 +1,6 @@
-package rp.robotics.simulation.example;
+package rp.robotics.example;
 
-import rp.robotics.DifferentialDriveRobot;
+import rp.robotics.MobileRobot;
 import rp.systems.StoppableRunnable;
 
 /**
@@ -12,7 +12,7 @@ import rp.systems.StoppableRunnable;
  */
 public class MyRobotController implements StoppableRunnable {
 
-	public MyRobotController(DifferentialDriveRobot _robot) {
+	public MyRobotController(MobileRobot _robot) {
 
 	}
 

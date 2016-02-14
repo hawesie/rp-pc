@@ -13,7 +13,7 @@ import org.junit.Test;
 
 import rp.assignments.AbstractTestHarness;
 import rp.config.RangeFinderDescription;
-import rp.robotics.DifferentialDriveRobotPC;
+import rp.robotics.MobileRobotWrapper;
 import rp.robotics.EventBasedTouchSensor;
 import rp.robotics.LocalisedRangeScanner;
 import rp.robotics.TouchSensorListener;
@@ -138,7 +138,7 @@ public class Ex1Tests extends AbstractTestHarness {
 
 			// this adds the touch sensor for the simulator if the controller
 			// accepts it
-			DifferentialDriveRobotPC robot = test.getSimulation().iterator()
+			MobileRobotWrapper robot = test.getSimulation().iterator()
 					.next();
 			Object controller = test.getController();
 
@@ -165,7 +165,7 @@ public class Ex1Tests extends AbstractTestHarness {
 					TestMaps.EMPTY_2_x_1, getBumperSequence(), false, 50000,
 					"createBumperController");
 
-			DifferentialDriveRobotPC robot = test.getSimulation().iterator()
+			MobileRobotWrapper robot = test.getSimulation().iterator()
 					.next();
 			LocalisedRangeScanner ranger = test.getSimulation()
 					.getRanger(robot);

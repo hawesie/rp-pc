@@ -1,7 +1,8 @@
-package rp.robotics.simulation.example;
+package rp.robotics.example;
 
 import lejos.robotics.navigation.Pose;
-import rp.robotics.DifferentialDriveRobotPC;
+import rp.robotics.DifferentialDriveRobot;
+import rp.robotics.MobileRobotWrapper;
 import rp.robotics.simulation.MapBasedSimulation;
 import rp.robotics.simulation.SimulatedRobots;
 import rp.robotics.testing.TestMaps;
@@ -9,8 +10,7 @@ import rp.robotics.visualisation.DifferentialDriveSim;
 import rp.robotics.visualisation.MapVisualisationComponent;
 
 /**
- * An example to get you started. Copy this to your own project, rename it and
- * go.
+ * An example of a movable-based robot simulation.
  * 
  * @author Nick Hawes
  *
@@ -28,13 +28,13 @@ public class MySimulationClass {
 		//
 		// The dimensions of the simulated robot are defined in metres, thus all
 		// other parts of your code should use metres too.
-		DifferentialDriveRobotPC robot = sim.addRobot(
+		MobileRobotWrapper<DifferentialDriveRobot> wrapper = sim.addRobot(
 				SimulatedRobots.EXPRESS_BOT_WITH_SENSORS, new Pose(3f, 3f, 0));
 
-		sim.getRanger(robot);
+		sim.getRanger(wrapper);
 
 		// This is the controller that actually makes the robot move
-		MyRobotController controller = new MyRobotController(robot);
+		MyRobotController controller = new MyRobotController(wrapper.getRobot());
 
 		// Create visualisation JComponent that renders map, robots etc
 		MapVisualisationComponent viz = MapVisualisationComponent
