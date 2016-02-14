@@ -23,6 +23,10 @@ public class GridMapVisualisation extends MapVisualisationComponent {
 
 	protected IGridMap m_gridMap;
 
+	public GridMapVisualisation(IGridMap _gridMap, LineMap _lineMap) {
+		this(_gridMap, _lineMap, 100f);
+	}
+
 	public GridMapVisualisation(IGridMap _gridMap, LineMap _lineMap,
 			float _scaleFactor) {
 		super(_lineMap, _scaleFactor);
@@ -31,6 +35,7 @@ public class GridMapVisualisation extends MapVisualisationComponent {
 
 	private void connectToNeighbour(Graphics2D _g2, int _x, int _y, int _dx,
 			int _dy) {
+
 		if (m_gridMap.isValidTransition(_x, _y, _x + _dx, _y + _dy)) {
 			Point p1 = m_gridMap.getCoordinatesOfGridPosition(_x, _y);
 			Point p2 = m_gridMap.getCoordinatesOfGridPosition(_x + _dx, _y
@@ -54,7 +59,7 @@ public class GridMapVisualisation extends MapVisualisationComponent {
 				if (!m_gridMap.isObstructed(x, y)) {
 					Point gridPoint = m_gridMap.getCoordinatesOfGridPosition(x,
 							y);
-					renderPoint(gridPoint, _g2, 2);
+					renderPoint(gridPoint, _g2, 0.02);
 				}
 			}
 		}

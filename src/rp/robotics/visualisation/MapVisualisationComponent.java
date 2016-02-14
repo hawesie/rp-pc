@@ -507,6 +507,7 @@ public class MapVisualisationComponent extends JComponent {
 	 */
 	public static void populateVisualisation(MapVisualisationComponent _viz,
 			MapBasedSimulation _sim) {
+		
 		for (MobileRobotWrapper<?> wrapper : _sim.getRobots()) {
 			_viz.addRobot(wrapper.getRobot());
 		}

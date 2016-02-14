@@ -1,5 +1,6 @@
 package rp.robotics.simulation;
 
+import lejos.robotics.navigation.Pose;
 import rp.config.MobileRobotConfiguration;
 import rp.robotics.MobileRobot;
 
@@ -23,4 +24,15 @@ public class MovableRobot extends MobileRobot {
 		return m_pilot;
 	}
 
+	@Override
+	public boolean isMoving() {
+		return m_pilot.isMoving();
+	}
+
+	@Override
+	public void setPose(Pose _pose) {
+	
+		m_pilot.setPose(_pose);
+	}
+	
 }

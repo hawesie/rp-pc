@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import rp.assignments.AbstractTestHarness;
 import rp.config.RangeScannerDescription;
+import rp.robotics.DifferentialDriveRobot;
 import rp.robotics.LocalisedRangeScanner;
 import rp.robotics.MobileRobotWrapper;
 import rp.robotics.mapping.MapUtils;
@@ -108,13 +109,13 @@ public class Ex2Tests extends AbstractTestHarness {
 
 			Pose start = new Pose(_robotStartX, 0.5f, 0f);
 
-			MobileRobotWrapper<?> wrapper = sim.addRobot(
+			MobileRobotWrapper<DifferentialDriveRobot> wrapper = sim.addRobot(
 					SimulatedRobots.makeWheeledConfiguration(false, true), start);
 			LocalisedRangeScanner ranger = sim.getRanger(wrapper);
 			RangeScannerDescription desc = wrapper.getRobot()
 					.getRangeScanners().get(0);
 
-			Object[] args = new Object[] { wrapper, desc, ranger,
+			Object[] args = new Object[] { wrapper.getRobot(), desc, ranger,
 					new Float(_limit) };
 
 			C controller = getTestObject("createRangeController",

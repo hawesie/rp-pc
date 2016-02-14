@@ -49,6 +49,7 @@ public abstract class AbstractPoseMove implements Movable {
 
 	@Override
 	public void step(Instant _now, Duration _stepInterval) {
+
 		if (m_pose != null) {
 			synchronized (m_pose) {
 				moveStep(_stepInterval);

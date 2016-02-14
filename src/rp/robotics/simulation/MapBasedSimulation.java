@@ -97,6 +97,7 @@ public class MapBasedSimulation implements Iterable<MobileRobotWrapper> {
 
 			RangeReadings obstacleReadings = takeReadingsToObstacle(
 					poser.getPose(), scannerDesc);
+
 			RangeReadings mapReadings = m_map.takeReadings(poser.getPose(),
 					scannerDesc);
 
@@ -112,19 +113,14 @@ public class MapBasedSimulation implements Iterable<MobileRobotWrapper> {
 
 				if (RangeScannerDescription.isValidReading(map)
 						&& RangeScannerDescription.isValidReading(obs)) {
-
-					// System.out.println("AAA");
 					jointReadings.setRange(i, mapReadings.getAngle(i),
 							Math.min(map, obs));
 				} else if (!RangeScannerDescription.isValidReading(map)) {
-					// System.out.println("BBB");
 					jointReadings.setRange(i, mapReadings.getAngle(i), obs);
 				} else {
-					// System.out.println("CCC");
 					jointReadings.setRange(i, mapReadings.getAngle(i), map);
 				}
 
-				// System.out.println("chosen: " + jointReadings.getRange(i));
 			}
 			return jointReadings;
 		}
@@ -236,8 +232,6 @@ public class MapBasedSimulation implements Iterable<MobileRobotWrapper> {
 				pose.getY() + largestDimension
 						* (float) Math.sin(Math.toRadians(pose.getHeading())));
 		Line rl = null;
-		// System.out.println("ray: " + l.x1 + " " + l.y1 + ", " + l.x2 + " "
-		// + l.y2);
 
 		if (m_obstacles != null) {
 
@@ -253,33 +247,13 @@ public class MapBasedSimulation implements Iterable<MobileRobotWrapper> {
 
 					Line target = footprint[i];
 
-					// System.out.println("target: " + target.x1 + " " +
-					// target.y1
-					// + ", " + target.x2 + " " + target.y2);
-
 					Point p = LineMap.intersectsAt(target, l);
 
-					// System.out.println("p: " + p);
-
 					if (p == null) {
-						// Does not intersect
-						// System.out.println(i + " checking against: " +
-						// lines[i].x1
-						// + " " + lines[i].y1 + ", " + lines[i].x2 + " "
-						// + lines[i].y2);
-						//
-						// System.out.println("does not intersect");
 						continue;
 					}
 
 					Line tl = new Line(pose.getX(), pose.getY(), p.x, p.y);
-
-					// System.out.println(i + " checking against: " +
-					// lines[i].x1 +
-					// " "
-					// + lines[i].y1 + ", " + lines[i].x2 + " " + lines[i].y2);
-					//
-					// System.out.println("does intersect: " + tl.length());
 
 					// If the range line intersects more than one map line
 					// then take the shortest distance.
@@ -393,8 +367,8 @@ public class MapBasedSimulation implements Iterable<MobileRobotWrapper> {
 	 * 
 	 * @param _config
 	 */
-	public MobileRobotWrapper<MovableRobot> addRobot(MobileRobotConfiguration _config,
-			Pose _start) {
+	public MobileRobotWrapper<MovableRobot> addRobot(
+			MobileRobotConfiguration _config, Pose _start) {
 		MovableRobot robot = new MovableRobot(_config, new MovablePilot(_start));
 		return addRobot(robot, _start);
 	}
@@ -480,8 +454,10 @@ public class MapBasedSimulation implements Iterable<MobileRobotWrapper> {
 	public LocalisedRangeScanner getRanger(MobileRobotWrapper<?> _robot,
 			int _sensorIndex) {
 		for (MobileRobotWrapper<?> wrapper : m_robots) {
-			MobileRobot robot = wrapper.getRobot();
-			if (robot.equals(_robot)) {
+
+			if (wrapper.equals(_robot)) {
+
+				MobileRobot robot = wrapper.getRobot();
 
 				if (robot.getRangeScanners() == null) {
 					throw new NullPointerException(

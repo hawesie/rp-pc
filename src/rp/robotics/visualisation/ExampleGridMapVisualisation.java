@@ -5,12 +5,15 @@ import javax.swing.JFrame;
 import rp.robotics.mapping.GridMap;
 import rp.robotics.mapping.LineMap;
 import rp.robotics.mapping.MapUtils;
+import rp.robotics.simulation.MapBasedSimulation;
+import rp.robotics.testing.TestMaps;
 
 public class ExampleGridMapVisualisation {
 
 	public static void main(String[] args) {
 		// Work on this map
 		LineMap lineMap = MapUtils.create2014Map2();
+		MapBasedSimulation sim = new MapBasedSimulation(lineMap);
 
 		// Grid map configuration
 
@@ -28,6 +31,8 @@ public class ExampleGridMapVisualisation {
 
 		GridMapVisualisation mapVis = new GridMapVisualisation(gridMap,
 				lineMap, 2);
+
+		MapVisualisationComponent.populateVisualisation(mapVis, sim);
 
 		displayVisualisation(mapVis);
 	}

@@ -21,49 +21,49 @@ public class MovablePilot implements PoseProvider {
 
 	public MovablePilot(Pose _startingPose) {
 		m_movable = new NoOpMovable(_startingPose);
-		m_moveThread = new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				while (true) {
-					try {
-						executeMove(m_moves.take());
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-
-			}
-		});
-		m_moveThread.setDaemon(true);
-		m_moveThread.start();
+		// m_moveThread = new Thread(new Runnable() {
+		//
+		// @Override
+		// public void run() {
+		// while (true) {
+		// try {
+		// executeMove(m_moves.take());
+		// } catch (InterruptedException e) {
+		// e.printStackTrace();
+		// }
+		// }
+		//
+		// }
+		// });
+		// m_moveThread.setDaemon(true);
+		// m_moveThread.start();
 	}
 
 	public MovablePilot() {
 		m_movable = new NoOpMovable();
 	}
 
-	private void executeMove(Movable _move) {
+	public void executeMove(Movable _move) {
 		// Update the pose of the movable
+		m_isMoving = true;
 		_move.setPose(m_movable.getPose());
 		m_movable = _move;
-		m_isMoving = true;
 		SimulationCore.getSimulationCore().addAndWaitSteppable(m_movable);
 		m_isMoving = false;
 	}
 
-	/**
-	 * Queues up a move for the pilot.
-	 * 
-	 * @param _move
-	 */
-	public void addMove(Movable _move) {
-		try {
-			m_moves.put(_move);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
+	// /**
+	// * Queues up a move for the pilot.
+	// *
+	// * @param _move
+	// */
+	// public void addMove(Movable _move) {
+	// try {
+	// m_moves.put(_move);
+	// } catch (InterruptedException e) {
+	// e.printStackTrace();
+	// }
+	// }
 
 	@Override
 	public Pose getPose() {

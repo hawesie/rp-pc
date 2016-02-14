@@ -17,13 +17,13 @@ import rp.robotics.visualisation.KillMeNow;
 import rp.robotics.visualisation.MapVisualisationComponent;
 
 /**
- * An example to get you started. Copy this to your own project, rename it and
- * go.
+ * A demo of robots moving about on a grid. Currently the range readings don't
+ * return off other robots and they can't collide into each other.
  * 
  * @author Nick Hawes
  *
  */
-public class MovableSimExample {
+public class ExampleGridMover {
 
 	public void run() {
 

@@ -35,7 +35,6 @@ public class Rotate extends AbstractPoseMove {
 
 	protected void moveStep(Duration _stepInterval) {
 
-		System.out.println("rotate step");
 		float durationSecs = _stepInterval.toMillis() / 1000f;
 		float moveAmount = m_speed * durationSecs;
 		m_pose.rotateUpdate(moveAmount);
