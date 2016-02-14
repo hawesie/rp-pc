@@ -9,7 +9,7 @@ import java.util.UUID;
  *
  */
 public class MobileRobotWrapper<R extends MobileRobot> implements
-		Comparable<MobileRobotWrapper> {
+		Comparable<MobileRobotWrapper<R>> {
 
 	private final UUID m_uuid = UUID.randomUUID();
 
@@ -20,10 +20,11 @@ public class MobileRobotWrapper<R extends MobileRobot> implements
 	}
 
 	@Override
-	public int compareTo(MobileRobotWrapper _that) {
+	public int compareTo(MobileRobotWrapper<R> _that) {
 		return this.m_uuid.compareTo(_that.m_uuid);
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public boolean equals(Object _that) {
 		if (_that instanceof MobileRobotWrapper) {
