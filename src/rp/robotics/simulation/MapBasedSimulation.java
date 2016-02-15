@@ -23,6 +23,7 @@ import rp.robotics.MobileRobotWrapper;
 import rp.robotics.TouchSensorEvent;
 import rp.robotics.TouchSensorListener;
 import rp.robotics.mapping.LineMap;
+import rp.util.SensorUtils;
 
 /**
  * This combines a simulated robot with a map to create a simple simulation of
@@ -34,10 +35,11 @@ import rp.robotics.mapping.LineMap;
  *
  */
 @SuppressWarnings("rawtypes")
-public class MapBasedSimulation implements Iterable<MobileRobotWrapper> {
+public class MapBasedSimulation implements
+		Iterable<MobileRobotWrapper<? extends MobileRobot>> {
 
 	protected final LineMap m_map;
-	protected final ArrayList<MobileRobotWrapper> m_robots = new ArrayList<MobileRobotWrapper>();
+	protected final ArrayList<MobileRobotWrapper<? extends MobileRobot>> m_robots = new ArrayList<>();
 
 	private boolean m_running = false;
 
@@ -65,11 +67,13 @@ public class MapBasedSimulation implements Iterable<MobileRobotWrapper> {
 	private class RelativeRangeScanner implements LocalisedRangeScanner {
 		final PoseProvider poser;
 		final RangeScannerDescription scannerDesc;
+		final MobileRobotWrapper<?> robotWrapper;
 
 		public RelativeRangeScanner(PoseProvider _poser,
-				RangeScannerDescription _desc) {
+				RangeScannerDescription _desc, MobileRobotWrapper<?> _wrapper) {
 			poser = _poser;
 			scannerDesc = _desc;
+			robotWrapper = _wrapper;
 		}
 
 		@Override
@@ -95,34 +99,13 @@ public class MapBasedSimulation implements Iterable<MobileRobotWrapper> {
 		@Override
 		public RangeReadings getRangeValues() {
 
-			RangeReadings obstacleReadings = takeReadingsToObstacle(
-					poser.getPose(), scannerDesc);
+			RangeReadings obstacleReadings = takeReadingsToNonMapThings(
+					poser.getPose(), scannerDesc, robotWrapper);
 
 			RangeReadings mapReadings = m_map.takeReadings(poser.getPose(),
 					scannerDesc);
 
-			RangeReadings jointReadings = new RangeReadings(
-					obstacleReadings.getNumReadings());
-
-			for (int i = 0; i < obstacleReadings.getNumReadings(); i++) {
-				float map = mapReadings.getRange(i);
-				float obs = obstacleReadings.getRange(i);
-
-				// System.out.println("map: " + mapReadings.getRange(i));
-				// System.out.println("obs: " + obstacleReadings.getRange(i));
-
-				if (RangeScannerDescription.isValidReading(map)
-						&& RangeScannerDescription.isValidReading(obs)) {
-					jointReadings.setRange(i, mapReadings.getAngle(i),
-							Math.min(map, obs));
-				} else if (!RangeScannerDescription.isValidReading(map)) {
-					jointReadings.setRange(i, mapReadings.getAngle(i), obs);
-				} else {
-					jointReadings.setRange(i, mapReadings.getAngle(i), map);
-				}
-
-			}
-			return jointReadings;
+			return SensorUtils.getMinimumValues(obstacleReadings, mapReadings);
 		}
 
 		@Override
@@ -220,9 +203,10 @@ public class MapBasedSimulation implements Iterable<MobileRobotWrapper> {
 	 * 
 	 * @param pose
 	 *            the pose of the robot
+	 * @param _robotWrapper
 	 * @return the range or -1 if not in range
 	 */
-	private float rangeToObstacle(Pose pose) {
+	private float rangeToObstacle(Pose pose, MobileRobotWrapper<?> _robotWrapper) {
 
 		float largestDimension = Math.max(m_map.getBoundingRect().width,
 				m_map.getBoundingRect().width);
@@ -263,18 +247,56 @@ public class MapBasedSimulation implements Iterable<MobileRobotWrapper> {
 				}
 
 			}
-			return (rl == null ? -1 : rl.length());
-		} else {
-			return RangeScannerDescription.OUT_OF_RANGE_VALUE;
 		}
+
+//		System.out.println("to obstacle: " + rl);
+
+		for (MobileRobotWrapper<? extends MobileRobot> wrapper : m_robots) {
+
+			if (!wrapper.equals(_robotWrapper)) {
+
+				Line[] footprint = new Line[wrapper.getRobot().getFootprint().length];
+
+				// transform footprint to it's pose location
+				GeometryUtils.transform(wrapper.getRobot().getPose(), wrapper
+						.getRobot().getFootprint(), footprint);
+
+				for (int i = 0; i < footprint.length; i++) {
+
+					Line target = footprint[i];
+
+					Point p = LineMap.intersectsAt(target, l);
+
+					if (p == null) {
+						continue;
+					}
+
+					Line tl = new Line(pose.getX(), pose.getY(), p.x, p.y);
+
+					// If the range line intersects more than one map line
+					// then take the shortest distance.
+					if (rl == null || tl.length() < rl.length()) {
+						rl = tl;
+					}
+				}
+
+			}
+
+		}
+
+		return (rl == null ? RangeFinderDescription.OUT_OF_RANGE_VALUE : rl
+				.length());
+
 	}
 
 	/**
 	 * Obtain range readings from obstacles at the predefined angles relative to
 	 * the robot
+	 * 
+	 * @param _robotWrapper
 	 */
-	private RangeReadings takeReadingsToObstacle(Pose _robotPose,
-			RangeScannerDescription _ranger) {
+	private RangeReadings takeReadingsToNonMapThings(Pose _robotPose,
+			RangeScannerDescription _ranger, MobileRobotWrapper<?> _robotWrapper) {
 
 		float[] readingAngles = _ranger.getReadingAngles();
 
@@ -292,7 +314,7 @@ public class MapBasedSimulation implements Iterable<MobileRobotWrapper> {
 			readingPose.setHeading(readingPoseHeading + readingAngles[i]);
 
 			// and take a reading from there
-			float obsRange = rangeToObstacle(readingPose);
+			float obsRange = rangeToObstacle(readingPose, _robotWrapper);
 
 			// System.out.println("obsRange: " + obsRange);
 			// System.out.println(_ranger.getMaxRange());
@@ -472,7 +494,8 @@ public class MapBasedSimulation implements Iterable<MobileRobotWrapper> {
 					}
 
 					RelativeRangeScanner ranger = new RelativeRangeScanner(
-							robot, robot.getRangeScanners().get(_sensorIndex));
+							robot, robot.getRangeScanners().get(_sensorIndex),
+							wrapper);
 					m_rangers.add(ranger);
 					return ranger;
 
@@ -488,11 +511,11 @@ public class MapBasedSimulation implements Iterable<MobileRobotWrapper> {
 	}
 
 	@Override
-	public Iterator<MobileRobotWrapper> iterator() {
+	public Iterator<MobileRobotWrapper<? extends MobileRobot>> iterator() {
 		return m_robots.iterator();
 	}
 
-	public ArrayList<MobileRobotWrapper> getRobots() {
+	public ArrayList<MobileRobotWrapper<? extends MobileRobot>> getRobots() {
 		return m_robots;
 	}
 

@@ -48,7 +48,7 @@ public class ExampleGridMover {
 
 		for (int i = 0; i < 5; i++) {
 			// Starting point on the grid
-			GridPose gridStart = new GridPose(8, 8, Heading.PLUS_X);
+			GridPose gridStart = new GridPose(2 * i, 2 * i, Heading.PLUS_X);
 
 			MobileRobotWrapper<MovableRobot> wrapper = sim.addRobot(
 					SimulatedRobots.makeConfiguration(false, true),
@@ -89,7 +89,7 @@ public class ExampleGridMover {
 	}
 
 	public static void main(String[] args) {
-		MovableSimExample demo = new MovableSimExample();
+		ExampleGridMover demo = new ExampleGridMover();
 		demo.run();
 	}
 
