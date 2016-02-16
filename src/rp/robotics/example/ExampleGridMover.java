@@ -27,6 +27,42 @@ public class ExampleGridMover {
 
 	public void run() {
 
+		GridMap map = TestMaps.warehouseMap();
+
+		// Create the simulation using the given map. This simulation can run
+		// with a GUI.
+		MapBasedSimulation sim = new MapBasedSimulation(map);
+
+		// Add a robot of a given configuration to the simulation. The return
+		// value is the object you can use to control the robot. //
+
+		int robots = 3;
+		for (int i = 0; i < robots; i++) {
+			// Starting point on the grid
+			GridPose gridStart = new GridPose(3 * i, 0, Heading.PLUS_Y);
+
+			MobileRobotWrapper<MovableRobot> wrapper = sim.addRobot(
+					SimulatedRobots.makeConfiguration(false, true),
+					map.toPose(gridStart));
+
+			RangeFinder ranger = sim.getRanger(wrapper);
+
+			RandomGridWalk controller = new RandomGridWalk(wrapper.getRobot(),
+					map, gridStart, ranger);
+
+			new Thread(controller).start();
+		}
+
+		GridMapVisualisation viz = new GridMapVisualisation(map, sim.getMap());
+
+		MapVisualisationComponent.populateVisualisation(viz, sim);
+
+		// Add the visualisation to a JFrame to display it
+		displayVisualisation(viz);
+	}
+
+	public void bigEmptyMap() {
+
 		// Create the simulation using the given map. This simulation can run
 		// with a GUI.
 		MapBasedSimulation sim = new MapBasedSimulation(TestMaps.EMPTY_8_x_6);
