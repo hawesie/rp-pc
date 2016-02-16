@@ -17,15 +17,14 @@ import rp.robotics.visualisation.KillMeNow;
 import rp.robotics.visualisation.MapVisualisationComponent;
 
 /**
- * A demo of robots moving about on a grid. Currently the range readings don't
- * return off other robots and they can't collide into each other.
+ * A demo of robots moving about on a grid. 
  * 
  * @author Nick Hawes
  *
  */
 public class ExampleGridMover {
 
-	public void run() {
+	public void warehouseMap() {
 
 		GridMap map = TestMaps.warehouseMap();
 
@@ -126,7 +125,7 @@ public class ExampleGridMover {
 
 	public static void main(String[] args) {
 		ExampleGridMover demo = new ExampleGridMover();
-		demo.run();
+		demo.warehouseMap();
 	}
 
 }
