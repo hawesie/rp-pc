@@ -15,6 +15,8 @@ import rp.robotics.MobileRobotWrapper;
 import rp.robotics.mapping.MapUtils;
 import rp.robotics.simulation.Drive;
 import rp.robotics.simulation.MapBasedSimulation;
+import rp.robotics.simulation.Movable;
+import rp.robotics.simulation.MovableQueue;
 import rp.robotics.simulation.SimulatedRobots;
 import rp.robotics.simulation.SimulatorListener;
 import rp.robotics.simulation.TranslationObstacle;
@@ -46,7 +48,7 @@ public class Ex2Tests extends AbstractTestHarness {
 	 * @param _obstacleStartX
 	 *            The x position the robot will start at *
 	 * @param _obstacleSpeed
-	 *            The speed at which the robot will move
+	 *            The speed at which the obstacle will move
 	 * @param _limit
 	 *            The distance (in metres) within which the robot must stay of
 	 *            the obstacle
@@ -61,8 +63,8 @@ public class Ex2Tests extends AbstractTestHarness {
 			float _robotStartX, float _obstacleStartX, float _obstacleSpeed,
 			float _limit, Duration _allowableOutsideLimit, Duration _startupTime) {
 		return createRangeLimitTest(_robotStartX, _obstacleStartX,
-				_obstacleSpeed, _limit, _allowableOutsideLimit, _startupTime,
-				null);
+				new float[] { _obstacleSpeed }, _limit, _allowableOutsideLimit,
+				_startupTime, null);
 	}
 
 	/**
@@ -73,8 +75,8 @@ public class Ex2Tests extends AbstractTestHarness {
 	 *            The x position the robot will start at
 	 * @param _obstacleStartX
 	 *            The x position the robot will start at *
-	 * @param _obstacleSpeed
-	 *            The speed at which the robot will move
+	 * @param _obstacleSpeeds
+	 *            The speeds at which the obstacle will move
 	 * @param _limit
 	 *            The distance (in metres) within which the robot must stay of
 	 *            the obstacle
@@ -88,29 +90,49 @@ public class Ex2Tests extends AbstractTestHarness {
 	 * @return The test.
 	 */
 	public <C extends StoppableRunnable> RangeLimitTest<?> createRangeLimitTest(
-			float _robotStartX, float _obstacleStartX, float _obstacleSpeed,
+			float _robotStartX, float _obstacleStartX, float[] _obstacleSpeeds,
 			float _limit, Duration _allowableOutsideLimit,
 			Duration _startupTime, SimulatorListener _listener) {
 		try {
 
 			float mapWidth = 16f;
 
+			float minObstacleSpeed = Float.MAX_VALUE;
+			for (float f : _obstacleSpeeds) {
+				minObstacleSpeed = Math.min(minObstacleSpeed, f);
+			}
+
 			MapBasedSimulation sim = new MapBasedSimulation(
 					MapUtils.createRectangularMap(mapWidth, 1));
 
 			float moveDistance = mapWidth - _obstacleStartX;
-			double testMaxDurationSecs = (moveDistance / _obstacleSpeed) / 2;
+			double testMaxDurationSecs = (moveDistance / minObstacleSpeed) / 2;
+
+			// we're only testing for half the duration, so reduce the distance
+			// with some wiggle room so the robot doesn't stop.
+			moveDistance = moveDistance * 0.75f;
+
 			Duration timeout = Duration
 					.ofMillis((long) (1000d * testMaxDurationSecs));
 
+			Movable[] moves = new Movable[_obstacleSpeeds.length];
+			for (int i = 0; i < _obstacleSpeeds.length; i++) {
+
+				// System.out.println("Speed: " + _obstacleSpeeds[i] + " dist "
+				// + moveDistance / _obstacleSpeeds.length);
+				moves[i] = new Drive(_obstacleSpeeds[i], moveDistance
+						/ _obstacleSpeeds.length);
+			}
+
 			sim.addObstacle(new TranslationObstacle(new Line[] { new Line(0,
-					0.5f, 0, -0.5f) }, new Drive(new Pose(
-					_obstacleStartX, 0.5f, 0f), _obstacleSpeed, 13f)));
+					0.5f, 0, -0.5f) }, new MovableQueue(new Pose(
+					_obstacleStartX, 0.5f, 0f), moves)));
 
 			Pose start = new Pose(_robotStartX, 0.5f, 0f);
 
 			MobileRobotWrapper<DifferentialDriveRobot> wrapper = sim.addRobot(
-					SimulatedRobots.makeWheeledConfiguration(false, true), start);
+					SimulatedRobots.makeWheeledConfiguration(false, true),
+					start);
 			LocalisedRangeScanner ranger = sim.getRanger(wrapper);
 			RangeScannerDescription desc = wrapper.getRobot()
 					.getRangeScanners().get(0);
@@ -135,6 +157,7 @@ public class Ex2Tests extends AbstractTestHarness {
 			t.printStackTrace();
 			return null;
 		}
+
 	}
 
 	public RangeLimitTest<?> createFastTest() {
@@ -150,6 +173,11 @@ public class Ex2Tests extends AbstractTestHarness {
 	public RangeLimitTest<?> createSlowTest() {
 		return createRangeLimitTest(1.5f, 3f, 0.08f, 0.5f,
 				Duration.ofSeconds(2), Duration.ofSeconds(5));
+	}
+
+	public RangeLimitTest<?> createMediumToFastTest() {
+		return createRangeLimitTest(2f, 3f, new float[] { 0.15f, 0.25f }, 0.5f,
+				Duration.ofSeconds(2), Duration.ofSeconds(5), null);
 	}
 
 	@Test

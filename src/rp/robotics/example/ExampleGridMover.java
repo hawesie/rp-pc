@@ -17,7 +17,7 @@ import rp.robotics.visualisation.KillMeNow;
 import rp.robotics.visualisation.MapVisualisationComponent;
 
 /**
- * A demo of robots moving about on a grid. 
+ * A demo of robots moving about on a grid.
  * 
  * @author Nick Hawes
  *

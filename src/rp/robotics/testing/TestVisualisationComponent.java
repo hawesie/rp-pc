@@ -10,25 +10,28 @@ import rp.robotics.visualisation.MapVisualisationComponent;
 public class TestVisualisationComponent {
 
 	public static MapVisualisationComponent createVisualisationForTest(
-			MapBasedSimulation _sim, ZoneSequenceTest<?> _test) {
-
-		ZoneSequenceTest<?> test = (ZoneSequenceTest<?>) _test;
-		MapVisualisationComponent visualisation = new ZoneSequenceTestVisualisation(
-				_sim.getMap(), test);
-
-		MapVisualisationComponent.populateVisualisation(visualisation, _sim);
-
-		return visualisation;
-	}
-
-	public static MapVisualisationComponent createVisualisationForTest(
 			MapBasedSimulation _sim, RobotTest<?> _test) {
 
-		MapVisualisationComponent visualisation = new MapVisualisationComponent(
-				_sim.getMap(), 75f);
+		if (ZoneSequenceTest.class.isAssignableFrom(_test.getClass())) {
 
-		MapVisualisationComponent.populateVisualisation(visualisation, _sim);
+			ZoneSequenceTest<?> test = (ZoneSequenceTest<?>) _test;
+			MapVisualisationComponent visualisation = new ZoneSequenceTestVisualisation(
+					_sim.getMap(), test);
 
-		return visualisation;
+			MapVisualisationComponent
+					.populateVisualisation(visualisation, _sim);
+
+			return visualisation;
+
+		} else {
+
+			MapVisualisationComponent visualisation = new MapVisualisationComponent(
+					_sim.getMap(), 75f);
+
+			MapVisualisationComponent
+					.populateVisualisation(visualisation, _sim);
+
+			return visualisation;
+		}
 	}
 }

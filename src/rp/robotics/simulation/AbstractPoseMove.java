@@ -52,7 +52,7 @@ public abstract class AbstractPoseMove implements Movable {
 
 		if (m_pose != null) {
 			synchronized (m_pose) {
-				moveStep(_stepInterval);
+				moveStep(_now, _stepInterval);
 			}
 
 		} else {
@@ -61,5 +61,5 @@ public abstract class AbstractPoseMove implements Movable {
 		}
 	}
 
-	protected abstract void moveStep(Duration _stepInterval);
+	protected abstract void moveStep(Instant _now, Duration _stepInterval);
 }

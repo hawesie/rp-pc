@@ -1,6 +1,7 @@
 package rp.robotics.simulation;
 
 import java.time.Duration;
+import java.time.Instant;
 
 import lejos.robotics.navigation.Pose;
 
@@ -33,7 +34,7 @@ public class Rotate extends AbstractPoseMove {
 		this(null, _speed, _rotateAmount);
 	}
 
-	protected void moveStep(Duration _stepInterval) {
+	protected void moveStep(Instant _now, Duration _stepInterval) {
 
 		float durationSecs = _stepInterval.toMillis() / 1000f;
 		float moveAmount = m_speed * durationSecs;
