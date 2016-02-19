@@ -134,8 +134,8 @@ public class Ex2Tests extends AbstractTestHarness {
 			Pose start = new Pose(_robotStartX, 0.5f, 0f);
 
 			MobileRobotWrapper<DifferentialDriveRobot> wrapper = sim.addRobot(
-					SimulatedRobots.makeWheeledConfiguration(false, true),
-					start);
+					SimulatedRobots.makeWheeledConfiguration(
+							sim.getSimulationCore(), false, true), start);
 			LocalisedRangeScanner ranger = sim.getRanger(wrapper);
 			RangeScannerDescription desc = wrapper.getRobot()
 					.getRangeScanners().get(0);

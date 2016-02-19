@@ -8,7 +8,6 @@ import java.time.Instant;
 
 import rp.robotics.MobileRobot;
 import rp.robotics.simulation.MapBasedSimulation;
-import rp.robotics.simulation.SimulationCore;
 import rp.robotics.simulation.SimulationSteppable;
 import rp.systems.StoppableRunnable;
 
@@ -26,6 +25,8 @@ public abstract class DistanceLimitTest<C extends StoppableRunnable> extends
 	private final float m_rangeLimit;
 	private final Duration m_allowableOutsideLimit;
 	private final Duration m_startupTime;
+	private boolean m_failed = false;
+	private AssertionError m_error;
 
 	public DistanceLimitTest(MapBasedSimulation _sim, float _limit,
 			C _controller, MobileRobot _poser, Duration _timeout,
@@ -59,60 +60,68 @@ public abstract class DistanceLimitTest<C extends StoppableRunnable> extends
 
 		try {
 			t.start();
-			SimulationCore.getSimulationCore().addAndWaitSteppable(
+			m_sim.getSimulationCore().addAndWaitSteppable(
 					new SimulationSteppable() {
 
-						boolean failed = false;
 						boolean ended = false;
 						Instant lastGood;
 
 						@Override
 						public void step(Instant _now, Duration _stepInterval) {
 
-							assert !remove();
-
 							// System.out.println("now: " + _now);
 							// System.out.println("end: " + endAt);
+							// System.out.println("after: " + startAfter);
+							// System.out.println("last: " + lastGood);
 
-							if (_now.isAfter(endAt)) {
-								ended = true;
-								System.out
-										.println("Successfully reached end of test");
-							} else if (lastGood != null
-									&& _now.isAfter(startAfter)) {
+							try {
+								assert !remove();
 
-								float reading = getDistance();
+								if (_now.isAfter(endAt)) {
+									ended = true;
+									System.out
+											.println("Successfully reached end of test");
+								} else if (lastGood != null
+										&& _now.isAfter(startAfter)) {
 
-								// System.out.println(reading);
+									float reading = getDistance();
 
-								if (reading <= 0.03) {
-									failed = true;
+									// System.out.println(reading);
 
-									fail("Robot is too close to obstacle. Range reading: "
-											+ reading);
-								} else if (isWithinRange(reading)) {
-									// System.out.println("Good reading!");
+									if (reading <= 0.03) {
+
+										fail("Robot is too close to obstacle. Range reading: "
+												+ reading);
+									} else if (isWithinRange(reading)) {
+										// System.out.println("Good reading!");
+										lastGood = _now;
+									} else if (Duration.between(lastGood, _now)
+											.compareTo(m_allowableOutsideLimit) > 0) {
+
+										fail("Range exceeded limit of "
+												+ m_rangeLimit
+												+ " for longer than allowable duration of "
+												+ m_allowableOutsideLimit);
+									}
+
+								} else {
 									lastGood = _now;
-								} else if (Duration.between(lastGood, _now)
-										.compareTo(m_allowableOutsideLimit) > 0) {
-									failed = true;
-
-									fail("Range exceeded limit of "
-											+ m_rangeLimit
-											+ " for longer than allowable duration of "
-											+ m_allowableOutsideLimit);
 								}
-
-							} else {
-								lastGood = _now;
+							} catch (AssertionError e) {
+								m_failed = true;
+								m_error = e;
 							}
 						}
 
 						@Override
 						public boolean remove() {
-							return failed || ended;
+							return m_failed || ended;
 						}
 					});
+
+			if (m_failed) {
+				throw m_error;
+			}
 
 		} finally {
 
@@ -132,5 +141,4 @@ public abstract class DistanceLimitTest<C extends StoppableRunnable> extends
 			}
 		}
 	}
-
 }

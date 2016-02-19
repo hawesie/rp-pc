@@ -49,6 +49,11 @@ public class SimulatedMotor implements RegulatedMotor {
 	private Thread m_moveThread;
 	private int m_limitAngle;
 	private Thread m_regulateThread;
+	private final SimulationCore m_sim;
+
+	public SimulatedMotor(SimulationCore _sim) {
+		m_sim = _sim;
+	}
 
 	private void notifyListener(boolean _started) {
 		if (m_listener != null) {
@@ -99,8 +104,7 @@ public class SimulatedMotor implements RegulatedMotor {
 			}
 		};
 
-		SimulationCore.getSimulationCore().addAndWaitSteppable(
-				regulateSteppable);
+		m_sim.addAndWaitSteppable(regulateSteppable);
 
 		m_measuredSpeed = 0;
 	}
@@ -172,7 +176,7 @@ public class SimulatedMotor implements RegulatedMotor {
 			}
 		};
 
-		SimulationCore.getSimulationCore().addAndWaitSteppable(moveSteppable);
+		m_sim.addAndWaitSteppable(moveSteppable);
 
 		// need to set this if the tacho predicate stopped the move
 		m_isMoving = false;
@@ -416,8 +420,9 @@ public class SimulatedMotor implements RegulatedMotor {
 	}
 
 	public static void main(String[] args) {
-		SimulatedMotor motor1 = new SimulatedMotor();
-		SimulatedMotor motor2 = new SimulatedMotor();
+		SimulationCore sim = SimulationCore.createSimulationCore();
+		SimulatedMotor motor1 = new SimulatedMotor(sim);
+		SimulatedMotor motor2 = new SimulatedMotor(sim);
 		motor1.forward();
 		motor2.forward();
 		int prev = 0;

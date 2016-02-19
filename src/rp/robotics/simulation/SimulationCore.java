@@ -77,20 +77,11 @@ public class SimulationCore extends Thread {
 		}
 	}
 
-	private static SimulationCore m_core;
-	private static final Object m_lock = new Object();
 	private final LinkedList<SteppableWrapper> m_wrappers = new LinkedList<SteppableWrapper>();
 	private final ConcurrentLinkedQueue<Pair<SimulationSteppable, Integer>> m_toAdd = new ConcurrentLinkedQueue<>();
 
-	// void add
-
-	public static SimulationCore getSimulationCore() {
-		synchronized (m_lock) {
-			if (m_core == null) {
-				m_core = new SimulationCore();
-			}
-			return m_core;
-		}
+	public static SimulationCore createSimulationCore() {
+		return new SimulationCore();
 	}
 
 	private final double m_targetRate;
@@ -124,7 +115,7 @@ public class SimulationCore extends Thread {
 
 		Pair<SimulationSteppable, Integer> pair = m_toAdd.poll();
 
-//		int in = 0;
+		// int in = 0;
 
 		while (pair != null) {
 
@@ -195,8 +186,10 @@ public class SimulationCore extends Thread {
 					wrapper.step(now);
 				}
 
-			} catch (Throwable t) {
-				t.printStackTrace();
+			} catch (Exception e) {
+				System.out.println("caught in SimulationCore.run(): "
+						+ e.getMessage());
+				e.printStackTrace();
 			}
 
 			r.sleep();
@@ -235,7 +228,8 @@ public class SimulationCore extends Thread {
 					_steppable.wait(100);
 				} catch (InterruptedException e) {
 					except = true;
-					System.out.println("caught: " + e.getMessage());
+					System.out.println("caught in waitSteppable: "
+							+ e.getMessage());
 					e.printStackTrace();
 					return;
 				}

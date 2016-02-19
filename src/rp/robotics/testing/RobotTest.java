@@ -18,6 +18,7 @@ public abstract class RobotTest<C extends StoppableRunnable> implements
 	private ArrayList<SimulatorListener> m_simulatorListeners;
 	protected final MapBasedSimulation m_sim;
 
+	
 	public RobotTest(MapBasedSimulation _sim, C _controller,
 			MobileRobot _poser, long _timeout) {
 		this(_sim, _controller, _poser, Duration.ofMillis(_timeout));

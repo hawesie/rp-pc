@@ -34,8 +34,8 @@ public class ZoneSequenceTest<C extends StoppableRunnable> extends RobotTest<C>
 	private boolean m_failIfOutOfSequence;
 	private final ZoneSequence m_sequence;
 
-	public ZoneSequenceTest(MapBasedSimulation _sim, ZoneSequence _sequence, C _controller,
-			MobileRobot _poser, long _timeout,
+	public ZoneSequenceTest(MapBasedSimulation _sim, ZoneSequence _sequence,
+			C _controller, MobileRobot _poser, long _timeout,
 			boolean _failIfOutOfSequence) {
 		super(_sim, _controller, _poser, _timeout);
 		m_sequence = _sequence;
@@ -62,7 +62,7 @@ public class ZoneSequenceTest<C extends StoppableRunnable> extends RobotTest<C>
 		zones.peek().setStatus(Status.LIVE);
 		try {
 			t.start();
-			SimulationCore.getSimulationCore().addAndWaitSteppable(
+			m_sim.getSimulationCore().addAndWaitSteppable(
 					new SimulationSteppable() {
 
 						boolean failed = false;

@@ -155,7 +155,8 @@ public class AbstractTestHarness {
 			Pose start = _sequence.getStart();
 
 			MobileRobotWrapper<DifferentialDriveRobot> wrapper = sim.addRobot(
-					SimulatedRobots.makeWheeledConfiguration(true, true), start);
+					SimulatedRobots.makeWheeledConfiguration(
+							sim.getSimulationCore(), true, true), start);
 
 			Object[] args = new Object[_args.length + 1];
 			args[0] = wrapper.getRobot();

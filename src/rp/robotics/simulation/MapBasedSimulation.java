@@ -47,6 +47,7 @@ public class MapBasedSimulation implements
 	private ArrayList<SimulatorListener> m_simulatorListeners;
 	private ArrayList<DynamicObstacle> m_obstacles;
 	private ArrayList<RelativeRangeScanner> m_rangers;
+	private final SimulationCore m_sim;
 
 	private class FootprintTouchPair {
 		final PoseProvider poser;
@@ -133,6 +134,7 @@ public class MapBasedSimulation implements
 
 	public MapBasedSimulation(LineMap _map) {
 		m_map = _map;
+		m_sim = SimulationCore.createSimulationCore();
 	}
 
 	public void addSimulatorListener(SimulatorListener _listener) {
@@ -145,55 +147,52 @@ public class MapBasedSimulation implements
 	private void start() {
 
 		m_running = true;
-		SimulationCore.getSimulationCore().addSteppable(
-				new SimulationSteppable() {
+		m_sim.addSteppable(new SimulationSteppable() {
 
-					@Override
-					public void step(Instant _now, Duration _stepInterval) {
+			@Override
+			public void step(Instant _now, Duration _stepInterval) {
 
-						if (m_touchSensors != null) {
-							synchronized (m_touchSensors) {
-								for (FootprintTouchPair sensor : m_touchSensors) {
-									if (isInCollision(sensor.poser.getPose(),
-											sensor.footprint)) {
-										if (!sensor.triggered) {
-											sensor.triggered = true;
+				if (m_touchSensors != null) {
+					synchronized (m_touchSensors) {
+						for (FootprintTouchPair sensor : m_touchSensors) {
+							if (isInCollision(sensor.poser.getPose(),
+									sensor.footprint)) {
+								if (!sensor.triggered) {
+									sensor.triggered = true;
 
-											long start = System
-													.currentTimeMillis();
-											sensor.listener
-													.sensorPressed(new TouchSensorEvent(
-															100, 3));
+									long start = System.currentTimeMillis();
+									sensor.listener
+											.sensorPressed(new TouchSensorEvent(
+													100, 3));
 
-											long responseTime = System
-													.currentTimeMillis()
-													- start;
-											callListenersSensorPressed(
-													sensor.robot, responseTime);
-										}
-									} else if (sensor.triggered) {
-										sensor.triggered = false;
-									}
+									long responseTime = System
+											.currentTimeMillis() - start;
+									callListenersSensorPressed(sensor.robot,
+											responseTime);
 								}
-							}
-						}
-
-						synchronized (m_robots) {
-							for (MobileRobotWrapper robot : m_robots) {
-
-								if (isInCollision(robot.getRobot())) {
-									// System.out.println("In collision");
-									robot.getRobot().startCollision();
-								}
+							} else if (sensor.triggered) {
+								sensor.triggered = false;
 							}
 						}
 					}
+				}
 
-					@Override
-					public boolean remove() {
-						return !m_running;
+				synchronized (m_robots) {
+					for (MobileRobotWrapper robot : m_robots) {
+
+						if (isInCollision(robot.getRobot())) {
+							// System.out.println("In collision");
+							robot.getRobot().startCollision();
+						}
 					}
-				});
+				}
+			}
+
+			@Override
+			public boolean remove() {
+				return !m_running;
+			}
+		});
 
 	}
 
@@ -249,7 +248,7 @@ public class MapBasedSimulation implements
 			}
 		}
 
-//		System.out.println("to obstacle: " + rl);
+		// System.out.println("to obstacle: " + rl);
 
 		for (MobileRobotWrapper<? extends MobileRobot> wrapper : m_robots) {
 
@@ -391,7 +390,8 @@ public class MapBasedSimulation implements
 	 */
 	public MobileRobotWrapper<MovableRobot> addRobot(
 			MobileRobotConfiguration _config, Pose _start) {
-		MovableRobot robot = new MovableRobot(_config, new MovablePilot(_start));
+		MovableRobot robot = new MovableRobot(_config, new MovablePilot(_start,
+				getSimulationCore()));
 		return addRobot(robot, _start);
 	}
 
@@ -466,7 +466,7 @@ public class MapBasedSimulation implements
 		}
 
 		m_obstacles.add(_obstacle);
-		SimulationCore.getSimulationCore().addSteppable(_obstacle);
+		getSimulationCore().addSteppable(_obstacle);
 	}
 
 	public LocalisedRangeScanner getRanger(MobileRobotWrapper<?> _robot) {
@@ -525,6 +525,10 @@ public class MapBasedSimulation implements
 
 	public ArrayList<RelativeRangeScanner> getRangers() {
 		return m_rangers;
+	}
+
+	public SimulationCore getSimulationCore() {
+		return m_sim;
 	}
 
 }

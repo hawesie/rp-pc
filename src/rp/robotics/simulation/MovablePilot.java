@@ -18,9 +18,11 @@ public class MovablePilot implements PoseProvider {
 	private Movable m_movable;
 	private final BlockingQueue<Movable> m_moves = new LinkedBlockingQueue<>();
 	private Thread m_moveThread;
+	private final SimulationCore m_sim;
 
-	public MovablePilot(Pose _startingPose) {
+	public MovablePilot(Pose _startingPose, SimulationCore _sim) {
 		m_movable = new NoOpMovable(_startingPose);
+		m_sim = _sim;
 		// m_moveThread = new Thread(new Runnable() {
 		//
 		// @Override
@@ -39,8 +41,9 @@ public class MovablePilot implements PoseProvider {
 		// m_moveThread.start();
 	}
 
-	public MovablePilot() {
+	public MovablePilot(SimulationCore _sim) {
 		m_movable = new NoOpMovable();
+		m_sim = _sim;
 	}
 
 	public void executeMove(Movable _move) {
@@ -48,7 +51,7 @@ public class MovablePilot implements PoseProvider {
 		m_isMoving = true;
 		_move.setPose(m_movable.getPose());
 		m_movable = _move;
-		SimulationCore.getSimulationCore().addAndWaitSteppable(m_movable);
+		m_sim.addAndWaitSteppable(m_movable);
 		m_isMoving = false;
 	}
 

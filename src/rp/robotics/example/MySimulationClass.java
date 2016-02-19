@@ -29,8 +29,10 @@ public class MySimulationClass {
 		// The dimensions of the simulated robot are defined in metres, thus all
 		// other parts of your code should use metres too.
 		MobileRobotWrapper<DifferentialDriveRobot> wrapper = sim.addRobot(
-				SimulatedRobots.EXPRESS_BOT_WITH_SENSORS, new Pose(3f, 3f, 0));
-
+				SimulatedRobots.makeWheeledConfiguration(
+						sim.getSimulationCore(), true, true), new Pose(0.5f,
+						0.5f, 0));
+		
 		sim.getRanger(wrapper);
 
 		// This is the controller that actually makes the robot move
