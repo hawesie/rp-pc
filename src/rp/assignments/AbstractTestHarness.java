@@ -78,7 +78,7 @@ public class AbstractTestHarness {
 						+ " returned a null controller, so failing");
 			}
 
-			System.out.println(" on: " + controller);
+//			System.out.println(" on: " + controller);
 
 			return (Obj) controller;
 
