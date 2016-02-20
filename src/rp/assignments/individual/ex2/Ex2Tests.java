@@ -1,5 +1,7 @@
 package rp.assignments.individual.ex2;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.time.Duration;
 
 import lejos.geom.Line;
@@ -18,6 +20,7 @@ import rp.robotics.simulation.MapBasedSimulation;
 import rp.robotics.simulation.Movable;
 import rp.robotics.simulation.MovableQueue;
 import rp.robotics.simulation.SimulatedRobots;
+import rp.robotics.simulation.SimulationCore;
 import rp.robotics.simulation.SimulatorListener;
 import rp.robotics.simulation.TranslationObstacle;
 import rp.robotics.testing.DistanceLimitTest;
@@ -66,6 +69,21 @@ public class Ex2Tests extends AbstractTestHarness {
 		return createRangeLimitTest(_robotStartX, _obstacleStartX,
 				new float[] { _obstacleSpeed }, _limit, _allowableOutsideLimit,
 				_startupTime, null);
+	}
+
+	private <C extends StoppableRunnable> void setSim(C _controller,
+			MapBasedSimulation _sim) {
+		try {
+			Method method = _controller.getClass().getMethod("setSimulation",
+					SimulationCore.class);
+			method.invoke(_controller, _sim.getSimulationCore());
+
+		} catch (NoSuchMethodException e) {
+		} catch (SecurityException e) {
+		} catch (IllegalAccessException e) {
+		} catch (IllegalArgumentException e) {
+		} catch (InvocationTargetException e) {
+		}
 	}
 
 	/**
@@ -145,6 +163,8 @@ public class Ex2Tests extends AbstractTestHarness {
 
 			C controller = getTestObject("createRangeController",
 					StoppableRunnable.class, args);
+
+			setSim(controller, sim);
 
 			DistanceLimitTest<C> test = new PoseDistanceLimitTest<>(sim,
 					wrapper.getRobot(), obstacle, _limit, controller,
