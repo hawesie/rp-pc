@@ -164,7 +164,9 @@ public class Ex2Tests extends AbstractTestHarness {
 			C controller = getTestObject("createRangeController",
 					StoppableRunnable.class, args);
 
-			setSim(controller, sim);
+			if (controller != null) {
+				setSim(controller, sim);
+			}
 
 			DistanceLimitTest<C> test = new PoseDistanceLimitTest<>(sim,
 					wrapper.getRobot(), obstacle, _limit, controller,
