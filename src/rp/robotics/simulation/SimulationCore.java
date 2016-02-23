@@ -79,17 +79,19 @@ public class SimulationCore extends Thread {
 
 	private final LinkedList<SteppableWrapper> m_wrappers = new LinkedList<SteppableWrapper>();
 	private final ConcurrentLinkedQueue<Pair<SimulationSteppable, Integer>> m_toAdd = new ConcurrentLinkedQueue<>();
+	private final Object m_stepLock = new Object();
 
 	public static SimulationCore createSimulationCore() {
 		return new SimulationCore();
 	}
 
 	private final double m_targetRate;
+	private boolean m_inStep = false;
 
 	public SimulationCore() {
 		setDaemon(true);
 		setPriority(MAX_PRIORITY);
-		m_targetRate = 120;
+		m_targetRate = 60;
 		start();
 	}
 
@@ -178,6 +180,8 @@ public class SimulationCore extends Thread {
 		while (true) {
 
 			try {
+				m_inStep = true;
+
 				addSteppablesFromQueue();
 
 				now = now.plus(step);
@@ -190,13 +194,34 @@ public class SimulationCore extends Thread {
 				System.out.println("caught in SimulationCore.run(): "
 						+ e.getMessage());
 				e.printStackTrace();
+			} finally {
+				m_inStep = false;
+				synchronized (m_stepLock) {
+					m_stepLock.notifyAll();
+				}
 			}
 
 			r.sleep();
 		}
-
 	}
 
+	public void waitForEndOfStep() {
+		synchronized (m_stepLock) {
+			while (m_inStep) {
+				try {
+					m_stepLock.wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	/**
+	 * Wait until the current cycle of steps is completed.
+	 * 
+	 * @param _steppable
+	 */
 	public void addAndWaitSteppable(SimulationSteppable _steppable) {
 		addAndWaitSteppable(_steppable, 1);
 	}
