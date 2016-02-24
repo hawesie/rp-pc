@@ -89,7 +89,7 @@ public class SynchronisedMotor extends SimulatedMotor {
 
 				SynchronisedMotor m = (SynchronisedMotor) _parameters[0];
 				m.getSim().waitForEndOfStep();
-				m.getSim().pause();
+				// m.getSim().pause();
 
 				method = new SynchronisedMethodCall(mh, m_motorCount,
 						_parameters);
@@ -106,7 +106,7 @@ public class SynchronisedMotor extends SimulatedMotor {
 			if (method.call()) {
 				m_calls.remove(mh);
 				SynchronisedMotor m = (SynchronisedMotor) _parameters[0];
-				m.getSim().unpause();
+				// m.getSim().unpause();
 				// System.out.println("Removing: " + mh);
 			}
 

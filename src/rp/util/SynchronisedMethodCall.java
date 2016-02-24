@@ -17,7 +17,7 @@ public class SynchronisedMethodCall {
 
 	public synchronized void add(MethodHandle _method, Object... _params) {
 		m_calls.put(_method, _params);
-		// System.out.println("Inner method calls: " + m_calls.size());
+		 System.out.println("Inner method calls: " + m_calls.size());
 	}
 
 	/**
@@ -36,6 +36,10 @@ public class SynchronisedMethodCall {
 					Object[] obs = entry.getValue();
 					mh.invokeWithArguments(obs);
 
+					if(obs.length > 1) {
+						System.out.println(obs[1]);
+					}
+					
 				} catch (Throwable e) {
 					e.printStackTrace();
 				}
