@@ -48,11 +48,11 @@ public class SimulatedMotor implements RegulatedMotor,
 	private final double BACKWARD = -1f;
 
 	private double m_direction = STOPPED;
-	private Thread m_moveThread;
+
 	private int m_limitAngle;
-	private Thread m_regulateThread;
 	private final SimulationCore m_sim;
 	private final Object m_stepLock = new Object();
+	private final Object m_moveLock = new Object();
 
 	private final UUID m_uuid = UUID.randomUUID();
 
@@ -83,6 +83,9 @@ public class SimulatedMotor implements RegulatedMotor,
 			} else {
 				m_listener.rotationStopped(this, getTachoCount(), isStalled(),
 						_now.toEpochMilli());
+				synchronized (m_moveLock) {
+					m_moveLock.notifyAll();
+				}
 			}
 		}
 
@@ -115,33 +118,31 @@ public class SimulatedMotor implements RegulatedMotor,
 
 			public void regulateStep(Instant _now, Duration _stepInterval) {
 
-				synchronized (m_stepLock) {
+				// System.out.println("regulate: " + _stepInterval);
 
-					// System.out.println("regulate: " + _stepInterval);
+				m_measuredSpeed = speedo.update(getTachoCount(),
+						_now.toEpochMilli());
 
-					m_measuredSpeed = speedo.update(getTachoCount(),
-							_now.toEpochMilli());
+				double difference = m_targetSpeed - m_measuredSpeed;
 
-					double difference = m_targetSpeed - m_measuredSpeed;
+				// System.out.println("spped diff: " + difference);
+				// System.out.println("measured: " + m_measuredSpeed);
 
-					// System.out.println("spped diff: " + difference);
-					// System.out.println("measured: " + m_measuredSpeed);
-
-//					if (m_state == MotorState.REGULATING) {
-//						m_commandedSpeed = m_commandedSpeed
-//								+ (0.0001 * difference);
-//					}
+				if (m_state == MotorState.REGULATING) {
+					m_commandedSpeed = m_commandedSpeed + (0.0001 * difference);
 				}
 
 			}
 
 			@Override
 			public void step(Instant _now, Duration _stepInterval) {
+
 				if (first) {
 					notifyListener(true, _now);
 				}
 
 				synchronized (m_stepLock) {
+
 					moveStep(_now, _stepInterval);
 					regulateStep(_now, _stepInterval);
 				}
@@ -195,19 +196,26 @@ public class SimulatedMotor implements RegulatedMotor,
 				boolean remove = !(m_isMoving && !_tachoPredicate
 						.test(getTachoCount()));
 				if (remove) {
+
+					m_isMoving = false;
+					m_commandedSpeed = 0;
+					m_measuredSpeed = 0;
+					m_state = MotorState.STOPPED;
 					notifyListener(false, _now);
 				}
 				return remove;
 			}
 		};
 
-		m_sim.addAndWaitSteppable(moveSteppable);
+		m_sim.addSteppable(moveSteppable);
 
-		// need to set this if the tacho predicate stopped the move
-		m_isMoving = false;
-		m_commandedSpeed = 0;
-		m_measuredSpeed = 0;
-		m_state = MotorState.STOPPED;
+		// m_sim.addAndWaitSteppable(moveSteppable);
+		//
+		// // need to set this if the tacho predicate stopped the move
+		// m_isMoving = false;
+		// m_commandedSpeed = 0;
+		// m_measuredSpeed = 0;
+		// m_state = MotorState.STOPPED;
 
 	}
 
@@ -233,40 +241,13 @@ public class SimulatedMotor implements RegulatedMotor,
 				} else {
 					return;
 				}
-			} else if (m_moveThread != null) {
-				// if we're not moving, make sure the last move thread has
-				// cleaned
-				// up
-				waitComplete();
 			}
 
 			m_direction = _direction;
 			m_isMoving = true;
 
-			m_moveThread = new Thread(new Runnable() {
-				@Override
-				public void run() {
-					move(_tachoPredicate);
+			move(_tachoPredicate);
 
-				}
-			});
-			//
-			// m_regulateThread = new Thread(new Runnable() {
-			//
-			// @Override
-			// public void run() {
-			// regulate();
-			//
-			// }
-			// });
-
-			m_moveThread.setPriority(10);
-			// m_regulateThread.setPriority(8);
-
-			m_moveThread.setDaemon(true);
-			// m_regulateThread.setDaemon(true);
-			m_moveThread.start();
-			// m_regulateThread.start();
 		}
 	}
 
@@ -293,7 +274,9 @@ public class SimulatedMotor implements RegulatedMotor,
 
 	@Override
 	public boolean isMoving() {
-		return m_isMoving;
+		synchronized (m_stepLock) {
+			return m_isMoving;
+		}
 	}
 
 	@Override
@@ -303,12 +286,16 @@ public class SimulatedMotor implements RegulatedMotor,
 
 	@Override
 	public int getTachoCount() {
-		return (int) Math.round(Math.floor(m_tachoCount));
+		synchronized (m_stepLock) {
+			return (int) Math.round(Math.floor(m_tachoCount));
+		}
 	}
 
 	@Override
 	public void resetTachoCount() {
-		m_tachoCount = 0;
+		synchronized (m_stepLock) {
+			m_tachoCount = 0;
+		}
 	}
 
 	@Override
@@ -341,18 +328,14 @@ public class SimulatedMotor implements RegulatedMotor,
 
 	@Override
 	public void waitComplete() {
-		if (m_moveThread != null) {
-			try {
-				m_moveThread.join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		if (m_regulateThread != null) {
-			try {
-				m_regulateThread.join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+
+		while (isMoving()) {
+			synchronized (m_moveLock) {
+				try {
+					m_moveLock.wait(10);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 
@@ -376,22 +359,26 @@ public class SimulatedMotor implements RegulatedMotor,
 
 	@Override
 	public void rotateTo(int _limitAngle, boolean _immediateReturn) {
-		m_limitAngle = _limitAngle;
-		double direction = FORWARD;
-		Predicate<Integer> target = i -> i >= _limitAngle - 2;
-		if (_limitAngle < getTachoCount()) {
-			direction = BACKWARD;
-			target = i -> i <= _limitAngle + 2;
-		}
-		startMove(direction, target);
-		if (!_immediateReturn) {
-			waitComplete();
+		synchronized (m_stepLock) {
+			m_limitAngle = _limitAngle;
+			double direction = FORWARD;
+			Predicate<Integer> target = i -> i >= _limitAngle - 2;
+			if (_limitAngle < getTachoCount()) {
+				direction = BACKWARD;
+				target = i -> i <= _limitAngle + 2;
+			}
+			startMove(direction, target);
+			if (!_immediateReturn) {
+				waitComplete();
+			}
 		}
 	}
 
 	@Override
 	public int getLimitAngle() {
-		return m_limitAngle;
+		synchronized (m_stepLock) {
+			return m_limitAngle;
+		}
 	}
 
 	@Override
@@ -425,7 +412,9 @@ public class SimulatedMotor implements RegulatedMotor,
 
 	@Override
 	public int getSpeed() {
-		return Math.round((float) Math.floor(m_measuredSpeed));
+		synchronized (m_stepLock) {
+			return Math.round((float) Math.floor(m_measuredSpeed));
+		}
 	}
 
 	@Override
@@ -447,13 +436,14 @@ public class SimulatedMotor implements RegulatedMotor,
 
 	@Override
 	public void setAcceleration(int _acceleration) {
-		if (_acceleration > 0 && _acceleration <= 6000) {
-			m_acceleration = _acceleration;
-		} else {
-			throw new IllegalArgumentException(
-					"Acceleration must be greater than 0 and less than or equal to 6000");
+		synchronized (m_stepLock) {
+			if (_acceleration > 0 && _acceleration <= 6000) {
+				m_acceleration = _acceleration;
+			} else {
+				throw new IllegalArgumentException(
+						"Acceleration must be greater than 0 and less than or equal to 6000");
+			}
 		}
-
 	}
 
 	public static void main(String[] args) {

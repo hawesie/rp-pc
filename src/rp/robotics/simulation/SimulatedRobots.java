@@ -50,11 +50,16 @@ public class SimulatedRobots {
 	public static WheeledRobotConfiguration makeWheeledConfiguration(
 			SimulationCore _sim, boolean _touchSensor, boolean _rangeSensor) {
 
-		Pair<SynchronisedMotor, SynchronisedMotor> motors = SynchronisedMotor
-				.createMotorPair(_sim);
-		WheeledRobotConfiguration config = new WheeledRobotConfiguration(
-				0.056f, 0.12f, 0.23f, motors.getItem1(), motors.getItem2());
+//		Pair<SynchronisedMotor, SynchronisedMotor> motors = SynchronisedMotor
+//				.createMotorPair(_sim);
+//		WheeledRobotConfiguration config = new WheeledRobotConfiguration(
+//				0.056f, 0.12f, 0.23f, motors.getItem1(), motors.getItem2());
 
+		WheeledRobotConfiguration config = new WheeledRobotConfiguration(
+				0.056f, 0.12f, 0.23f, new SimulatedMotor(_sim),
+				new SimulatedMotor(_sim));
+
+		
 		if (_touchSensor) {
 			config.addTouchSensor();
 		}
