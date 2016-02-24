@@ -13,7 +13,7 @@ import rp.robotics.visualisation.MapVisualisationComponent;
  * @author Nick Hawes
  *
  */
-public class TestViewer {
+public class TestViewer implements Runnable {
 
 	private final RobotTest<?> m_test;
 	private final MapBasedSimulation m_sim;

@@ -6,7 +6,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
+import lejos.util.Delay;
 import rp.util.Pair;
 import rp.util.Rate;
 
@@ -41,14 +44,12 @@ public class SimulationCore extends Thread {
 
 				// System.out.println("GO ------ " + m_stepRatio);
 
-				Instant now = Instant.now();
-
-				Duration interval = Duration.between(lastCall, now);
+				Duration interval = Duration.between(lastCall, _now);
 
 				for (Iterator<SimulationSteppable> iterator = m_steppables
 						.iterator(); iterator.hasNext();) {
 					SimulationSteppable steppable = iterator.next();
-					if (steppable.remove()) {
+					if (steppable.remove(_now, interval)) {
 
 						iterator.remove();
 						synchronized (steppable) {
@@ -58,20 +59,20 @@ public class SimulationCore extends Thread {
 					} else {
 						// System.out.println("wrapper step");
 						steppable.step(_now, interval);
-						if (steppable.remove()) {
-
-							iterator.remove();
-							synchronized (steppable) {
-								steppable.notifyAll();
-							}
-
-						}
+						// if (steppable.remove(_now, interval)) {
+						//
+						// iterator.remove();
+						// synchronized (steppable) {
+						// steppable.notifyAll();
+						// }
+						//
+						// }
 
 					}
 
 				}
 
-				lastCall = now;
+				lastCall = _now;
 				countDown = m_stepRatio;
 			}
 		}
@@ -79,7 +80,6 @@ public class SimulationCore extends Thread {
 
 	private final LinkedList<SteppableWrapper> m_wrappers = new LinkedList<SteppableWrapper>();
 	private final ConcurrentLinkedQueue<Pair<SimulationSteppable, Integer>> m_toAdd = new ConcurrentLinkedQueue<>();
-	private final Object m_stepLock = new Object();
 
 	public static SimulationCore createSimulationCore() {
 		return new SimulationCore();
@@ -87,6 +87,7 @@ public class SimulationCore extends Thread {
 
 	private final double m_targetRate;
 	private boolean m_inStep = false;
+	private boolean m_paused = false;
 
 	public SimulationCore() {
 		setDaemon(true);
@@ -169,6 +170,26 @@ public class SimulationCore extends Thread {
 		addSteppable(_steppable, 1);
 	}
 
+	private final Lock m_stepLock = new ReentrantLock();
+
+	public void pause() {
+		synchronized (m_stepLock) {
+			if (!m_paused) {
+				m_stepLock.lock();
+				m_paused = true;
+			}
+		}
+	}
+
+	public void unpause() {
+		synchronized (m_stepLock) {
+			if (m_paused) {
+				m_stepLock.unlock();
+				m_paused = false;
+			}
+		}
+	}
+
 	@Override
 	public void run() {
 		Rate r = new Rate(m_targetRate);
@@ -179,7 +200,10 @@ public class SimulationCore extends Thread {
 
 		while (true) {
 
+			m_stepLock.lock();
+
 			try {
+
 				m_inStep = true;
 
 				addSteppablesFromQueue();
@@ -195,13 +219,18 @@ public class SimulationCore extends Thread {
 						+ e.getMessage());
 				e.printStackTrace();
 			} finally {
+
 				m_inStep = false;
+
+				m_stepLock.unlock();
 				synchronized (m_stepLock) {
 					m_stepLock.notifyAll();
 				}
 			}
 
-			r.sleep();
+			// r.sleep();
+			Delay.msDelay((long) (1000.0 / m_targetRate));
+
 		}
 	}
 
@@ -242,24 +271,24 @@ public class SimulationCore extends Thread {
 
 	public void waitSteppable(SimulationSteppable _steppable) {
 		boolean except = false;
-		while (!_steppable.remove()) {
-			// if (except) {
-			// System.out.println("restart loop");
-			// }
+		// while (!_steppable.remove()) {
+		// if (except) {
+		// System.out.println("restart loop");
+		// }
 
-			synchronized (_steppable) {
-				try {
-					// wait on a loop as it helps deal with sync errors
-					_steppable.wait(100);
-				} catch (InterruptedException e) {
-					except = true;
-					System.out.println("caught in waitSteppable: "
-							+ e.getMessage());
-					e.printStackTrace();
-					return;
-				}
+		synchronized (_steppable) {
+			try {
+				// wait on a loop as it helps deal with sync errors
+				_steppable.wait();
+			} catch (InterruptedException e) {
+				except = true;
+				System.out
+						.println("caught in waitSteppable: " + e.getMessage());
+				e.printStackTrace();
+				return;
 			}
 		}
+		// }
 		if (except) {
 			System.out.println("done wait");
 		}

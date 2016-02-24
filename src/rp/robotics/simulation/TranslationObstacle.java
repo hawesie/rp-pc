@@ -44,8 +44,8 @@ public class TranslationObstacle implements DynamicObstacle {
 	}
 
 	@Override
-	public boolean remove() {
-		return m_mover.remove();
+	public boolean remove(Instant _now, Duration _stepInterval) {
+		return m_mover.remove(_now, _stepInterval);
 	}
 
 	@Override

@@ -43,7 +43,7 @@ public abstract class AbstractPoseMove implements Movable {
 	}
 
 	@Override
-	public boolean remove() {
+	public boolean remove(Instant _now, Duration _stepInterval) {
 		return m_remove;
 	}
 

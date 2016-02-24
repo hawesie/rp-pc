@@ -2,6 +2,7 @@ package rp.robotics.simulation;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.UUID;
 import java.util.function.Predicate;
 
 import lejos.robotics.RegulatedMotor;
@@ -15,7 +16,8 @@ import rp.util.Rate;
  * @author Nick Hawes
  *
  */
-public class SimulatedMotor implements RegulatedMotor {
+public class SimulatedMotor implements RegulatedMotor,
+		Comparable<SimulatedMotor> {
 
 	// target speed of motor in degrees/second
 	protected double m_targetSpeed = 360;
@@ -52,66 +54,42 @@ public class SimulatedMotor implements RegulatedMotor {
 	private final SimulationCore m_sim;
 	private final Object m_stepLock = new Object();
 
+	private final UUID m_uuid = UUID.randomUUID();
+
+	@Override
+	public boolean equals(Object _obj) {
+		if (_obj instanceof SimulatedMotor) {
+			SimulatedMotor that = (SimulatedMotor) _obj;
+			return this.m_uuid.equals(that.m_uuid);
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public int hashCode() {
+		return m_uuid.hashCode();
+	}
+
 	public SimulatedMotor(SimulationCore _sim) {
 		m_sim = _sim;
 	}
 
-	private void notifyListener(boolean _started) {
+	private void notifyListener(boolean _started, Instant _now) {
 		if (m_listener != null) {
 			if (_started) {
 				m_listener.rotationStarted(this, getTachoCount(), isStalled(),
-						System.currentTimeMillis());
+						_now.toEpochMilli());
 			} else {
 				m_listener.rotationStopped(this, getTachoCount(), isStalled(),
-						System.currentTimeMillis());
+						_now.toEpochMilli());
 			}
 		}
 
 	}
 
-	/**
-	 * Regulate the speed of the motor relative to the target.
-	 */
-	private void regulate() {
-
-		SimulationSteppable regulateSteppable = new SimulationSteppable() {
-
-			Speedometer speedo = new Speedometer(getTachoCount(), Instant.now()
-					.toEpochMilli(), 20);
-
-			@Override
-			public void step(Instant _now, Duration _stepInterval) {
-
-				synchronized (m_stepLock) {
-
-					// System.out.println("regulate: " + _stepInterval);
-
-					m_measuredSpeed = speedo.update(getTachoCount(),
-							_now.toEpochMilli());
-
-					double difference = m_targetSpeed - m_measuredSpeed;
-
-					// System.out.println("spped diff: " + difference);
-					// System.out.println("measured: " + m_measuredSpeed);
-
-					if (m_state == MotorState.REGULATING) {
-						m_commandedSpeed = m_commandedSpeed
-								+ (0.0001 * difference);
-					}
-				}
-
-			}
-
-			@Override
-			public boolean remove() {
-
-				return !m_isMoving;
-			}
-		};
-
-		m_sim.addAndWaitSteppable(regulateSteppable);
-
-		m_measuredSpeed = 0;
+	public SimulationCore getSim() {
+		return m_sim;
 	}
 
 	/**
@@ -126,59 +104,100 @@ public class SimulatedMotor implements RegulatedMotor {
 		// tacho should have a resolution of 4 degrees (+/- 2) so this loop
 		// needs to increment in smaller steps, e.g. 2 degree steps
 
-		notifyListener(true);
-
 		m_state = MotorState.ACCELERATING;
 
 		SimulationSteppable moveSteppable = new SimulationSteppable() {
 
-			@Override
-			public void step(Instant _now, Duration _stepInterval) {
+			boolean first = true;
+
+			Speedometer speedo = new Speedometer(getTachoCount(), Instant.now()
+					.toEpochMilli(), 20);
+
+			public void regulateStep(Instant _now, Duration _stepInterval) {
+
 				synchronized (m_stepLock) {
-					// System.out.println("move: " + _stepInterval);
 
-					// System.out.println("inner step");
-					//
-					// System.out.println(_stepInterval.toMillis());
-					double cycleTimeSecs = _stepInterval.toMillis() / 1000.0;
+					// System.out.println("regulate: " + _stepInterval);
 
-					if (m_state == MotorState.ACCELERATING) {
+					m_measuredSpeed = speedo.update(getTachoCount(),
+							_now.toEpochMilli());
 
-						if (m_commandedSpeed < m_targetSpeed) {
-							// don't accelerate past target speed
-							m_commandedSpeed = Math.min(m_commandedSpeed
-									+ (m_acceleration * cycleTimeSecs),
-									m_targetSpeed);
-							// System.out.println(cycleTimeSecs);
-							// System.out.println("accelerating to speed: "
-							// + m_commandedSpeed);
+					double difference = m_targetSpeed - m_measuredSpeed;
 
-						} else {
-							m_state = MotorState.REGULATING;
-						}
-					} else if (m_state == MotorState.DECELERATING) {
+					// System.out.println("spped diff: " + difference);
+					// System.out.println("measured: " + m_measuredSpeed);
 
-						if (m_commandedSpeed > m_targetSpeed) {
-							// don't accelerate past target speed
-							m_commandedSpeed = Math.max(m_commandedSpeed
-									- (m_acceleration * cycleTimeSecs),
-									m_targetSpeed);
-							// System.out.println(cycleTimeSecs);
-							// System.out.println("accelerating to speed: "
-							// + m_commandedSpeed);
-						} else {
-							m_state = MotorState.REGULATING;
-						}
-					}
-
-					m_tachoCount += (cycleTimeSecs * m_commandedSpeed * m_direction);
-					// System.out.println("Count: " + m_tachoCount);
+//					if (m_state == MotorState.REGULATING) {
+//						m_commandedSpeed = m_commandedSpeed
+//								+ (0.0001 * difference);
+//					}
 				}
+
 			}
 
 			@Override
-			public boolean remove() {
-				return !(m_isMoving && !_tachoPredicate.test(getTachoCount()));
+			public void step(Instant _now, Duration _stepInterval) {
+				if (first) {
+					notifyListener(true, _now);
+				}
+
+				synchronized (m_stepLock) {
+					moveStep(_now, _stepInterval);
+					regulateStep(_now, _stepInterval);
+				}
+			}
+
+			public void moveStep(Instant _now, Duration _stepInterval) {
+
+				// System.out.println("move: " + _stepInterval);
+
+				// System.out.println("inner step");
+				//
+				// System.out.println(_stepInterval.toMillis());
+				double cycleTimeSecs = _stepInterval.toMillis() / 1000.0;
+
+				if (m_state == MotorState.ACCELERATING) {
+
+					if (m_commandedSpeed < m_targetSpeed) {
+						// don't accelerate past target speed
+						m_commandedSpeed = Math.min(m_commandedSpeed
+								+ (m_acceleration * cycleTimeSecs),
+								m_targetSpeed);
+						// System.out.println(cycleTimeSecs);
+						// System.out.println("accelerating to speed: "
+						// + m_commandedSpeed);
+
+					} else {
+						m_state = MotorState.REGULATING;
+					}
+				} else if (m_state == MotorState.DECELERATING) {
+
+					if (m_commandedSpeed > m_targetSpeed) {
+						// don't accelerate past target speed
+						m_commandedSpeed = Math.max(m_commandedSpeed
+								- (m_acceleration * cycleTimeSecs),
+								m_targetSpeed);
+						// System.out.println(cycleTimeSecs);
+						// System.out.println("accelerating to speed: "
+						// + m_commandedSpeed);
+					} else {
+						m_state = MotorState.REGULATING;
+					}
+				}
+
+				m_tachoCount += (cycleTimeSecs * m_commandedSpeed * m_direction);
+				// System.out.println("Count: " + m_tachoCount);
+
+			}
+
+			@Override
+			public boolean remove(Instant _now, Duration _stepInterval) {
+				boolean remove = !(m_isMoving && !_tachoPredicate
+						.test(getTachoCount()));
+				if (remove) {
+					notifyListener(false, _now);
+				}
+				return remove;
 			}
 		};
 
@@ -187,8 +206,9 @@ public class SimulatedMotor implements RegulatedMotor {
 		// need to set this if the tacho predicate stopped the move
 		m_isMoving = false;
 		m_commandedSpeed = 0;
+		m_measuredSpeed = 0;
 		m_state = MotorState.STOPPED;
-		notifyListener(false);
+
 	}
 
 	@Override
@@ -230,22 +250,23 @@ public class SimulatedMotor implements RegulatedMotor {
 
 				}
 			});
-			m_regulateThread = new Thread(new Runnable() {
-
-				@Override
-				public void run() {
-					regulate();
-
-				}
-			});
+			//
+			// m_regulateThread = new Thread(new Runnable() {
+			//
+			// @Override
+			// public void run() {
+			// regulate();
+			//
+			// }
+			// });
 
 			m_moveThread.setPriority(10);
-			m_regulateThread.setPriority(8);
+			// m_regulateThread.setPriority(8);
 
 			m_moveThread.setDaemon(true);
-			m_regulateThread.setDaemon(true);
+			// m_regulateThread.setDaemon(true);
 			m_moveThread.start();
-			m_regulateThread.start();
+			// m_regulateThread.start();
 		}
 	}
 
@@ -376,13 +397,7 @@ public class SimulatedMotor implements RegulatedMotor {
 	@Override
 	public void setSpeed(int _speed) {
 
-		// wait for simulation to run all steppables on this time.
-		// this reduces the chance of two motors having their speeds set
-		// separately.
-		m_sim.waitForEndOfStep();
-
 		synchronized (m_stepLock) {
-
 
 			if (_speed >= 0 && _speed <= getMaxSpeed()) {
 				if (m_state == MotorState.REGULATING) {
@@ -481,6 +496,11 @@ public class SimulatedMotor implements RegulatedMotor {
 		// dp.travel(distanceMm);
 		//
 		// System.out.println(pp.getPose());
+	}
+
+	@Override
+	public int compareTo(SimulatedMotor _that) {
+		return this.m_uuid.compareTo(_that.m_uuid);
 	}
 
 }

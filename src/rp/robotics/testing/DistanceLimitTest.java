@@ -75,7 +75,6 @@ public abstract class DistanceLimitTest<C extends StoppableRunnable> extends
 							// System.out.println("last: " + lastGood);
 
 							try {
-								assert !remove();
 
 								if (_now.isAfter(endAt)) {
 									ended = true;
@@ -114,7 +113,8 @@ public abstract class DistanceLimitTest<C extends StoppableRunnable> extends
 						}
 
 						@Override
-						public boolean remove() {
+						public boolean remove(Instant _now,
+								Duration _stepInterval) {
 							return m_failed || ended;
 						}
 					});

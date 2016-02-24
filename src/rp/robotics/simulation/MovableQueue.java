@@ -45,7 +45,7 @@ public class MovableQueue extends AbstractPoseMove {
 		}
 
 		if (!m_remove) {
-			if (m_current.remove()) {
+			if (m_current.remove(_now, _stepInterval)) {
 				m_current = null;
 			} else {
 				m_current.step(_now, _stepInterval);

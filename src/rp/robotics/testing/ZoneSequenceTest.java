@@ -15,7 +15,6 @@ import java.util.Stack;
 import lejos.robotics.navigation.Pose;
 import rp.robotics.MobileRobot;
 import rp.robotics.simulation.MapBasedSimulation;
-import rp.robotics.simulation.SimulationCore;
 import rp.robotics.simulation.SimulationSteppable;
 import rp.robotics.testing.TargetZone.Status;
 import rp.systems.StoppableRunnable;
@@ -96,7 +95,7 @@ public class ZoneSequenceTest<C extends StoppableRunnable> extends RobotTest<C>
 						}
 
 						@Override
-						public boolean remove() {
+						public boolean remove(Instant _now, Duration _stepInterval) {
 							return failed || zones.size() == 0;
 						}
 					});

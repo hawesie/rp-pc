@@ -189,7 +189,7 @@ public class MapBasedSimulation implements
 			}
 
 			@Override
-			public boolean remove() {
+			public boolean remove(Instant _now, Duration _stepInterval) {
 				return !m_running;
 			}
 		});
