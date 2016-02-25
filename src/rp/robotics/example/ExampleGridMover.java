@@ -29,7 +29,7 @@ public class ExampleGridMover {
 		GridMap map = TestMaps.warehouseMap();
 
 		// Create the simulation using the given map. This simulation can run
-		// with a GUI.
+		// without a GUI.
 		MapBasedSimulation sim = new MapBasedSimulation(map);
 
 		// Add a robot of a given configuration to the simulation. The return

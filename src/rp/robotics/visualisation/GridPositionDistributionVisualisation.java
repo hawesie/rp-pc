@@ -8,14 +8,15 @@ import lejos.geom.Point;
 import rp.robotics.localisation.GridPositionDistribution;
 import rp.robotics.mapping.LineMap;
 
-public class GridPositionDistributionVisualisation extends MapVisualisationComponent {
+public class GridPositionDistributionVisualisation extends
+		MapVisualisationComponent {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private static final float BIGGEST_POINT_RADIUS = 60;
+	private static final float BIGGEST_POINT_RADIUS = 1f;
 
 	protected GridPositionDistribution m_gridDistribution;
 
@@ -24,6 +25,12 @@ public class GridPositionDistributionVisualisation extends MapVisualisationCompo
 			float _scaleFactor) {
 		super(_lineMap, _scaleFactor);
 		m_gridDistribution = _distribution;
+	}
+
+	public GridPositionDistributionVisualisation(
+			GridPositionDistribution _distribution, LineMap _lineMap) {
+		this(_distribution, _lineMap, 100f);
+
 	}
 
 	/**
@@ -53,10 +60,10 @@ public class GridPositionDistributionVisualisation extends MapVisualisationCompo
 					float radius = BIGGEST_POINT_RADIUS
 							* m_gridDistribution.getProbability(x, y);
 					if (radius > 0) {
-						if (radius < 1) {
-							radius = 1;
-						}
-						renderPoint(gridPoint, _g2, (int) radius);
+						// if (radius < 0.01) {
+						// radius = 0.01f;
+						// }
+						renderPoint(gridPoint, _g2, radius);
 					}
 				}
 			}
