@@ -24,6 +24,9 @@ import rp.robotics.visualisation.KillMeNow;
 import rp.robotics.visualisation.MapVisualisationComponent;
 import rp.systems.StoppableRunnable;
 
+/**
+* Example to be shown in the lecture.
+*/
 public class MarkovLocalisationExample implements StoppableRunnable {
 
 	// The map used as the basis of behaviour
