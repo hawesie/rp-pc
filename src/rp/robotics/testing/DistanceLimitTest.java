@@ -50,6 +50,8 @@ public abstract class DistanceLimitTest<C extends StoppableRunnable> extends
 		assertTrue("Controller could not be created for this test.",
 				m_controller != null);
 
+		getSimulation().start();
+
 		Thread t = new Thread(m_controller);
 		Instant now = Instant.now();
 
@@ -88,8 +90,9 @@ public abstract class DistanceLimitTest<C extends StoppableRunnable> extends
 									// System.out.println(reading);
 
 									if (reading <= 0.03) {
+										// System.out.println("FAIL 1");
 
-										fail("Robot is too close to obstacle. Range reading: "
+										fail("Robot is too close to obstacle. Distance: "
 												+ reading);
 									} else if (isWithinRange(reading)) {
 										// System.out.println("Good reading!");
@@ -97,7 +100,9 @@ public abstract class DistanceLimitTest<C extends StoppableRunnable> extends
 									} else if (Duration.between(lastGood, _now)
 											.compareTo(m_allowableOutsideLimit) > 0) {
 
-										fail("Range exceeded limit of "
+										// System.out.println("FAIL 2");
+
+										fail("Distance exceeded limit of "
 												+ m_rangeLimit
 												+ " for longer than allowable duration of "
 												+ m_allowableOutsideLimit);
@@ -120,6 +125,7 @@ public abstract class DistanceLimitTest<C extends StoppableRunnable> extends
 					});
 
 			if (m_failed) {
+				// System.out.println("Rethrowing error on failure.");
 				throw m_error;
 			}
 
@@ -131,14 +137,14 @@ public abstract class DistanceLimitTest<C extends StoppableRunnable> extends
 			try {
 				// System.out.println("joining");
 				t.join(10000);
-				callListenersControllerStopped(m_poser,
-						System.currentTimeMillis() - stopCalledAt);
-				// System.out.println("done");
-
 			} catch (InterruptedException e) {
-				fail(e.getMessage());
 				e.printStackTrace();
 			}
+
+			callListenersControllerStopped(m_poser, System.currentTimeMillis()
+					- stopCalledAt);
+			// System.out.println("done");
+
 		}
 	}
 }

@@ -82,18 +82,24 @@ public class SimulationCore extends Thread {
 	private final ConcurrentLinkedQueue<Pair<SimulationSteppable, Integer>> m_toAdd = new ConcurrentLinkedQueue<>();
 
 	public static SimulationCore createSimulationCore() {
-		return new SimulationCore();
+		return new SimulationCore(true);
+	}
+
+	public static SimulationCore createSimulationCore(boolean _start) {
+		return new SimulationCore(_start);
 	}
 
 	private final double m_targetRate;
 	private boolean m_inStep = false;
 	private boolean m_paused = false;
 
-	public SimulationCore() {
+	private SimulationCore(boolean _start) {
 		setDaemon(true);
 		setPriority(MAX_PRIORITY);
 		m_targetRate = 60;
-		start();
+		if (_start) {
+			start();
+		}
 	}
 
 	public double getSimulationRate() {
@@ -228,7 +234,7 @@ public class SimulationCore extends Thread {
 				}
 			}
 
-			// r.sleep();
+			r.sleep();
 			Delay.msDelay((long) (1000.0 / m_targetRate));
 
 		}
@@ -284,6 +290,9 @@ public class SimulationCore extends Thread {
 				except = true;
 				System.out
 						.println("caught in waitSteppable: " + e.getMessage());
+				System.out.println("caught in waitSteppable: "
+						+ _steppable.getClass());
+
 				e.printStackTrace();
 				return;
 			}

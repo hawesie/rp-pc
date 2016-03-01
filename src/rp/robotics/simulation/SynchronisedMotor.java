@@ -114,7 +114,8 @@ public class SynchronisedMotor extends SimulatedMotor {
 	}
 
 	public static void main(String[] args) {
-		Pair<SynchronisedMotor, SynchronisedMotor> motors = createMotorPair(new SimulationCore());
+		Pair<SynchronisedMotor, SynchronisedMotor> motors = createMotorPair(SimulationCore
+				.createSimulationCore());
 		motors.getItem1().setSpeed(100);
 		motors.getItem1().forward();
 		motors.getItem2().setSpeed(100);

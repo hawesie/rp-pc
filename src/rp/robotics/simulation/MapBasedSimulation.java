@@ -49,6 +49,8 @@ public class MapBasedSimulation implements
 	private ArrayList<RelativeRangeScanner> m_rangers;
 	private final SimulationCore m_sim;
 
+	private final boolean m_startOnFirstRobot;
+
 	private class FootprintTouchPair {
 		final PoseProvider poser;
 		final Line[] footprint;
@@ -132,9 +134,14 @@ public class MapBasedSimulation implements
 
 	}
 
-	public MapBasedSimulation(LineMap _map) {
+	public MapBasedSimulation(LineMap _map, boolean _startSimOnFirstRobot) {
 		m_map = _map;
-		m_sim = SimulationCore.createSimulationCore();
+		m_sim = SimulationCore.createSimulationCore(false);
+		m_startOnFirstRobot = _startSimOnFirstRobot;
+	}
+
+	public MapBasedSimulation(LineMap _map) {
+		this(_map, true);
 	}
 
 	public void addSimulatorListener(SimulatorListener _listener) {
@@ -144,56 +151,60 @@ public class MapBasedSimulation implements
 		m_simulatorListeners.add(_listener);
 	}
 
-	private void start() {
+	public void start() {
 
-		m_running = true;
-		m_sim.addSteppable(new SimulationSteppable() {
+		if (!m_running) {
 
-			@Override
-			public void step(Instant _now, Duration _stepInterval) {
+			m_sim.start();
 
-				if (m_touchSensors != null) {
-					synchronized (m_touchSensors) {
-						for (FootprintTouchPair sensor : m_touchSensors) {
-							if (isInCollision(sensor.poser.getPose(),
-									sensor.footprint)) {
-								if (!sensor.triggered) {
-									sensor.triggered = true;
+			m_running = true;
+			m_sim.addSteppable(new SimulationSteppable() {
 
-									long start = System.currentTimeMillis();
-									sensor.listener
-											.sensorPressed(new TouchSensorEvent(
-													100, 3));
+				@Override
+				public void step(Instant _now, Duration _stepInterval) {
 
-									long responseTime = System
-											.currentTimeMillis() - start;
-									callListenersSensorPressed(sensor.robot,
-											responseTime);
+					if (m_touchSensors != null) {
+						synchronized (m_touchSensors) {
+							for (FootprintTouchPair sensor : m_touchSensors) {
+								if (isInCollision(sensor.poser.getPose(),
+										sensor.footprint)) {
+									if (!sensor.triggered) {
+										sensor.triggered = true;
+
+										long start = System.currentTimeMillis();
+										sensor.listener
+												.sensorPressed(new TouchSensorEvent(
+														100, 3));
+
+										long responseTime = System
+												.currentTimeMillis() - start;
+										callListenersSensorPressed(
+												sensor.robot, responseTime);
+									}
+								} else if (sensor.triggered) {
+									sensor.triggered = false;
 								}
-							} else if (sensor.triggered) {
-								sensor.triggered = false;
+							}
+						}
+					}
+
+					synchronized (m_robots) {
+						for (MobileRobotWrapper robot : m_robots) {
+
+							if (isInCollision(robot.getRobot())) {
+								// System.out.println("In collision");
+								robot.getRobot().startCollision();
 							}
 						}
 					}
 				}
 
-				synchronized (m_robots) {
-					for (MobileRobotWrapper robot : m_robots) {
-
-						if (isInCollision(robot.getRobot())) {
-							// System.out.println("In collision");
-							robot.getRobot().startCollision();
-						}
-					}
+				@Override
+				public boolean remove(Instant _now, Duration _stepInterval) {
+					return !m_running;
 				}
-			}
-
-			@Override
-			public boolean remove(Instant _now, Duration _stepInterval) {
-				return !m_running;
-			}
-		});
-
+			});
+		}
 	}
 
 	/**
@@ -209,6 +220,7 @@ public class MapBasedSimulation implements
 
 		float largestDimension = Math.max(m_map.getBoundingRect().width,
 				m_map.getBoundingRect().width);
+
 		Line l = new Line(pose.getX(), pose.getY(), pose.getX()
 				+ largestDimension
 				* (float) Math.cos(Math.toRadians(pose.getHeading())),
@@ -411,7 +423,7 @@ public class MapBasedSimulation implements
 		}
 
 		// if the first robot was added, the start sim running
-		if (m_robots.size() == 1) {
+		if (m_robots.size() == 1 && m_startOnFirstRobot) {
 			start();
 		}
 

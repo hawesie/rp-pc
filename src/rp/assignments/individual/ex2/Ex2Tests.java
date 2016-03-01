@@ -117,7 +117,7 @@ public class Ex2Tests extends AbstractTestHarness {
 			float mapWidth = 16f;
 
 			MapBasedSimulation sim = new MapBasedSimulation(
-					MapUtils.createRectangularMap(mapWidth, 1));
+					MapUtils.createRectangularMap(mapWidth, 1), false);
 
 			// we're only testing for half the duration, so reduce the distance
 			// with some wiggle room so the robot doesn't stop.
