@@ -5,7 +5,7 @@ import rp.systems.StoppableRunnable;
 
 /**
  * 
- * Very empty example controller structure.
+ * The most basic runnable-based controller structure for a mobile robot.
  * 
  * @author Nick Hawes
  *
@@ -13,7 +13,7 @@ import rp.systems.StoppableRunnable;
 public class MyRobotController implements StoppableRunnable {
 
 	public MyRobotController(MobileRobot _robot) {
-
+		// TODO Auto-generated method stub
 	}
 
 	@Override

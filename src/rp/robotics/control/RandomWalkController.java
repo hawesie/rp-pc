@@ -15,7 +15,7 @@ import rp.util.Rate;
  * @author Nick Hawes
  *
  */
-public class RandomWalk implements ControllerWithTouchSensor {
+public class RandomWalkController implements ControllerWithTouchSensor {
 
 	private final DifferentialDriveRobot m_robot;
 	private boolean m_running = false;
@@ -23,7 +23,7 @@ public class RandomWalk implements ControllerWithTouchSensor {
 	private boolean m_bumped = false;
 	private RangeFinder m_ranger;
 
-	public RandomWalk(DifferentialDriveRobot _robot) {
+	public RandomWalkController(DifferentialDriveRobot _robot) {
 		m_robot = _robot;
 		m_pilot = m_robot.getDifferentialPilot();
 	}
@@ -43,7 +43,6 @@ public class RandomWalk implements ControllerWithTouchSensor {
 		while (m_running) {
 			float move = (float) (moveMin + (Math.random() * moveDiff));
 			m_pilot.travel(move, true);
-
 			r = new Rate(40);
 			while (m_pilot.isMoving() && !m_bumped) {
 				if (m_ranger != null) {
@@ -52,7 +51,6 @@ public class RandomWalk implements ControllerWithTouchSensor {
 					}
 				}
 				r.sleep();
-
 			}
 
 			if (m_bumped) {
@@ -61,7 +59,6 @@ public class RandomWalk implements ControllerWithTouchSensor {
 
 				m_bumped = false;
 			}
-
 			m_pilot.rotate(turnMin + (Math.random() * turnDiff));
 		}
 	}
@@ -84,7 +81,6 @@ public class RandomWalk implements ControllerWithTouchSensor {
 	@Override
 	public void sensorBumped(TouchSensorEvent _e) {
 		// Doesn't work in simulation
-
 	}
 
 	public void setRangeScanner(RangeFinder _ranger) {

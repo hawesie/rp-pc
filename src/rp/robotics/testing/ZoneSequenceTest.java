@@ -95,15 +95,15 @@ public class ZoneSequenceTest<C extends StoppableRunnable> extends RobotTest<C>
 						}
 
 						@Override
-						public boolean remove(Instant _now, Duration _stepInterval) {
-							return failed || zones.size() == 0;
+						public boolean remove(Instant _now,
+								Duration _stepInterval) {
+							return !t.isAlive() || failed || zones.size() == 0;
 						}
 					});
 
 			if (zones.size() > 0) {
-				fail(String
-						.format("Test timed out after %d milliseconds with %d zones left.",
-								m_timeout, zones.size()));
+				fail(String.format("Test finished with %d zones unvisited.",
+						zones.size()));
 			}
 
 		} finally {

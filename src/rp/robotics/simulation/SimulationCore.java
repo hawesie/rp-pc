@@ -28,7 +28,7 @@ public class SimulationCore extends Thread {
 		private final int m_stepRatio;
 		private final ArrayList<SimulationSteppable> m_steppables;
 		private int countDown;
-		private Instant lastCall = Instant.now();
+		private Instant lastCall = null;
 
 		public SteppableWrapper(int _stepRatio, SimulationSteppable _steppable) {
 			super();
@@ -39,6 +39,10 @@ public class SimulationCore extends Thread {
 		}
 
 		public void step(Instant _now) {
+
+			if (lastCall == null) {
+				lastCall = _now;
+			}
 
 			if (--countDown == 0) {
 
@@ -221,7 +225,7 @@ public class SimulationCore extends Thread {
 				}
 
 			} catch (Exception e) {
-				System.out.println("caught in SimulationCore.run(): "
+				System.err.println("caught in SimulationCore.run(): "
 						+ e.getMessage());
 				e.printStackTrace();
 			} finally {
@@ -229,6 +233,7 @@ public class SimulationCore extends Thread {
 				m_inStep = false;
 
 				m_stepLock.unlock();
+
 				synchronized (m_stepLock) {
 					m_stepLock.notifyAll();
 				}
