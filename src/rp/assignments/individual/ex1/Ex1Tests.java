@@ -13,9 +13,9 @@ import org.junit.Test;
 
 import rp.assignments.AbstractTestHarness;
 import rp.config.RangeFinderDescription;
-import rp.robotics.MobileRobotWrapper;
 import rp.robotics.EventBasedTouchSensor;
 import rp.robotics.LocalisedRangeScanner;
+import rp.robotics.MobileRobotWrapper;
 import rp.robotics.TouchSensorListener;
 import rp.robotics.testing.MockRangeFinder;
 import rp.robotics.testing.TargetZone;
@@ -42,60 +42,64 @@ public class Ex1Tests extends AbstractTestHarness {
 	}
 
 	/**
-	 * Example test for Individual Exercise 1a: a triangle with side length of
-	 * 1.0m
+	 * Example test for Individual Exercise 1a: a pentagon with side length of
+	 * 0.5.
 	 * 
 	 * @return
 	 */
-	public static ZoneSequence getTriangleTestSequence() {
+	public static ZoneSequence getPentagonTestSequence() {
+		Pose start = new Pose(3.0f,3.0f,0.0f);
+		ArrayList<TargetZone> zones = new ArrayList<TargetZone>(5);
+		zones.add(new TargetZone(new Point(3.5f,3.0f), 0.25f));
+		zones.add(new TargetZone(new Point(3.6545086f,3.4755282f), 0.25f));
+		zones.add(new TargetZone(new Point(3.25f,3.7694209f), 0.25f));
+		zones.add(new TargetZone(new Point(2.8454914f,3.4755282f), 0.25f));
+		zones.add(new TargetZone(new Point(3.0f,3.0f), 0.25f));
+		return new ZoneSequence(start, zones);
 
-		Pose start = new Pose(3f, 3f, 0f);
+	}
 
-		ArrayList<TargetZone> zones = new ArrayList<TargetZone>();
-		zones.add(new TargetZone(new Point(4.0f, 3.0f), 0.15f));
-		zones.add(new TargetZone(new Point(3.5f, 3.87f), 0.15f));
-		zones.add(new TargetZone(new Point(3.0f, 3.0f), 0.15f));
+	/**
+	 * Example test for Individual Exercise 1b: an octagon with side length of
+	 * 0.8m
+	 * 
+	 * @return
+	 */
+	public static ZoneSequence getOctagonTestSequence() {
+		Pose start = new Pose(3.0f,3.0f,0.0f);
+		ArrayList<TargetZone> zones = new ArrayList<TargetZone>(8);
+		zones.add(new TargetZone(new Point(3.8f,3.0f), 0.25f));
+		zones.add(new TargetZone(new Point(4.3656855f,3.5656855f), 0.25f));
+		zones.add(new TargetZone(new Point(4.3656855f,4.3656855f), 0.25f));
+		zones.add(new TargetZone(new Point(3.8f,4.9313707f), 0.25f));
+		zones.add(new TargetZone(new Point(3.0f,4.9313707f), 0.25f));
+		zones.add(new TargetZone(new Point(2.4343145f,4.3656855f), 0.25f));
+		zones.add(new TargetZone(new Point(2.4343145f,3.5656855f), 0.25f));
+		zones.add(new TargetZone(new Point(3.0f,3.0f), 0.25f));
 
 		return new ZoneSequence(start, zones);
 	}
 
 	/**
-	 * Example test for Individual Exercise 1b: a square with side length of
-	 * 1.0m
+	 * Example test for Individual Exercise 1c: a nonagon with side length of
+	 * 0.9m
 	 * 
 	 * @return
 	 */
-	public static ZoneSequence getSquareTestSequence() {
-
-		Pose start = new Pose(3.0f, 3.0f, 0.0f);
-		ArrayList<TargetZone> zones = new ArrayList<TargetZone>(4);
-		zones.add(new TargetZone(new Point(4.0f, 3.0f), 0.15f));
-		zones.add(new TargetZone(new Point(4.0f, 4.0f), 0.15f));
-		zones.add(new TargetZone(new Point(3.0f, 4.0f), 0.15f));
-		zones.add(new TargetZone(new Point(3.0f, 3.0f), 0.15f));
+	public static ZoneSequence getNonagonSequence() {
+		Pose start = new Pose(3.0f,3.0f,0.0f);
+		ArrayList<TargetZone> zones = new ArrayList<TargetZone>(9);
+		zones.add(new TargetZone(new Point(3.9f,3.0f), 0.25f));
+		zones.add(new TargetZone(new Point(4.58944f,3.5785089f), 0.25f));
+		zones.add(new TargetZone(new Point(4.7457232f,4.4648356f), 0.25f));
+		zones.add(new TargetZone(new Point(4.2957234f,5.2442584f), 0.25f));
+		zones.add(new TargetZone(new Point(3.45f,5.5520763f), 0.25f));
+		zones.add(new TargetZone(new Point(2.6042767f,5.2442584f), 0.25f));
+		zones.add(new TargetZone(new Point(2.1542766f,4.4648356f), 0.25f));
+		zones.add(new TargetZone(new Point(2.31056f,3.5785089f), 0.25f));
+		zones.add(new TargetZone(new Point(3.0f,3.0f), 0.25f));
 		return new ZoneSequence(start, zones);
-	}
 
-	/**
-	 * Example test for Individual Exercise 1c: a decagon with side length of
-	 * 0.2m
-	 * 
-	 * @return
-	 */
-	public static ZoneSequence getDecagonSequence() {
-		Pose start = new Pose(3.0f, 3.0f, 0.0f);
-		ArrayList<TargetZone> zones = new ArrayList<TargetZone>(10);
-		zones.add(new TargetZone(new Point(3.2f, 3.0f), 0.15f));
-		zones.add(new TargetZone(new Point(3.3618035f, 3.117557f), 0.15f));
-		zones.add(new TargetZone(new Point(3.4236069f, 3.3077683f), 0.15f));
-		zones.add(new TargetZone(new Point(3.3618035f, 3.4979796f), 0.15f));
-		zones.add(new TargetZone(new Point(3.2f, 3.6155367f), 0.15f));
-		zones.add(new TargetZone(new Point(3.0f, 3.6155367f), 0.15f));
-		zones.add(new TargetZone(new Point(2.8381965f, 3.4979796f), 0.15f));
-		zones.add(new TargetZone(new Point(2.7763932f, 3.3077683f), 0.15f));
-		zones.add(new TargetZone(new Point(2.8381965f, 3.117557f), 0.15f));
-		zones.add(new TargetZone(new Point(3.0f, 3.0f), 0.15f));
-		return new ZoneSequence(start, zones);
 	}
 
 	public static ZoneSequence getBumperSequence() {
@@ -105,26 +109,24 @@ public class Ex1Tests extends AbstractTestHarness {
 		zones.add(new TargetZone(new Point(0.20000005f, 0.5f), 0.25f));
 		zones.add(new TargetZone(new Point(1.8000001f, 0.5f), 0.25f));
 		zones.add(new TargetZone(new Point(0.20000005f, 0.5f), 0.25f));
-
 		return new ZoneSequence(start, zones);
-
 	}
 
-	public ZoneSequenceTestWithSim<?> createTriangleTest() {
+	public ZoneSequenceTestWithSim<?> createPentagonTest() {
 		return createSequenceTest(TestMaps.EMPTY_8_x_6,
-				getTriangleTestSequence(), false, 30000,
-				"createEquilateralTriangleController", 1.0f);
+				getPentagonTestSequence(), false, 30000,
+				"createPentagonController", 0.5f);
 	}
 
-	public ZoneSequenceTestWithSim<?> createSquareTest() {
+	public ZoneSequenceTestWithSim<?> createOctagonTest() {
 		return createSequenceTest(TestMaps.EMPTY_8_x_6,
-				getSquareTestSequence(), false, 40000,
-				"createSquareController", 1.0f);
+				getOctagonTestSequence(), false, 40000,
+				"createOctagonController", 0.8f);
 	}
 
-	public ZoneSequenceTestWithSim<?> createDecagonTest() {
-		return createSequenceTest(TestMaps.EMPTY_8_x_6, getDecagonSequence(),
-				false, 50000, "createDecagonController", 0.2f);
+	public ZoneSequenceTestWithSim<?> createNonagonTest() {
+		return createSequenceTest(TestMaps.EMPTY_8_x_6, getNonagonSequence(),
+				false, 50000, "createNonagonController", 0.9f);
 	}
 
 	public ZoneSequenceTestWithSim<?> createBumperTest() {
@@ -138,8 +140,7 @@ public class Ex1Tests extends AbstractTestHarness {
 
 			// this adds the touch sensor for the simulator if the controller
 			// accepts it
-			MobileRobotWrapper robot = test.getSimulation().iterator()
-					.next();
+			MobileRobotWrapper robot = test.getSimulation().iterator().next();
 			Object controller = test.getController();
 
 			if (controller != null) {
@@ -165,8 +166,7 @@ public class Ex1Tests extends AbstractTestHarness {
 					TestMaps.EMPTY_2_x_1, getBumperSequence(), false, 50000,
 					"createBumperController");
 
-			MobileRobotWrapper robot = test.getSimulation().iterator()
-					.next();
+			MobileRobotWrapper robot = test.getSimulation().iterator().next();
 			LocalisedRangeScanner ranger = test.getSimulation()
 					.getRanger(robot);
 
@@ -192,21 +192,21 @@ public class Ex1Tests extends AbstractTestHarness {
 	}
 
 	@Test
-	public void triangleTest() {
+	public void pentagonTest() {
 		System.out.println("Running triangle test");
-		runSequenceTest(createTriangleTest());
+		runSequenceTest(createPentagonTest());
 	}
 
 	@Test
-	public void squareTest() {
+	public void octagonTest() {
 		System.out.println("Running square test");
-		runSequenceTest(createSquareTest());
+		runSequenceTest(createOctagonTest());
 	}
 
 	@Test
-	public void decagonTest() {
+	public void nonagonTest() {
 		System.out.println("Running decagon test");
-		runSequenceTest(createDecagonTest());
+		runSequenceTest(createNonagonTest());
 	}
 
 	@Test
