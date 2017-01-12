@@ -193,19 +193,19 @@ public class Ex1Tests extends AbstractTestHarness {
 
 	@Test
 	public void pentagonTest() {
-		System.out.println("Running triangle test");
+		System.out.println("Running pentagon test");
 		runSequenceTest(createPentagonTest());
 	}
 
 	@Test
 	public void octagonTest() {
-		System.out.println("Running square test");
+		System.out.println("Running octagon test");
 		runSequenceTest(createOctagonTest());
 	}
 
 	@Test
 	public void nonagonTest() {
-		System.out.println("Running decagon test");
+		System.out.println("Running nonagon test");
 		runSequenceTest(createNonagonTest());
 	}
 
