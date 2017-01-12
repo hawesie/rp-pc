@@ -1,5 +1,8 @@
 package rp.robotics.testing;
 
+import java.awt.Dimension;
+import java.awt.Insets;
+
 import javax.swing.JFrame;
 
 import rp.robotics.simulation.MapBasedSimulation;
@@ -45,9 +48,10 @@ public class TestViewer implements Runnable {
 		frame.addWindowListener(new KillMeNow());
 
 		frame.pack();
-		frame.setSize(viz.getMinimumSize());
+		Insets insets = frame.getInsets();
+		Dimension min = viz.getMinimumSize();
+		frame.setSize((int)(min.getWidth() + insets.left), (int)(min.getHeight() + insets.top));
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setVisible(true);
 	}
-
 }
