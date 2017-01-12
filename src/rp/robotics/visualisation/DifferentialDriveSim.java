@@ -1,5 +1,8 @@
 package rp.robotics.visualisation;
 
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+
 import javax.swing.JFrame;
 
 import lejos.robotics.RangeFinder;
@@ -87,6 +90,47 @@ public class DifferentialDriveSim {
 	public static JFrame displayVisualisation(MapVisualisationComponent viz) {
 		// Create a frame to contain the viewer
 		JFrame frame = new JFrame("Simulation Viewer");
+		Object visibleLock = new Object();
+
+		frame.addWindowListener(new WindowListener() {
+
+			@Override
+			public void windowOpened(WindowEvent _e) {
+				synchronized (visibleLock) {
+					visibleLock.notifyAll();
+				}
+			}
+
+			@Override
+			public void windowIconified(WindowEvent _e) {
+
+			}
+
+			@Override
+			public void windowDeiconified(WindowEvent _e) {
+
+			}
+
+			@Override
+			public void windowDeactivated(WindowEvent _e) {
+
+			}
+
+			@Override
+			public void windowClosing(WindowEvent _e) {
+
+			}
+
+			@Override
+			public void windowClosed(WindowEvent _e) {
+
+			}
+
+			@Override
+			public void windowActivated(WindowEvent _e) {
+
+			}
+		});
 
 		// Add visualisation to frame
 		frame.add(viz);
@@ -94,6 +138,16 @@ public class DifferentialDriveSim {
 		frame.setSize(viz.getMinimumSize());
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setVisible(true);
+
+		// don't exit until window is drawn. this prevents people's robots from
+		// driving off when they can't see it
+		synchronized (visibleLock) {
+			try {
+				visibleLock.wait(20000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 
 		return frame;
 	}
