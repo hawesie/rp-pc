@@ -33,6 +33,9 @@ public class SimulatedMotor implements RegulatedMotor,
 	// whether or not the motor should be moving
 	private boolean m_isMoving = false;
 
+	// whether a stop has been requested
+	private boolean m_stopRequested = false;
+
 	// listener for motor actions, only support a single listener to match NXT
 	// implementation
 	private RegulatedMotorListener m_listener = null;
@@ -195,14 +198,14 @@ public class SimulatedMotor implements RegulatedMotor,
 
 			@Override
 			public boolean remove(Instant _now, Duration _stepInterval) {
-				boolean remove = !(m_isMoving && !_tachoPredicate
+				boolean remove = !(!m_stopRequested && !_tachoPredicate
 						.test(getTachoCount()));
 				if (remove) {
-
 					m_isMoving = false;
 					m_commandedSpeed = 0;
 					m_measuredSpeed = 0;
 					m_state = MotorState.STOPPED;
+					m_stopRequested = false;
 					notifyListener(false, _now);
 				}
 				return remove;
@@ -318,11 +321,10 @@ public class SimulatedMotor implements RegulatedMotor,
 	@Override
 	public void stop(boolean _immediateReturn) {
 		synchronized (m_stepLock) {
-			m_isMoving = false;
+			m_stopRequested = true;
 			if (!_immediateReturn) {
 				waitComplete();
 			}
-			m_direction = STOPPED;
 		}
 	}
 
