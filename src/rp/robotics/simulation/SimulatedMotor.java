@@ -86,9 +86,11 @@ public class SimulatedMotor implements RegulatedMotor,
 			} else {
 				m_listener.rotationStopped(this, getTachoCount(), isStalled(),
 						_now.toEpochMilli());
+//				System.out.println("Before notify");
 				synchronized (m_moveLock) {
 					m_moveLock.notifyAll();
 				}
+//				System.out.println("After notify");
 			}
 		}
 
@@ -140,6 +142,8 @@ public class SimulatedMotor implements RegulatedMotor,
 			@Override
 			public void step(Instant _now, Duration _stepInterval) {
 
+				// System.err.println("start step");
+
 				if (first) {
 					notifyListener(true, _now);
 				}
@@ -151,6 +155,7 @@ public class SimulatedMotor implements RegulatedMotor,
 				}
 
 				first = false;
+				// System.err.println("end step");
 			}
 
 			public void moveStep(Instant _now, Duration _stepInterval) {
@@ -201,12 +206,15 @@ public class SimulatedMotor implements RegulatedMotor,
 				boolean remove = !(!m_stopRequested && !_tachoPredicate
 						.test(getTachoCount()));
 				if (remove) {
+//					System.out.println("Removing");
 					m_isMoving = false;
 					m_commandedSpeed = 0;
 					m_measuredSpeed = 0;
 					m_state = MotorState.STOPPED;
 					m_stopRequested = false;
+//					System.out.print("NOtifing..");
 					notifyListener(false, _now);
+//					System.out.println("... done");
 				}
 				return remove;
 			}
@@ -227,7 +235,7 @@ public class SimulatedMotor implements RegulatedMotor,
 	@Override
 	protected void finalize() throws Throwable {
 		// make sure any movement thread can exit on shutdown
-		m_isMoving = false;
+		m_stopRequested = true;
 	}
 
 	private void startMove(double _direction) {
@@ -236,17 +244,20 @@ public class SimulatedMotor implements RegulatedMotor,
 
 	private void startMove(double _direction, Predicate<Integer> _tachoPredicate) {
 
-		synchronized (m_stepLock) {
-			// if moving in a different direction, make sure we've stopped
-			// before
-			// moving again
-			if (m_isMoving) {
-				if (m_direction != _direction) {
-					stop(false);
-				} else {
-					return;
-				}
+		// if moving in a different direction, make sure we've stopped
+		// before
+		// moving again
+		if (m_isMoving) {
+			if (m_direction != _direction) {
+				// System.out.print("Stopping for changing direction... ");
+				stop(false);
+				// System.out.println("... done");
+			} else {
+				return;
 			}
+		}
+
+		synchronized (m_stepLock) {
 
 			m_direction = _direction;
 			m_isMoving = true;
@@ -320,12 +331,17 @@ public class SimulatedMotor implements RegulatedMotor,
 
 	@Override
 	public void stop(boolean _immediateReturn) {
+		// System.out.println("stop() before step lock");
 		synchronized (m_stepLock) {
+			// System.out.println("stop() in step lock");
 			m_stopRequested = true;
-			if (!_immediateReturn) {
-				waitComplete();
-			}
 		}
+		if (!_immediateReturn) {
+			// System.out.println("stop() before wait");
+			waitComplete();
+			// System.out.println("stop() after wait");
+		}
+
 	}
 
 	@Override
@@ -337,13 +353,16 @@ public class SimulatedMotor implements RegulatedMotor,
 	public void waitComplete() {
 
 		while (isMoving()) {
+//			System.out.println("waitComplete() Before moveLock");
 			synchronized (m_moveLock) {
 				try {
+//					System.out.println("waitComplete() waiting");
 					m_moveLock.wait(10);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 			}
+			Thread.yield();
 		}
 
 	}
@@ -366,17 +385,19 @@ public class SimulatedMotor implements RegulatedMotor,
 
 	@Override
 	public void rotateTo(int _limitAngle, boolean _immediateReturn) {
+		double direction = FORWARD;
+		Predicate<Integer> target = null;
+
 		synchronized (m_stepLock) {
 			m_limitAngle = _limitAngle;
-			double direction = FORWARD;
-			Predicate<Integer> target = i -> i >= _limitAngle - 2;
+			target = i -> i >= _limitAngle - 2;
 			if (_limitAngle < getTachoCount()) {
 				direction = BACKWARD;
 				target = i -> i <= _limitAngle + 2;
 			}
-			startMove(direction, target);
-
 		}
+
+		startMove(direction, target);
 
 		if (!_immediateReturn) {
 			waitComplete();
