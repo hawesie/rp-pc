@@ -2,6 +2,8 @@
 
 Some classes useful for robot sensing, simulation, testing map abstraction and localisation in leJOS. 
 
+This project requires Java 8. This is probably only an issue for OS X where you'll need to use Java 6 for the rp-\* projects which send code to the robot.
+
 ## Eclipse
 
 ### Getting the code
@@ -16,7 +18,6 @@ To use this code in your project you first need to clone the project into your E
 If this project does not compile because it is missing any `lejos.*` packages this means that the leJOS PC jar was not added correctly. This happens to me, so it might happen to you too. This will also happen if you just created a standard Java project. To add the leJOS PC jar go to `Project` `Properties`, select `Java Build Path`, and click on the `Libraries` tab. From here click `Add Library...` select `LeJOS Library Container` then select platform `PC Libraries` and hit `Finish`.
 
 ### Dependencies
-
 
 For the tests to compile, you must add JUnit support to your project. Go to `Project` `Properties`, select `Java Build Path`, and click on the `Libraries` tab. From here click `Add Library...` select `JUnit 4`.
 
