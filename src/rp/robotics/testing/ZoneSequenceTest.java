@@ -70,7 +70,7 @@ public class ZoneSequenceTest<C extends StoppableRunnable> extends RobotTest<C>
 						public void step(Instant _now, Duration _stepInterval) {
 
 							if (_now.isAfter(timeoutAt)) {
-								failed = false;
+								failed = true;
 							} else {
 
 								Pose p = m_poser.getPose();
