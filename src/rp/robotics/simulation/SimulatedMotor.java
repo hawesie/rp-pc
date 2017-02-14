@@ -59,6 +59,9 @@ public class SimulatedMotor implements RegulatedMotor,
 
 	private final UUID m_uuid = UUID.randomUUID();
 
+	@SuppressWarnings("unused")
+	private final String m_label;
+
 	@Override
 	public boolean equals(Object _obj) {
 		if (_obj instanceof SimulatedMotor) {
@@ -74,8 +77,9 @@ public class SimulatedMotor implements RegulatedMotor,
 		return m_uuid.hashCode();
 	}
 
-	public SimulatedMotor(SimulationCore _sim) {
+	public SimulatedMotor(SimulationCore _sim, String _label) {
 		m_sim = _sim;
+		m_label = _label;
 	}
 
 	private void notifyListener(boolean _started, Instant _now) {
@@ -86,11 +90,11 @@ public class SimulatedMotor implements RegulatedMotor,
 			} else {
 				m_listener.rotationStopped(this, getTachoCount(), isStalled(),
 						_now.toEpochMilli());
-//				System.out.println("Before notify");
+				// println("Before notify");
 				synchronized (m_moveLock) {
 					m_moveLock.notifyAll();
 				}
-//				System.out.println("After notify");
+				// println("After notify");
 			}
 		}
 
@@ -121,17 +125,18 @@ public class SimulatedMotor implements RegulatedMotor,
 			Speedometer speedo = new Speedometer(getTachoCount(), Instant.now()
 					.toEpochMilli(), 20);
 
+			@SuppressWarnings("unused")
 			public void regulateStep(Instant _now, Duration _stepInterval) {
 
 				m_measuredSpeed = speedo.update(getTachoCount(),
 						_now.toEpochMilli());
 
 				double difference = m_targetSpeed - m_measuredSpeed;
-				// System.out.println("regulate: " + _stepInterval);
+				// println("regulate: " + _stepInterval);
 
 				if (m_state == MotorState.REGULATING) {
-					// System.out.println("spped diff: " + difference);
-					// System.out.println("measured: " + m_measuredSpeed);
+					// println("spped diff: " + difference);
+					// println("measured: " + m_measuredSpeed);
 
 					// m_commandedSpeed = m_commandedSpeed + (0.0001 *
 					// difference);
@@ -142,29 +147,31 @@ public class SimulatedMotor implements RegulatedMotor,
 			@Override
 			public void step(Instant _now, Duration _stepInterval) {
 
-				// System.err.println("start step");
+				// println("start step");
 
 				if (first) {
 					notifyListener(true, _now);
+					first = false;
 				}
 
 				synchronized (m_stepLock) {
+					// println("In moveStep stepLock");
 
 					moveStep(_now, _stepInterval);
 					// regulateStep(_now, _stepInterval);
+					// println("Out moveStep stepLock");
 				}
 
-				first = false;
-				// System.err.println("end step");
+				// println("end step");
 			}
 
 			public void moveStep(Instant _now, Duration _stepInterval) {
 
-				// System.out.println("move: " + _stepInterval);
+				// println("move: " + _stepInterval);
 
-				// System.out.println("inner step");
+				// println("inner step");
 				//
-				// System.out.println(_stepInterval.toMillis());
+				// println(_stepInterval.toMillis());
 				double cycleTimeSecs = _stepInterval.toMillis() / 1000.0;
 
 				if (m_state == MotorState.ACCELERATING) {
@@ -174,8 +181,8 @@ public class SimulatedMotor implements RegulatedMotor,
 						m_commandedSpeed = Math.min(m_commandedSpeed
 								+ (m_acceleration * cycleTimeSecs),
 								m_targetSpeed);
-						// System.out.println(cycleTimeSecs);
-						// System.out.println("accelerating to speed: "
+						// println(cycleTimeSecs);
+						// println("accelerating to speed: "
 						// + m_commandedSpeed);
 
 					} else {
@@ -188,8 +195,8 @@ public class SimulatedMotor implements RegulatedMotor,
 						m_commandedSpeed = Math.max(m_commandedSpeed
 								- (m_acceleration * cycleTimeSecs),
 								m_targetSpeed);
-						// System.out.println(cycleTimeSecs);
-						// System.out.println("accelerating to speed: "
+						// println(cycleTimeSecs);
+						// println("accelerating to speed: "
 						// + m_commandedSpeed);
 					} else {
 						m_state = MotorState.REGULATING;
@@ -197,7 +204,9 @@ public class SimulatedMotor implements RegulatedMotor,
 				}
 
 				m_tachoCount += (cycleTimeSecs * m_commandedSpeed * m_direction);
-				// System.out.println("Count: " + m_tachoCount);
+				// println("Count: " + m_tachoCount);
+				m_measuredSpeed = speedo.update(getTachoCount(),
+						_now.toEpochMilli());
 
 			}
 
@@ -205,16 +214,17 @@ public class SimulatedMotor implements RegulatedMotor,
 			public boolean remove(Instant _now, Duration _stepInterval) {
 				boolean remove = !(!m_stopRequested && !_tachoPredicate
 						.test(getTachoCount()));
+				// println("Removing? " + remove);
 				if (remove) {
-//					System.out.println("Removing");
+					println("Removing");
 					m_isMoving = false;
 					m_commandedSpeed = 0;
 					m_measuredSpeed = 0;
 					m_state = MotorState.STOPPED;
 					m_stopRequested = false;
-//					System.out.print("NOtifing..");
+					// System.out.print("NOtifing..");
 					notifyListener(false, _now);
-//					System.out.println("... done");
+					// println("... done");
 				}
 				return remove;
 			}
@@ -249,21 +259,22 @@ public class SimulatedMotor implements RegulatedMotor,
 		// moving again
 		if (m_isMoving) {
 			if (m_direction != _direction) {
-				// System.out.print("Stopping for changing direction... ");
+				println("Stopping for changing direction... ");
 				stop(false);
-				// System.out.println("... done");
+				println("... done");
 			} else {
 				return;
 			}
 		}
 
 		synchronized (m_stepLock) {
+			println("In startMove stepLock");
 
 			m_direction = _direction;
 			m_isMoving = true;
 
 			move(_tachoPredicate);
-
+			println("Out startMove stepLock");
 		}
 	}
 
@@ -290,9 +301,9 @@ public class SimulatedMotor implements RegulatedMotor,
 
 	@Override
 	public boolean isMoving() {
-		// System.out.println("In isMoving");
+		// println("In isMoving");
 		synchronized (m_stepLock) {
-			// System.out.println("Out isMoving");
+			// println("Out isMoving");
 
 			return m_isMoving;
 		}
@@ -329,17 +340,26 @@ public class SimulatedMotor implements RegulatedMotor,
 		return listener;
 	}
 
+	private void println(Object _o) {
+		// System.out.println(m_label + ": " + _o.toString());
+	}
+
+	private int stopCalled = 0;
+
 	@Override
 	public void stop(boolean _immediateReturn) {
-		// System.out.println("stop() before step lock");
-		synchronized (m_stepLock) {
-			// System.out.println("stop() in step lock");
-			m_stopRequested = true;
-		}
-		if (!_immediateReturn) {
-			// System.out.println("stop() before wait");
-			waitComplete();
-			// System.out.println("stop() after wait");
+
+		println("stop() before step lock");
+		if (isMoving()) {
+			synchronized (m_stepLock) {
+				println((++stopCalled) + " stop() in step lock");
+				m_stopRequested = true;
+			}
+			if (!_immediateReturn) {
+				println(stopCalled + " stop() before wait");
+				waitComplete();
+				println(stopCalled + " stop() after wait");
+			}
 		}
 
 	}
@@ -353,16 +373,17 @@ public class SimulatedMotor implements RegulatedMotor,
 	public void waitComplete() {
 
 		while (isMoving()) {
-//			System.out.println("waitComplete() Before moveLock");
+			println("waitComplete() Before moveLock: " + m_stopRequested);
 			synchronized (m_moveLock) {
 				try {
-//					System.out.println("waitComplete() waiting");
+					println("waitComplete() waiting");
 					m_moveLock.wait(10);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 			}
 			Thread.yield();
+			// Delay.msDelay(10);
 		}
 
 	}
@@ -479,7 +500,7 @@ public class SimulatedMotor implements RegulatedMotor,
 
 	public static void main(String[] args) {
 		SimulationCore sim = SimulationCore.createSimulationCore();
-		SimulatedMotor motor1 = new SimulatedMotor(sim);
+		SimulatedMotor motor1 = new SimulatedMotor(sim, "");
 		motor1.forward();
 		int prev = 0;
 		Rate rate = new Rate(10);
@@ -496,7 +517,7 @@ public class SimulatedMotor implements RegulatedMotor,
 		// // int[] targets = { 0, 361, -33, 400, 404, -27, -666, 1024 };
 		// // for (int target : targets) {
 		// // motor.rotateTo(target, false);
-		// // System.out.println("Rotation for " + target + " att " +
+		// // println("Rotation for " + target + " att " +
 		// // motor.getTachoCount());
 		// // }
 		//
@@ -505,7 +526,7 @@ public class SimulatedMotor implements RegulatedMotor,
 		// //
 		// // OdometryPoseProvider pp = new OdometryPoseProvider(dp);
 		// //
-		// // System.out.println(pp.getPose());
+		// // println(pp.getPose());
 		// //
 		// // double distanceMm = 500;
 		// //
@@ -513,7 +534,7 @@ public class SimulatedMotor implements RegulatedMotor,
 		// // dp.rotate(-90);
 		// // dp.travel(distanceMm);
 		// //
-		// // System.out.println(pp.getPose());
+		// // println(pp.getPose());
 	}
 
 	@Override

@@ -12,7 +12,7 @@ public class SimulatedMotorTest {
 	@Test
 	public void testForward() {
 
-		RegulatedMotor motor = new SimulatedMotor(SimulationCore.createSimulationCore());
+		RegulatedMotor motor = new SimulatedMotor(SimulationCore.createSimulationCore(), "Test");
 
 		int targetSpeed = 360;
 		int acceleration = 6000;
@@ -54,7 +54,7 @@ public class SimulatedMotorTest {
 	@Test
 	public void testBackwards() {
 
-		RegulatedMotor motor = new SimulatedMotor(SimulationCore.createSimulationCore());
+		RegulatedMotor motor = new SimulatedMotor(SimulationCore.createSimulationCore(), "Test");
 
 		int targetSpeed = 360;
 		int acceleration = 6000;
@@ -96,7 +96,7 @@ public class SimulatedMotorTest {
 	@Test
 	public void testForwardBackwards() {
 
-		RegulatedMotor motor = new SimulatedMotor(SimulationCore.createSimulationCore());
+		RegulatedMotor motor = new SimulatedMotor(SimulationCore.createSimulationCore(), "Test");
 
 		motor.forward();
 		Delay.msDelay(1000);
@@ -142,7 +142,7 @@ public class SimulatedMotorTest {
 
 	@Test
 	public void testRotateTo() {
-		RegulatedMotor motor = new SimulatedMotor(SimulationCore.createSimulationCore());
+		RegulatedMotor motor = new SimulatedMotor(SimulationCore.createSimulationCore(), "Test");
 		int[] targets = { 0, 361, -33, 400, 404, -27, -666, 1024 };
 		for (int target : targets) {
 			motor.rotateTo(target, false);
@@ -158,7 +158,7 @@ public class SimulatedMotorTest {
 
 	@Test
 	public void testRotate() {
-		RegulatedMotor motor = new SimulatedMotor(SimulationCore.createSimulationCore());
+		RegulatedMotor motor = new SimulatedMotor(SimulationCore.createSimulationCore(), "Test");
 		int[] increments = { -13, 0, 300, 201, -20, -489, 1 };
 		for (int increment : increments) {
 			int target = motor.getTachoCount() + increment;
@@ -196,7 +196,7 @@ public class SimulatedMotorTest {
 		TestListener listener = new TestListener();
 		assertTrue(listener.started == 0);
 		assertTrue(listener.stopped == 0);
-		RegulatedMotor motor = new SimulatedMotor(SimulationCore.createSimulationCore());
+		RegulatedMotor motor = new SimulatedMotor(SimulationCore.createSimulationCore(), "Test");
 		motor.addListener(listener);
 		int count = 5;
 		for (int i = 0; i < count; i++) {

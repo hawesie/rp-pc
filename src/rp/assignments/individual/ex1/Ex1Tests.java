@@ -48,13 +48,13 @@ public class Ex1Tests extends AbstractTestHarness {
 	 * @return
 	 */
 	public static ZoneSequence getPentagonTestSequence() {
-		Pose start = new Pose(3.0f,3.0f,0.0f);
+		Pose start = new Pose(3.0f, 3.0f, 0.0f);
 		ArrayList<TargetZone> zones = new ArrayList<TargetZone>(5);
-		zones.add(new TargetZone(new Point(3.5f,3.0f), 0.25f));
-		zones.add(new TargetZone(new Point(3.6545086f,3.4755282f), 0.25f));
-		zones.add(new TargetZone(new Point(3.25f,3.7694209f), 0.25f));
-		zones.add(new TargetZone(new Point(2.8454914f,3.4755282f), 0.25f));
-		zones.add(new TargetZone(new Point(3.0f,3.0f), 0.25f));
+		zones.add(new TargetZone(new Point(3.5f, 3.0f), 0.35f));
+		zones.add(new TargetZone(new Point(3.6545086f, 3.4755282f), 0.35f));
+		zones.add(new TargetZone(new Point(3.25f, 3.7694209f), 0.35f));
+		zones.add(new TargetZone(new Point(2.8454914f, 3.4755282f), 0.35f));
+		zones.add(new TargetZone(new Point(3.0f, 3.0f), 0.35f));
 		return new ZoneSequence(start, zones);
 
 	}
@@ -66,16 +66,16 @@ public class Ex1Tests extends AbstractTestHarness {
 	 * @return
 	 */
 	public static ZoneSequence getOctagonTestSequence() {
-		Pose start = new Pose(3.0f,3.0f,0.0f);
+		Pose start = new Pose(3.0f, 3.0f, 0.0f);
 		ArrayList<TargetZone> zones = new ArrayList<TargetZone>(8);
-		zones.add(new TargetZone(new Point(3.8f,3.0f), 0.25f));
-		zones.add(new TargetZone(new Point(4.3656855f,3.5656855f), 0.25f));
-		zones.add(new TargetZone(new Point(4.3656855f,4.3656855f), 0.25f));
-		zones.add(new TargetZone(new Point(3.8f,4.9313707f), 0.25f));
-		zones.add(new TargetZone(new Point(3.0f,4.9313707f), 0.25f));
-		zones.add(new TargetZone(new Point(2.4343145f,4.3656855f), 0.25f));
-		zones.add(new TargetZone(new Point(2.4343145f,3.5656855f), 0.25f));
-		zones.add(new TargetZone(new Point(3.0f,3.0f), 0.25f));
+		zones.add(new TargetZone(new Point(3.8f, 3.0f), 0.35f));
+		zones.add(new TargetZone(new Point(4.3656855f, 3.5656855f), 0.35f));
+		zones.add(new TargetZone(new Point(4.3656855f, 4.3656855f), 0.35f));
+		zones.add(new TargetZone(new Point(3.8f, 4.9313707f), 0.35f));
+		zones.add(new TargetZone(new Point(3.0f, 4.9313707f), 0.35f));
+		zones.add(new TargetZone(new Point(2.4343145f, 4.3656855f), 0.35f));
+		zones.add(new TargetZone(new Point(2.4343145f, 3.5656855f), 0.35f));
+		zones.add(new TargetZone(new Point(3.0f, 3.0f), 0.35f));
 
 		return new ZoneSequence(start, zones);
 	}
@@ -87,17 +87,17 @@ public class Ex1Tests extends AbstractTestHarness {
 	 * @return
 	 */
 	public static ZoneSequence getNonagonSequence() {
-		Pose start = new Pose(3.0f,3.0f,0.0f);
+		Pose start = new Pose(3.0f, 3.0f, 0.0f);
 		ArrayList<TargetZone> zones = new ArrayList<TargetZone>(9);
-		zones.add(new TargetZone(new Point(3.9f,3.0f), 0.25f));
-		zones.add(new TargetZone(new Point(4.58944f,3.5785089f), 0.25f));
-		zones.add(new TargetZone(new Point(4.7457232f,4.4648356f), 0.25f));
-		zones.add(new TargetZone(new Point(4.2957234f,5.2442584f), 0.25f));
-		zones.add(new TargetZone(new Point(3.45f,5.5520763f), 0.25f));
-		zones.add(new TargetZone(new Point(2.6042767f,5.2442584f), 0.25f));
-		zones.add(new TargetZone(new Point(2.1542766f,4.4648356f), 0.25f));
-		zones.add(new TargetZone(new Point(2.31056f,3.5785089f), 0.25f));
-		zones.add(new TargetZone(new Point(3.0f,3.0f), 0.25f));
+		zones.add(new TargetZone(new Point(3.9f, 3.0f), 0.35f));
+		zones.add(new TargetZone(new Point(4.58944f, 3.5785089f), 0.35f));
+		zones.add(new TargetZone(new Point(4.7457232f, 4.4648356f), 0.35f));
+		zones.add(new TargetZone(new Point(4.2957234f, 5.2442584f), 0.35f));
+		zones.add(new TargetZone(new Point(3.45f, 5.5520763f), 0.35f));
+		zones.add(new TargetZone(new Point(2.6042767f, 5.2442584f), 0.35f));
+		zones.add(new TargetZone(new Point(2.1542766f, 4.4648356f), 0.35f));
+		zones.add(new TargetZone(new Point(2.31056f, 3.5785089f), 0.35f));
+		zones.add(new TargetZone(new Point(3.0f, 3.0f), 0.35f));
 		return new ZoneSequence(start, zones);
 
 	}
@@ -105,10 +105,10 @@ public class Ex1Tests extends AbstractTestHarness {
 	public static ZoneSequence getBumperSequence() {
 		Pose start = new Pose(0.2f, 0.5f, 0.0f);
 		ArrayList<TargetZone> zones = new ArrayList<TargetZone>(4);
-		zones.add(new TargetZone(new Point(1.8000001f, 0.5f), 0.25f));
-		zones.add(new TargetZone(new Point(0.20000005f, 0.5f), 0.25f));
-		zones.add(new TargetZone(new Point(1.8000001f, 0.5f), 0.25f));
-		zones.add(new TargetZone(new Point(0.20000005f, 0.5f), 0.25f));
+		zones.add(new TargetZone(new Point(1.8000001f, 0.5f), 0.35f));
+		zones.add(new TargetZone(new Point(0.20000005f, 0.5f), 0.35f));
+		zones.add(new TargetZone(new Point(1.8000001f, 0.5f), 0.35f));
+		zones.add(new TargetZone(new Point(0.20000005f, 0.5f), 0.35f));
 		return new ZoneSequence(start, zones);
 	}
 
@@ -135,7 +135,7 @@ public class Ex1Tests extends AbstractTestHarness {
 			// test with bumper controller, this doesn't include the touch
 			// sensor.
 			ZoneSequenceTestWithSim<?> test = createSequenceTest(
-					TestMaps.EMPTY_2_x_1, getBumperSequence(), true, 50000,
+					TestMaps.EMPTY_2_x_1, getBumperSequence(), true, 70000,
 					"createBumperController");
 
 			// this adds the touch sensor for the simulator if the controller

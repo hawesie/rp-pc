@@ -4,7 +4,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 
 import rp.robotics.MobileRobot;
-import rp.robotics.MobileRobotWrapper;
 import rp.robotics.simulation.MapBasedSimulation;
 import rp.robotics.simulation.SimulatorListener;
 import rp.systems.StoppableRunnable;

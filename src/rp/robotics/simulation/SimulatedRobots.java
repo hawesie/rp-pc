@@ -2,7 +2,6 @@ package rp.robotics.simulation;
 
 import rp.config.MobileRobotConfiguration;
 import rp.config.WheeledRobotConfiguration;
-import rp.util.Pair;
 
 public class SimulatedRobots {
 
@@ -56,8 +55,8 @@ public class SimulatedRobots {
 //				0.056f, 0.12f, 0.23f, motors.getItem1(), motors.getItem2());
 
 		WheeledRobotConfiguration config = new WheeledRobotConfiguration(
-				0.056f, 0.12f, 0.23f, new SimulatedMotor(_sim),
-				new SimulatedMotor(_sim));
+				0.056f, 0.12f, 0.23f, new SimulatedMotor(_sim, "left"),
+				new SimulatedMotor(_sim, "right"));
 
 		
 		if (_touchSensor) {

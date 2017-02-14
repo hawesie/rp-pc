@@ -13,7 +13,7 @@ public class DifferentialPilotTest {
 	public void testForward() {
 		SimulationCore sim = SimulationCore.createSimulationCore();
 		DifferentialPilot dp = new DifferentialPilot(56, 163,
-				new SimulatedMotor(sim), new SimulatedMotor(sim));
+				new SimulatedMotor(sim, "Left"), new SimulatedMotor(sim, "Right"));
 
 		double speedMmPerSec = 50;
 		dp.setTravelSpeed(speedMmPerSec);
@@ -36,7 +36,7 @@ public class DifferentialPilotTest {
 		SimulationCore sim = SimulationCore.createSimulationCore();
 
 		DifferentialPilot dp = new DifferentialPilot(56, 163,
-				new SimulatedMotor(sim), new SimulatedMotor(sim));
+				new SimulatedMotor(sim, "Left"), new SimulatedMotor(sim, "Right"));
 
 		double speedMmPerSec = 50;
 		dp.setTravelSpeed(speedMmPerSec);
@@ -59,7 +59,7 @@ public class DifferentialPilotTest {
 		SimulationCore sim = SimulationCore.createSimulationCore();
 
 		DifferentialPilot dp = new DifferentialPilot(56, 163,
-				new SimulatedMotor(sim), new SimulatedMotor(sim));
+				new SimulatedMotor(sim, "Left"), new SimulatedMotor(sim, "Right"));
 
 		OdometryPoseProvider pp = new OdometryPoseProvider(dp);
 
@@ -107,7 +107,7 @@ public class DifferentialPilotTest {
 		SimulationCore sim = SimulationCore.createSimulationCore();
 
 		DifferentialPilot dp = new DifferentialPilot(56, 163,
-				new SimulatedMotor(sim), new SimulatedMotor(sim));
+				new SimulatedMotor(sim, "Left"), new SimulatedMotor(sim, "Right"));
 
 		OdometryPoseProvider pp = new OdometryPoseProvider(dp);
 

@@ -29,6 +29,7 @@ public class TouchListenerTest implements TouchSensorListener {
 
 	@Override
 	public void sensorPressed(TouchSensorEvent _e) {
+		System.out.println("Pressed");
 		synchronized (m_OnEvent) {
 			onEvent(_e);
 			m_pressed = true;
@@ -37,6 +38,7 @@ public class TouchListenerTest implements TouchSensorListener {
 
 	@Override
 	public void sensorReleased(TouchSensorEvent _e) {
+		System.out.println("Released");
 		synchronized (m_OnEvent) {
 			onEvent(_e);
 			m_released = true;
@@ -45,6 +47,7 @@ public class TouchListenerTest implements TouchSensorListener {
 
 	@Override
 	public void sensorBumped(TouchSensorEvent _e) {
+		System.out.println("Bumped");
 		synchronized (m_OnEvent) {
 			onEvent(_e);
 			m_bumped = true;

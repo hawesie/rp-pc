@@ -28,9 +28,8 @@ public class ZoneSequenceTestVisualisation extends MapVisualisationComponent {
 
 	@Override
 	public void paint(Graphics _g) {
-		super.paint(_g);
 		paintTest((Graphics2D) _g);
-
+		super.paint(_g);
 	}
 
 	private void paintTest(Graphics2D _g) {

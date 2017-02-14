@@ -4,6 +4,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import lejos.geom.Line;
 import lejos.geom.Point;
@@ -48,6 +50,8 @@ public class MapBasedSimulation implements
 	private ArrayList<DynamicObstacle> m_obstacles;
 	private ArrayList<RelativeRangeScanner> m_rangers;
 	private final SimulationCore m_sim;
+	private final ExecutorService m_eventDispatchService = Executors
+			.newCachedThreadPool();
 
 	private final boolean m_startOnFirstRobot;
 
@@ -172,14 +176,22 @@ public class MapBasedSimulation implements
 										sensor.triggered = true;
 
 										long start = System.currentTimeMillis();
-										sensor.listener
-												.sensorPressed(new TouchSensorEvent(
-														100, 3));
 
-										long responseTime = System
-												.currentTimeMillis() - start;
-										callListenersSensorPressed(
-												sensor.robot, responseTime);
+										// Events need to go in a separate
+										// thread to prevent them blocking the
+										// simulation if someone writes bad code
+										// (or violates my shaky assumptions)
+										m_eventDispatchService.execute(() -> {
+											sensor.listener
+													.sensorPressed(new TouchSensorEvent(
+															100, 3));
+											long responseTime = System
+													.currentTimeMillis()
+													- start;
+											callSimulationListenersSensorPressed(
+													sensor.robot, responseTime);
+										});
+
 									}
 								} else if (sensor.triggered) {
 									sensor.triggered = false;
@@ -348,7 +360,7 @@ public class MapBasedSimulation implements
 
 	}
 
-	private void callListenersSensorPressed(MobileRobot _robot,
+	private void callSimulationListenersSensorPressed(MobileRobot _robot,
 			long _responseTime) {
 		if (m_simulatorListeners != null) {
 			synchronized (m_simulatorListeners) {

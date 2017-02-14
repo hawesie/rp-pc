@@ -12,8 +12,8 @@ public class SynchronisedMotor extends SimulatedMotor {
 
 	public static Pair<SynchronisedMotor, SynchronisedMotor> createMotorPair(
 			SimulationCore _sim) {
-		return Pair.makePair(new SynchronisedMotor(_sim),
-				new SynchronisedMotor(_sim));
+		return Pair.makePair(new SynchronisedMotor(_sim, "Left"),
+				new SynchronisedMotor(_sim, "Right"));
 	}
 
 	private static int m_motorCount = 0;
@@ -22,8 +22,8 @@ public class SynchronisedMotor extends SimulatedMotor {
 
 	private static final HashMap<String, SynchronisedMethodCall> m_calls = new HashMap<>();
 
-	private SynchronisedMotor(SimulationCore _sim) {
-		super(_sim);
+	private SynchronisedMotor(SimulationCore _sim, String _label) {
+		super(_sim, _label);
 		synchronized (m_syncLock) {
 			m_motorCount++;
 		}

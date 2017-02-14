@@ -55,6 +55,7 @@ public class ZoneSequenceTest<C extends StoppableRunnable> extends RobotTest<C>
 
 		assertThat(m_poser.getPose(), is(m_sequence.getStart()));
 
+		
 		Thread t = new Thread(m_controller);
 		Instant timeoutAt = Instant.now().plus(m_timeout);
 
@@ -81,7 +82,7 @@ public class ZoneSequenceTest<C extends StoppableRunnable> extends RobotTest<C>
 									if (!zones.isEmpty()) {
 										zones.peek().setStatus(Status.LIVE);
 									}
-									// System.out.println("Zone done");
+//									System.out.println("Zone done");
 								} else if (m_failIfOutOfSequence) {
 									for (TargetZone zone : m_sequence) {
 										failed = true;
@@ -108,7 +109,7 @@ public class ZoneSequenceTest<C extends StoppableRunnable> extends RobotTest<C>
 
 		} finally {
 
-			// System.out.println("Tests all passed, stopping controller");
+			System.out.println("Test finished, stopping controller");
 			long stopCalledAt = System.currentTimeMillis();
 			m_controller.stop();
 			try {
@@ -117,10 +118,12 @@ public class ZoneSequenceTest<C extends StoppableRunnable> extends RobotTest<C>
 						System.currentTimeMillis() - stopCalledAt);
 
 			} catch (InterruptedException e) {
-				fail(e.getMessage());
+				System.out.println("Thread join interrupted");
+
+				fail("Thread join interrupted:\n" + e.getMessage());
 				e.printStackTrace();
 			}
-			// System.out.println("Test done");
+			System.out.println("Test done and controller stopped");
 		}
 	}
 

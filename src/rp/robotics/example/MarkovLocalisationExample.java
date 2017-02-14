@@ -18,7 +18,6 @@ import rp.robotics.simulation.MapBasedSimulation;
 import rp.robotics.simulation.MovableRobot;
 import rp.robotics.simulation.SimulatedRobots;
 import rp.robotics.testing.TestMaps;
-import rp.robotics.visualisation.GridMapVisualisation;
 import rp.robotics.visualisation.GridPositionDistributionVisualisation;
 import rp.robotics.visualisation.KillMeNow;
 import rp.robotics.visualisation.MapVisualisationComponent;
